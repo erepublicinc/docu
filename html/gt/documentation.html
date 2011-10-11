@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>govtech2 documentation</title>
+</head>
+<body>
+<h1>GOVTECH2</h1>
+
+<h2>Hosting</h2>
+<p>it looks like we are moving from a SAAS (Software As A Service) to a PAAS (PLatform As A Service) model I found the following</p>
+<p>Rackspace's Cloud Sites   <a href="http://www.rackspace.com/Cloud_Sites">http://www.rackspace.com/Cloud_Sites</a>                 </p>
+<p>Media Temple's Grid Service</p> <a href="http://mediatemple.net/">http://mediatemple.net/</a> 
+<p>dotcloud,  based in San francisco, small   <a href="https://www.dotcloud.com/">https://www.dotcloud.com/</a> DotCloud runs on Amazon EC2. More specifically, we run on the us-east-1 region, across multiple availability zones.</p>
+<p>cloudcontrol, based in EU? <a href="http://cloudcontrol.com/">http://cloudcontrol.com/</a> </p>
+<p>phpfog   <a href="www.appfog.com">appfog.com</a>  (still in private beta)</p>
+host and replicate php apps
+
+
+
+
+<h2>software layers</h2>
+
+The software needs to be layered as follows
+<ul class='layer'>
+<li>page layer</li>
+<li>website layer, code for the specific content, css etc</li>
+<li>core layer, very generic</li>
+<li>php on apache , memcache? ,  database(whichever we choose)</li>
+</ul>
+
+
+<h3>why layers?</h3>
+<p>thinking about the code as being in layers gives us the following advantages:
+<br>- Different levels of testing, for example a core-level change has to go through a lot more testing
+<br>- Code review, for example core-level change has to have a code review
+<br>- Documentation, for example core-level change has to have the documentation changed, and this should be qa'ed as well'
+</p>
+
+
+<h3>page layer</h3>
+<p>this layer deals with individual pages, changes will opnly affect a single page
+</p>
+
+
+<h3>website layer</h3>
+<p>this layer deals with the websites, changes will affect a website.
+for example the css files for a site fit into this category
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
