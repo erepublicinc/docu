@@ -18,6 +18,7 @@ body{
     
 }
 
+
 #id_left_column{
     width:300px;  
     height:1000px; 
