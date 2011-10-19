@@ -73,6 +73,7 @@ function setup_smarty($test=false)
         $smarty->testInstall(); // to check
     return $smarty;    
 }
+
     
 //  this debug class adds timing info to the bottom of the page in a comment
 //  usage:    put this anywhere in the code    PageTimer::timeIt("MY label"); 

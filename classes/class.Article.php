@@ -56,7 +56,16 @@ class Article extends Content
     }
     
     
-  
+    public static function GetArticles( $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')  
+    {
+        return parent::GetContentByType('articles', $site, $orderby, $limit, $skip , $status) ; 
+    }
+    
+    public static function GetArticle($pk, $version = 0)  
+    {
+        return Content::getAllData($pk, "articles", $version);
+    }
+    
     
     /**
      * only static sYaasfuctions can be called through Yaas2 .  This is a security measure
@@ -64,12 +73,12 @@ class Article extends Content
      */
     public static function sYaasGetDetails($params)
     {
-        return Content::getAllData($params->pk, "docu_items", intval($params->version))->ToArray();
+        return Content::getAllData($params->pk, "articles", intval($params->version))->ToArray();
     }
     
     public static function sYaasSave($params)
     {
-        
+echo'<pre>'; print_r($params); die;        
         if(! User::Authorize('ADMIN'))
         {
             return('unauthorized');

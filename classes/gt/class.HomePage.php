@@ -15,9 +15,18 @@ class HomePage extends WebPage
     
     public function Display(){
        
-        $contents = Content::GetPageContents(); 
+       
         
         
-        echo("homepage");
+
+        $arts = Content::GetPageContents();
+      
+        
+        $this->mSmarty->assign('articles', $arts);
+        $this->$mMainTpl = 'hompage.tpl';
+
+   
+        
+      
     }
 }

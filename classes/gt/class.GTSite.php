@@ -6,7 +6,8 @@ class GTSite extends Website
         // Check if this page already exists in our cache of complete pages
         $fname = str_replace('/', '#',  $_SERVER['REDIRECT_URL']);
         $fname = rtrim($fname,'# ');
-      //  die($fname);
+        
+        //$this->mDefaultModules = array(....);    // set the sitewide modules here
         
         
         parent::__construct();

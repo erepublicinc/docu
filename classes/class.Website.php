@@ -42,10 +42,10 @@ abstract class Website
     protected $_mClassArguments = array();
     
     public $mUser;         // do we need this ?
-    private $_mClassName;  //name of the page class
+    protected $_mClassName;  //name of the page class
 
-    public $mDefaultModules = array(); //Array of site wide default modules
-
+    public $mDefaultModules = array();     //Array of site wide default modules
+    
     public $mSYSTEM_ENTRY_TIME;
     public function __construct()
     {
@@ -64,12 +64,12 @@ abstract class Website
      *  Initializes and displays page based on URL.
      */
     public function Render()
-    {
+    { 
         //$this->_modifyEnvironment($_SERVER['REQUEST_URI']); moved to the constructor
-        $this->_GetPageClassName();
-        $this->_LoadPageClass();
+        $this->_GetPageClassName(); 
+        $this->_LoadPageClass(); 
         if (!empty($this->page))
-        {
+        {  
             $this->page->Display();
         }
 
@@ -89,7 +89,7 @@ abstract class Website
      *  Using the URI Path to get the page class
      *  @return bool Always returns true.
      */
-    private function _GetPageClassName()
+    protected function _GetPageClassName()
     {
         $uri            = parse_url($_SERVER['REQUEST_URI']);
         $path           = rtrim($uri['path'], "/");
@@ -137,14 +137,15 @@ abstract class Website
      */
     private function _LoadPageClass()
     {
+  
         if (empty($this->_mClassName))
-        {
+        { 
             return false;
         }
 
         try
         {
-            if ((class_exists($this->_mClassName)))
+            if ((class_exists($this->_mClassName, true)))
             {
                 $this->page = new $this->_mClassName($this, $this->_mClassArguments);
             }

@@ -103,9 +103,14 @@ CREATE TABLE articles
     )engine InnoDB;
        
        
-
-
-
+CREATE TABLE modules   
+	(
+	    pk INT NOT NULL AUTO_INCREMENT,
+        title VARCHAR(150),             --  for internal use
+        display_title VARCHAR(150),    
+	    class_name VARCHAR(150),  
+	    json_parameters VARCHAR(250)
+	)  engine InnoDB ;
 
 -- to see a version that's not the live version add ?version=23&pw=govtech123 ( to see a version that's not live you need to be logged in or have the pw param 
 -- drop table pages;

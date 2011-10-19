@@ -27,6 +27,8 @@ class User
            $_SESSION['user_email'] = $userdata->email;
            $_SESSION['user_password'] = $pw;
            $_SESSION['user_pk'] = $userdata->pk;
+           $_SESSION['user_first_name'] = $userdata->first_name;
+           $_SESSION['user_last_name']  = $userdata->last_name;
            $_COOKIE['user_email'] = $email;
            $_COOKIE['password'] = $pw;
            
@@ -42,16 +44,16 @@ class User
     
     static function Authorize($permission = 'LOGGED_IN')
     {
-        
-       // print_r($_SESSION); die;
+ 
         // try to login using a cookie
-        if(!isset($_SESSION['user_email']) && isset( $_COOKIE['password']))       
+        if(!isset($_SESSION['user_email']) && !empty($_COOKIE['password']))       
            Authorization::Login($_COOKIE['user_email'], $_COOKIE['password']);
-        
+ 
         // still not logged in?  Redirect the user to the login page   
-        if(!isset($_SESSION['user_email']))        
+        if( empty($_SESSION['user_email'])){        
             header("LOCATION: /common/login.php");
-        
+            die;
+        }
         if($permission == 'LOGGED_IN') // we just want to make sure this person is logged in
             return true;
                 

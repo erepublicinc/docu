@@ -54,13 +54,15 @@ class Query  implements Iterator
             
             // conactenate the queries separated by ;
             foreach ($query as $q)               
-                $mq .= $q.';';                              
-            $result = self::$mConnection->multi_query($mq);
-            
+                $mq .= $q.';';           
+//print_r($mq)   ; die;  
+        
+            $result = self::$mConnection->multi_query($mq);           
             if($result === false)
                 logerror('multi_query error : '. self::$mConnection->error, __FILE__ . __LINE__);
-            
-            $this->mResultSet =  $mysqli->store_result();        
+                
+            $this->mResultSet = self::$mConnection->store_result();    
+                 
         }
         else
         {
@@ -136,9 +138,12 @@ class Query  implements Iterator
     {
         if($this->mNumQueries > 1 && self::$mConnection->more_results())
         {
-            $this->mResultSet->free();
-            self::$mConnection->next_result();
-            $this->mResultSet = store_result();
+            if( $this->mResultSet->free() === false)
+              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+            if(self::$mConnection->next_result() === false)
+              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+            if($this->mResultSet = store_result() === false)
+              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
             $this->next();
             return true;
         }

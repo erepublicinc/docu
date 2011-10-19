@@ -76,25 +76,84 @@ class Content
         $q = new Query("UPDATE contents SET live_version = $version WHERE pk = $this->mPk");
         return $q->version;
     }
+
     
-    /**
-     * @param content type [optional] default: ALL   comma separated list of content types you want
-     * @param Url [optional] default = 0 is current url like /blogs/joesblog
+    /** GetContentByType , primarily used by cms
+     * @param content type  content types you want
+     * @param Site [optional] default = null is all sites
      * @param limit [optional] default =10 , number of items to return
      * @param startAt [optional] default =0 , where to start (for paging)
+     * @param string status 
      * @return array of contentItems
      */
-    public static function GetPageContents($contentType = 'ALL', $url = null, $limit = 10, $startAt = 0)
+    
+    public static function GetContentByType($contentType , $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')    
+    {   
+       global $CONFIG;
+        
+        $contents =  array();       
+        $topX     = "LIMIT $skip, $limit ";
+        $types    = '';  
+        $status   = '';     
+                
+        if($status != 'ALL')
+        {
+            $sql .= " AND status = '$status' ";
+        }
+/*        
+        if($orderby)
+        {
+            $order = " ORDER BY "
+        }
+  */      
+        if($site)
+        {
+            // need an extra join to figure out which page we are looking for
+             $sql="SELECT  * FROM contents 
+               JOIN targets
+                  JOIN pages
+                  ON pages.pk = targets.page_fk 
+               ON targets.content_fk = contents.pk 
+               WHERE contents.content_type = '$contentType'  and   pages.site = '$site'    $status $topX ";
+        }
+        else 
+        {
+            // use the current page
+           $sql="SELECT  * FROM contents 
+               WHERE contents.content_type = '$contentType'   $status $topX ";
+        }
+      
+       
+        $result = new Query($sql);          
+    } 
+    
+    
+    
+    /**
+     * @param String content type [optional] default: ALL   returneparated list of content types you want
+     * @param String Url [optional] default = 0 is current url like /blogs/joesblog
+     * @param number limit [optional] default =10 , number of items to return
+     * @param number startAt [optional] default =0 , where to start (for paging)
+     * @param String status
+     * @return array of contentItems
+     */
+    public static function GetPageContents($contentType = 'ALL', $url = null, $limit = 10, $skip = 0, $status = 'LIVE')
     {
         global $CONFIG;
         
         $contents =  array();       
-        $topX     = "LIMIT $limit ";
-        $types    = '';       
+        $topX     = "LIMIT $skip, $limit ";
+        $types    = '';  
+        $status   = '';     
         
         if($contentType != 'ALL')
         {  
             $types = " AND content_type = '$contentType' ";
+        }
+        
+        if($status != 'ALL')
+        {
+            $sql .= " AND status = '$status' ";
         }
         
         if($url)
@@ -105,7 +164,7 @@ class Content
                   JOIN pages
                   ON pages.pk = targets.page_fk 
                ON targets.content_fk = contents.pk 
-               WHERE pages.url = '$url'   $types  $topX ";
+               WHERE pages.url = '$url'   $types $status $topX ";
         }
         else 
         {
@@ -113,10 +172,12 @@ class Content
             $sql="SELECT  * FROM contents 
                JOIN targets 
                ON targets.contents_fk = contents.pk 
-               WHERE targets.pages_fk = ". $CONFIG->current_page_pk ."  $types  $topX ";
+               WHERE targets.pages_fk = ". $CONFIG->current_page_pk ."  $types $status $topX ";
         }
+      
+       
         
-        $result = new Query($sql,'array');
+        $result = new Query($sql);
         foreach($result as $content)
         {
             switch($content->content_type)
@@ -256,8 +317,10 @@ class Content
          $sql=array();
          $sql[] = "SELECT * FROM contents c 
                  JOIN $extraTable t 
-                 ON c.pk = t.contents_fk and t.version = $theversion                   
-                 WHERE pk = $pk ";
+                 ON c.pk = t.contents_fk and t.version = $theversion     
+                 JOIN users u
+                 ON u.pk = c.main_author_fk              
+                 WHERE c.pk = $pk ";
             			
 		 $sql[] = "SELECT pin_position, live_date, dead_date, pages.title 
 		          FROM targets
