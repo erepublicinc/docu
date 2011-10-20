@@ -102,6 +102,15 @@ class Query  implements Iterator
                 logerror("statement: $sql  $errorString", __FILE__ . __LINE__);
                 return false;
             }
+            /*
+            elseif(is_object($result)) {
+                $o = $result->fetch_object();
+                if(! empty($o->pk))
+                {
+                     $pk = $resultSet->pk;
+                     echo ('pk: '.$pk);
+                }
+            } */
         }
              
         self::$mConnection->commit();

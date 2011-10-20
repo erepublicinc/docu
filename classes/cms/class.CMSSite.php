@@ -38,7 +38,7 @@ class CMSSite extends Website
         strtolower($path);
         $pathSegments   = explode("/", $path);
         $numOfSegments  = count($pathSegments);
-        $site           = 'all'; 
+        $site           = 'ALL'; 
         $this->_mClassName = 'CmsHome'; // default
         
         
@@ -47,7 +47,7 @@ class CMSSite extends Website
         
         if(in_array($pathSegments[0], array('gt','gov','em','cv')))
         {
-            $site = $pathSegments[0];
+            $site = strtoupper($pathSegments[0]);
             array_shift($pathSegments);
         }
 
@@ -55,7 +55,7 @@ class CMSSite extends Website
         // allow maapings of classes  according to the website
         switch($site)
         {          
-            case 'em' :
+            case 'EM' :
                         $map = array('articles' => 'EditArticle') ;
             break;
             

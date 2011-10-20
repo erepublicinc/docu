@@ -77,14 +77,14 @@ function loadPage(pk)
 	   dataType: 'json',
        data:  'data='+ YaasEncode('Documentation.GetDetails',{'pk':pk}),
 	   success: function( data ) {
-		   thePK = parseInt(data[0][0].pk) +0;
+		   thePK = parseInt(data[0][0].contents_pk) +0;
            theIndexing = data[0][0].indexing;
            theTitle = data[0][0].title;
            // get the field from the first row of the first request
-	       $('#id_user_doc').html(data[0][0].user_docu);    
-	       $('#id_design_doc').text(data[0][0].design_docu);  
-	       $('#id_doc_title').text(data[0][0].title);    
-	       $('#id_indexing').text(data[0][0].indexing);   
+	       $('#id_user_doc').html(data[0][0].specs_user_docu);    
+	       $('#id_design_doc').text(data[0][0].specs_design_docu);  
+	       $('#id_doc_title').text(data[0][0].contents_title);    
+	       $('#id_indexing').text(data[0][0].specs_indexing);   
 	   }
 	  
 	});
@@ -100,11 +100,12 @@ function savePage()
        type: "POST",     
        url: '/common/yaas2.php',
        dataType: 'json',
-       data:  'data='+ YaasEncode('Documentation.Save',{'pk':thePK, 
-           'indexing':$('#id_indexing').text(), 
-           'title':$('#id_doc_title').text(), 
-           'design_docu':$('#id_design_doc').text(), 
-           'user_docu':$('#id_user_doc').html() }),
+       data:  'data='+ YaasEncode('Documentation.Save',{
+           'contents_pk':thePK, 
+           'specs_indexing':$('#id_indexing').text(), 
+           'contents_title':$('#id_doc_title').text(), 
+           'specs_design_docu':$('#id_design_doc').text(), 
+           'specs_user_docu':$('#id_user_doc').html() }),
        success: function( data ) {
                 
        },
@@ -114,7 +115,13 @@ function savePage()
       
     });
 }
-
+var ckConfig = {toolbar :
+    [
+     ['Source', '-','Undo','Redo','PasteFromWord'],
+     ['Find','Replace','-','SelectAll','RemoveFormat'],
+     ['Link', 'Unlink', 'Image'],           
+     ['Bold', 'Italic','Underline','TextColor','Blockquote', 'SpecialChar','NumberedList','BulletedList']
+ ]};
 var editor = null;
 var edited_div = null;
 function closeEditor()
@@ -136,7 +143,13 @@ function edit( div )
 	{  
 	   closeEditor();
 	   edited_div = div;  
-       editor = CKEDITOR.replace( div );      
+       editor = CKEDITOR.replace( div,ckConfig );
+
+       var writer = editor.dataProcessor.writer;
+        // The character sequence to use for every indentation step.
+        writer.indentationChars = '-'; //'\t';
+        // The character sequence to be used for line breaks.
+        writer.lineBreakChars = '<br>' ; //'\n';      
     }
 }
 
@@ -184,7 +197,7 @@ $(document).ready(function(){
 
 {foreach $docu as $doc}
 
-   <li> <span onclick="loadPage({$doc->pk}) "> {$doc->indexing}  {$doc->title} </span> </li>
+   <li> <span onclick="loadPage({$doc->contents_pk}) "> {$doc->specs_indexing}  {$doc->contents_title} </span> </li>
 {/foreach} 
 
 

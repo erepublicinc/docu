@@ -21,15 +21,15 @@ class Page
         
         if($site != 'ALL')
         {
-            $sql .= " WHERE site_code = '$site' ";
+            $sql .= " WHERE pages_site_code = '$site' ";
             $WHERE_AND = "AND";
         }
         
         if($onlyLivePages)
         {
-            $sql .= " $WHERE_AND status = 'LIVE' ";
+            $sql .= " $WHERE_AND pages_status = 'LIVE' ";
         }   
-        $sql .= ' ORDER BY site_code';
+        $sql .= ' ORDER BY pages_site_code';
         
         return new Query($sql);
     }    
@@ -41,8 +41,9 @@ class Page
         {
             return('unauthorized');
         }
-       
-        $sql = "INSERT INTO targets (pages_fk, contents_fk) values($params->page_pk, $params->content_pk)";
+        $page    = $params->targets_pages_fk;
+        $content = $params->targets_contents_fk;
+        $sql = "INSERT INTO targets (targets_pages_fk, targets_contents_fk) values($page, $content)";
         return new Query($sql);
     }
     

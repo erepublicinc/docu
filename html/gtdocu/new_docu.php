@@ -4,23 +4,15 @@ User::Authorize();
 Query::SetAdminMode();
 
 
-if($_REQUEST['title'])
+if($_REQUEST['contents_title'])
 {
-    $params = new stdClass();
-    $params->title       = sanitize($_REQUEST['title']); 
-    $params->summary     = sanitize($_REQUEST['summary']); 
-    $params->indexing    = sanitize($_REQUEST['indexing']); 
-    $params->user_docu   = sanitize($_REQUEST['user_docu']);
-    $params->design_docu = sanitize($_REQUEST['design_docu']);
-    
-    $d = new Documentation($params);
-    
-    if(! $d->Save())
+   
+    if(! Documentation::sYaasSave($_POST))
     {  
         $msg =  "docu creation failed, please try again";   
     }  
     else {
-        header("LOCATION: docu.php");
+        header("LOCATION: /index.php");
     }
 }
 
@@ -38,11 +30,11 @@ if($_REQUEST['title'])
 <form method="POST">
     <input type="hidden" name="redirect" value="<?php echo $_REQUEST['redirect']; ?>"/>
     <table>
-        <tr> <td>Title:</td><td> <input type="text" name="title" />   </td></tr>
-        <tr> <td>Summary:</td><td> <input type="text" name="summary" />   </td></tr>
-        <tr> <td>Indexing:</td><td>    <input type="text" name="indexing"/></td></tr>
-        <tr> <td>User documentation:</td><td> <input type="text" name="user_docu" />   </td></tr>
-        <tr> <td>Design notes:</td><td> <input type="text" name="design_docu" />   </td></tr>
+        <tr> <td>Title:</td><td> <input type="text" name="contents_title" />   </td></tr>
+        <tr> <td>Summary:</td><td> <input type="text" name="contents_summary" />   </td></tr>
+        <tr> <td>Indexing:</td><td>    <input type="text" name="specs_indexing"/></td></tr>
+        <tr> <td>User documentation:</td><td> <input type="text" name="specs_user_docu" />   </td></tr>
+        <tr> <td>Design notes:</td><td> <input type="text" name="specs_design_docu" />   </td></tr>
         <tr> <td>&nbsp;</td><td>    <input type="submit" value="Submit" />      </td></tr>
     </table>
 </form>

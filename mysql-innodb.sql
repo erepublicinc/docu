@@ -1,167 +1,168 @@
+--  
+
+-- table name should be one word without unserscores
+-- pk should be tablename_pk
+-- foreign keys should be in the format:     []foreigntablename_fk
+
 drop table media;
 drop table articles;
 drop table targets;
 drop table pages;
-drop table docu_items;
+drop table specs;
 drop table contents;
 drop table roles;
 drop table users;
+drop table modules;
 
 CREATE TABLE users
     (
-        pk INT NOT NULL AUTO_INCREMENT,
-        last_name VARCHAR(20) ,
-        first_name VARCHAR(20),
-        password VARCHAR(40) ,
-        email VARCHAR(70)   NOT NULL,
-        ad_user VARCHAR(20) ,
-        user_active BIT DEFAULT 0 NOT NULL,
-        PRIMARY KEY (pk),
-        CONSTRAINT users_email_unique UNIQUE (email)
+        users_pk INT NOT NULL AUTO_INCREMENT,
+        users_last_name VARCHAR(20) ,
+        users_first_name VARCHAR(20),
+        users_password VARCHAR(40) ,
+        users_email VARCHAR(70)   NOT NULL,
+        users_ad_user VARCHAR(20) ,
+        users_active BIT DEFAULT 0 NOT NULL,
+        PRIMARY KEY (users_pk),
+        CONSTRAINT users_email_unique UNIQUE (users_email)
     ) engine InnoDB ; 
 
 CREATE TABLE roles   
     (
-        users_fk INT NOT NULL ,
-        role_code VARCHAR(20) NOT NULL ,
-        CONSTRAINT  FOREIGN KEY (users_fk) REFERENCES users (pk) ON DELETE CASCADE,      
-        PRIMARY KEY (users_fk, role_code)
+        roles_users_fk INT NOT NULL ,
+        roles_code VARCHAR(20) NOT NULL ,
+        CONSTRAINT  FOREIGN KEY (roles_users_fk) REFERENCES users (users_pk) ON DELETE CASCADE,      
+        PRIMARY KEY (roles_users_fk, roles_code)
     ) engine InnoDB;  
     
 -- drop table media;        
 CREATE TABLE  media
     (
-        pk INT NOT NULL AUTO_INCREMENT,
-        url VARCHAR(500)   NOT NULL,
-        title VARCHAR(150)  ,                  --  for internal use
-        display_title VARCHAR(150)  ,
-        summary VARCHAR(500)  ,
-        create_date DATETIME,
-        credit VARCHAR(255)  ,
-        link VARCHAR(255)  ,                 -- in case this item has to be linked   
-        new_window BIT DEFAULT 0 NOT NULL,
-        subtype VARCHAR(20)   NOT NULL,      -- IMAGE, PDF, VIDEO
-        alt VARCHAR(255)  ,                  --  alt text
-        PRIMARY KEY (pk)
+        media_pk INT NOT NULL AUTO_INCREMENT,
+        media_url VARCHAR(500)   NOT NULL,
+        media_title VARCHAR(150)  ,                  --  for internal use
+        media_display_title VARCHAR(150)  ,
+        media_summary VARCHAR(500)  ,
+        media_create_date DATETIME,
+        media_credit VARCHAR(255)  ,
+        media_link VARCHAR(255)  ,                 -- in case this item has to be linked   
+        media_new_window BIT DEFAULT 0 NOT NULL,
+        media_type VARCHAR(20)   NOT NULL,      -- IMAGE, PDF, VIDEO
+        medi_alt_text VARCHAR(255)  ,                  --  alt text
+        PRIMARY KEY (media_pk)
     )engine InnoDB;
     
 -- drop table contents;   
 CREATE TABLE
     contents
     (
-        pk INT NOT NULL AUTO_INCREMENT, 
-        live_version INT NOT NULL,
-        url_name VARCHAR(500),
-        title VARCHAR(150) NOT NULL,
-        display_title VARCHAR(150),
-        summary VARCHAR(500),
-        create_date TIMESTAMP,
-        content_type VARCHAR(20) NOT NULL,
-        status VARCHAR(20),
-        main_author_fk INT,
+        contents_pk INT NOT NULL AUTO_INCREMENT, 
+        contents_live_version INT NOT NULL,
+        contents_url_name VARCHAR(500),
+        contents_title VARCHAR(150) NOT NULL,
+        contents_display_title VARCHAR(150),
+        contents_summary VARCHAR(500),
+        contents_create_date TIMESTAMP,
+        contents_type VARCHAR(20) NOT NULL,
+        contents_status VARCHAR(20),
+        contents_main_authors_fk INT,
   
-        PRIMARY KEY (pk),
-        FOREIGN KEY (main_author_fk) REFERENCES users(pk)      
+        PRIMARY KEY (contents_pk),
+        FOREIGN KEY (contents_main_authors_fk) REFERENCES users(users_pk)      
     )engine InnoDB;
 
 
 
     
 -- drop table docu_items   ;
-CREATE TABLE docu_items   
+CREATE TABLE specs   
     (
         -- first 3 field are required for all content extension tables  
-        contents_fk INT NOT NULL ,
-        version INT  NOT NULL,
-        author_fk INT,                -- author of latest change
+        specs_contents_fk INT NOT NULL ,
+        specs_version INT  NOT NULL,
+        specs_authors_fk INT,                -- author of latest change
         
-        indexing VARCHAR(30),
-        subtype  VARCHAR(20),
-        user_docu   TEXT , 
-        design_docu TEXT ,
+        specs_indexing VARCHAR(30),
+        specs_type  VARCHAR(20),
+        specs_user_docu   TEXT , 
+        specs_design_docu TEXT ,
         
-        PRIMARY KEY (contents_fk, version),
-        FOREIGN KEY (contents_fk) REFERENCES contents(pk) ON DELETE CASCADE,  
-        FOREIGN KEY (author_fk) REFERENCES users(pk)
+        PRIMARY KEY (specs_contents_fk, specs_version),
+        FOREIGN KEY (specs_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE,  
+        FOREIGN KEY (specs_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
        
 -- drop table articles;
 CREATE TABLE articles   
     (
         -- first 3 field are required for all content extension tables  
-        contents_fk INT NOT NULL ,
-        version INT  NOT NULL,
-        author_fk INT,                -- author of latest change
-        update_date TIMESTAMP,
+        articles_contents_fk INT NOT NULL ,
+        articles_version INT  NOT NULL,
+        articles_authors_fk INT,                -- author of latest change
+        articles_update_date TIMESTAMP,
          
-        subtype  VARCHAR(20),
-        body   TEXT , 
+        articles_type  VARCHAR(20),
+        articles_body   TEXT , 
      
-        PRIMARY KEY (contents_fk, version),
-        FOREIGN KEY (contents_fk) REFERENCES contents(pk) ON DELETE CASCADE,  
-        FOREIGN KEY (author_fk) REFERENCES users(pk)
+        PRIMARY KEY (articles_contents_fk, articles_version),
+        FOREIGN KEY (articles_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE,  
+        FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
        
        
 CREATE TABLE modules   
-	(
-	    pk INT NOT NULL AUTO_INCREMENT,
-        title VARCHAR(150),             --  for internal use
-        display_title VARCHAR(150),    
-	    class_name VARCHAR(150),  
-	    json_parameters VARCHAR(250)
-	)  engine InnoDB ;
+    (
+        modules_pk INT NOT NULL AUTO_INCREMENT,
+        modules_title VARCHAR(150),             --  for internal use
+        modules_display_title VARCHAR(150),    
+        modules_php_class VARCHAR(150),  
+        modules_json_parameters VARCHAR(250),
+        PRIMARY KEY ( modules_pk)
+    )  engine InnoDB ;
 
 -- to see a version that's not the live version add ?version=23&pw=govtech123 ( to see a version that's not live you need to be logged in or have the pw param 
 -- drop table pages;
 CREATE TABLE pages   
     (
-        pk INT NOT NULL AUTO_INCREMENT,
-        version INT NOT NULL ,     
-        site_code VARCHAR(20),         -- GOV, GT, EM, CV, DC, PCIO
-        title VARCHAR(150) ,             --  for internal use
-        display_title VARCHAR(150) ,    
-        url     VARCHAR(50)   NOT NULL,    -- like: /workforce
-        subtype VARCHAR(50)   NOT NULL,     --  TOPIC
-        body TEXT  ,                        --  for simple page like about
-        no_robots  BIT,         --  this should set the no_robots line in the <head>
-        password VARCHAR(20)  , --  for customer preview only
-        status VARCHAR(20),       -- like 'LIVE', 'TEST','OLD' (only 1 version should be live)
-        php_class VARCHAR(20),    --  the class that renders this page  
-        author_fk INT NOT NULL,   --  the last person to edit this page 
+        pages_pk INT NOT NULL AUTO_INCREMENT,
+        pages_version INT NOT NULL ,     
+        pages_site_code VARCHAR(20),         -- GOV, GT, EM, CV, DC, PCIO
+        pages_title VARCHAR(150) ,             --  for internal use
+        pages_display_title VARCHAR(150) ,    
+        pages_url     VARCHAR(50)   NOT NULL,    -- like: /workforce
+        pages_type VARCHAR(50)   NOT NULL,     --  TOPIC
+        pages_body TEXT  ,                        --  for simple page like about
+        pages_no_robots  BIT,         --  this should set the no_robots line in the <head>
+        pages_password VARCHAR(20)  , --  for customer preview only
+        pages_status VARCHAR(20),       -- like 'LIVE', 'TEST','OLD' (only 1 version should be live)
+        pages_php_class VARCHAR(20),    --  the class that renders this page  
+        pages_authors_fk INT NOT NULL,   --  the last person to edit this page 
         
         
-        listing_left_column_modules VARCHAR(500),     -- comma separated list of module_pk's in the right order like:   123,12331,42354,433
-        listing_center_column_modules VARCHAR(500) ,
-        listing_right_column_modules VARCHAR(500),
-        detail_left_column_modules VARCHAR(500) ,
-        detail_center_column_modules VARCHAR(500) ,
-        detail_right_column_modules VARCHAR(500) ,
-                
-        PRIMARY KEY (pk, version)
+        PRIMARY KEY (pages_pk, pages_version)
     )  engine InnoDB ;
 
 
 -- drop table targets; 
 CREATE TABLE targets   
     (
-        pages_fk INT NOT NULL ,
-        contents_fk INT NOT NULL ,
-        pin_position  INT DEFAULT 0 NOT NULL,           --  normally  0, but if not null is is the pinned position (1 is first )     
-        live_date TIMESTAMP,                                      --  articles will only show between live and dead dates
-        dead_date TIMESTAMP,
-        PRIMARY KEY (pages_fk, contents_fk),
-        FOREIGN KEY (pages_fk) REFERENCES pages (pk)  ON DELETE CASCADE,   
-        FOREIGN KEY (contents_fk) REFERENCES contents (pk)   ON DELETE CASCADE        
+        targets_pages_fk INT NOT NULL ,
+        targets_contents_fk INT NOT NULL ,
+        targets_pin_position  INT DEFAULT 0 NOT NULL,           --  normally  0, but if not null is is the pinned position (1 is first )     
+        targets_live_date TIMESTAMP,                                      --  articles will only show between live and dead dates
+        targets_dead_date TIMESTAMP,
+        PRIMARY KEY (targets_pages_fk, targets_contents_fk),
+        FOREIGN KEY (targets_pages_fk) REFERENCES pages (pages_pk)  ON DELETE CASCADE,   
+        FOREIGN KEY (targets_contents_fk) REFERENCES contents (contents_pk)   ON DELETE CASCADE        
     )engine InnoDB;   
 
 -- creteing the first user
-insert into users (last_name, first_name, password, email, user_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
-insert into roles(users_fk,role_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
+insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
+insert into roles(roles_users_fk,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 
-insert into pages (version,site_code,title,display_title,url,subtype,body,status,php_class,author_fk) 
+insert into pages (pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
     values(1,'GT','homepage','Government Technology','/','HOMEPAGE',' ' ,'LIVE','Homepage',3);
-insert into pages (version,site_code,title,display_title,url,subtype,body,status,php_class,author_fk) 
+insert into pages (pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
     values(1,'GT','about','About','/about','',' ' ,'LIVE','StaticPage',3);
 
 -- ----------------------------------------------------------------------------------------

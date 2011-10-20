@@ -11,14 +11,14 @@ class CmsHome extends WebPage
     public function Display()
     {
        
-        $this->mSmarty->assign('articles', $arts);
-        $this->$mMainTpl = 'cmsHome.tpl';
+     //   $this->mSmarty->assign('articles', $arts);
+        $this->mMainTpl = 'cmsHome.tpl';
       
     }
     
     
     
    protected function _InitCaching(){}
-     protected function _InitPage(){}
+   protected function _InitPage(){}
 }
 

@@ -2,22 +2,29 @@
 // a model class
 class Article extends Content
 {
-    private static $mFieldDescriptions = array( 'body'    => array('type'=>'varchar')    );
+    private static $mFieldDescriptions = array( 'articles_body'    => array('type'=>'varchar')    );
     
-    public function __construct($fieldsObject)
+    /*
+     *  creates a new article from an array or object
+     */
+    public function __construct($fieldsObjectOrArray)
     {
         //print_o($fieldsObject); die('here1');
         
-        parent::__construct($fieldsObject);
+        parent::__construct($fieldsObjectOrArray);
         $this->mExtraTable  = 'articles';
         $this->mContentType = 'ARTICLE';
          
     }
 
     public function Save()
-    {
-        if($this->mPk)
-            return $this->SaveExisting();
+    { //die("pk ".$this->mPk);
+        
+        $newVersion = true;  // always create a new version
+        
+        $this->mFields->articles_authors_fk  = $_SESSION['user_pk'];  
+        if($this->mPk > 0)
+            return $this->SaveExisting($newVersion);
         else 
             return $this->SaveNew();    
     }
@@ -25,28 +32,39 @@ class Article extends Content
     protected function SaveNew()
     { 
        
-        $ebody = Query::Escape($this->mFields->body);
-                
-        $this->mSqlStack[]  = "INSERT INTO articles(contents_fk,version,body) 
-                 VALUES(LAST_INSERT_ID(),1,'$ebody')";
+        $ebody  = Query::Escape($this->mFields->articles_body);
+        $author = $this->mFields->articles_authors_fk   ;      
+//        $this->mSqlStack[]  = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk) 
+//                 VALUES(LAST_INSERT_ID(),1,'$ebody', $author)";
+
+        $this->mSqlStack[]  = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk) 
+                 VALUES(@pk,1,'$ebody', $author)";
         
-        $this->mFields->main_author_fk = $_SESSION['user_pk'];  
-        $this->mFields->author_fk      = $_SESSION['user_pk'];   
+        $this->mFields->contents_main_authors_fk = $_SESSION['user_pk'];  
+         
 
        //  print_o( $this->mFields); die('here2'); 
         
         return parent::SaveNew();
     }
     
-    protected function SaveExisting()
+    protected function SaveExisting($newVersion = TRUE)
     {
         //print_r($params); die;    
-        $ebody = Query::Escape($this->mFields->body);
+        $ebody  = Query::Escape($this->mFields->articles_body);
+        $author = $this->mFields->articles_authors_fk   ; 
+        $pk     = $this->mPk;
         
-        $this->mSqlStack[] = "INSERT INTO articles(contents_fk,version,body)          
-                     VALUES($this->mPk, @v,'$ebody')";
-         
-        return parent::SaveExisting();
+        if($newVersion)
+        {
+           $this->mSqlStack[] = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk, articles_update_date)          
+                     VALUES($pk, @v,'$ebody', $author , NOW())";
+        }
+        else 
+        {
+           $this->mSqlStack[] = "UPDATE articles set articles_body = $ebody, articles_authors_fk = $author,  articles_update_date = NOW()  where articles_pk = $pk";
+        }
+        return parent::SaveExisting($newVersion);
     }
      
     
@@ -58,7 +76,7 @@ class Article extends Content
     
     public static function GetArticles( $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')  
     {
-        return parent::GetContentByType('articles', $site, $orderby, $limit, $skip , $status) ; 
+        return parent::GetContentByType('ARTICLE', $site, $orderby, $limit, $skip , $status) ; 
     }
     
     public static function GetArticle($pk, $version = 0)  
@@ -78,17 +96,17 @@ class Article extends Content
     
     public static function sYaasSave($params)
     {
-echo'<pre>'; print_r($params); die;        
+//echo'<pre>'; print_r($params); die;        
         if(! User::Authorize('ADMIN'))
         {
             return('unauthorized');
         }
         Query::SetAdminMode();
         
-        $d      = new Documentation($params);
+        $d      = new Article($params);
         $result = $d->Save(); 
               
-        return YaasMakeErrorResponse($params);
+        return 0; //YaasMakeErrorResponse($params);
     }
 }
 

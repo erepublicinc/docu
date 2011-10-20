@@ -14,27 +14,27 @@ class User
     
     static function Login($email, $pw)
     {
-       $sql = "SELECT pk, password, role_code, email 
+       $sql = "SELECT *
                  FROM users 
-                 LEFT JOIN roles ON users.pk = roles.users_fk                 
-                 WHERE email = '$email' "; 
+                 LEFT JOIN roles ON users_pk = roles_users_fk                 
+                 WHERE users_email = '$email' "; 
        
        $userdata = new Query($sql);
 //die('asa'.$userdata->password);       
-       if($userdata && $userdata->password == $pw)
+       if($userdata && $userdata->users_password == $pw)
        {         
                 
-           $_SESSION['user_email'] = $userdata->email;
+           $_SESSION['user_email'] = $userdata->users_email;
            $_SESSION['user_password'] = $pw;
-           $_SESSION['user_pk'] = $userdata->pk;
-           $_SESSION['user_first_name'] = $userdata->first_name;
-           $_SESSION['user_last_name']  = $userdata->last_name;
+           $_SESSION['user_pk'] = $userdata->users_pk;
+           $_SESSION['user_first_name'] = $userdata->users_first_name;
+           $_SESSION['user_last_name']  = $userdata->users_last_name;
            $_COOKIE['user_email'] = $email;
            $_COOKIE['password'] = $pw;
            
            // get permissions and save them in the session object
            foreach($userdata as $u)
-                 $permissions[] = $u->role_code ;
+                 $permissions[] = $u->roles_code ;
            $_SESSION['user_permissions'] = $permissions;       
            return true;
        }
@@ -66,7 +66,7 @@ class User
     
     static function newUser($email, $pw, $fname, $lname)
     {
-        $sql = "insert into users (email,password, first_name, last_name, user_active) 
+        $sql = "insert into users (users_email, users_password, users_first_name, users_last_name, users_active) 
                  values('$email', '$pw','$fname', '$lname', 1)";
         
         

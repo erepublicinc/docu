@@ -1,19 +1,22 @@
 {literal}
 <script type="text/javascript">
 
+var ckConfig = {toolbar :
+    [
+     ['Source', '-','Undo','Redo','PasteFromWord'],
+     ['Find','Replace','-','SelectAll','RemoveFormat'],
+     ['Link', 'Unlink', 'Image'],           
+     ['Bold', 'Italic','Underline','TextColor','Blockquote', 'SpecialChar','NumberedList','BulletedList']
+ ]};
+
+
     $(document).ready(function(){
          $(".slidingDiv").hide();
          $(".show_hide").show();
          $('.show_hide').click(function(){
          $(".slidingDiv").slideToggle();
          });
-         CKEDITOR.replace( 'id_body',{toolbar :
-            [
-            ['Source', '-','Undo','Redo','PasteFromWord'],
-            ['Find','Replace','-','SelectAll','RemoveFormat'],
-            ['Link', 'Unlink', 'Image'],           
-            ['Bold', 'Italic','Underline','TextColor','Blockquote', 'SpecialChar','NumberedList','BulletedList']
-        ]});
+         CKEDITOR.replace( 'id_body',ckConfig);
     });
 </script>
 
@@ -29,8 +32,8 @@
   <!-- PAGE TITLE -->
     <div class="boxstyle2">
         <div class="m-10">  
-        <h3>Sacramento, Calif., Police Training Includes Sessions with Local Businesses </h3>
-        <h6>Common Article</h6>          
+        <h3>{$article->contents_title}</h3>
+        <h6>Article</h6>          
         </div>
     </div>
     
@@ -38,77 +41,24 @@
     <div style="margin: 15px 5px;">
              <form >
                 <div class="grid_7">
-                    Domains:
-                        <select name="domainID" id="domainID" class="domain-select select-list-medium" style="width:200px">
-                                        <option class="" value="10492" selected="true">
-                    clk.navigatored.com
-                </option>
-                            <option class="" value="14408">
-                    clk.navigatorem.com
-                </option>
-                            <option class="" value="10472">
-                    clk.navigatorgov.com
-                </option>
-                            <option class="" value="16623">
-                    m.emergencymgmt.com
-                </option>
-                            <option class="" value="14239">
-                    m.governing.com
-                </option>
-                            <option class="" value="13664">
-                    m.govtech.com
-                </option>
-                            <option class="" value="8157">
-                    www.centerdigitaled.com
-                </option>
-                            <option class="" value="8167">
-                    www.centerdigitalgov.com
-                </option>
-                            <option class="" value="7319">
-                    www.convergemag.com
-                </option>
-                            <option class="" value="11949">
-                    www.digitalcommunities.com
-                </option>
-                            <option class="" value="8717">
-                    www.emergencymgmt.com
-                </option>
-                            <option class="" value="9139">
-                    www.envtestdomain.com
-                </option>
-                            <option class="" value="8117">
-                    www.erepublic.com
-                </option>
-                            <option class="" value="11302">
-                    www.governing.com
-                </option>
-                            <option class="" value="8152">
-                    www.govtech.com
-                </option>
-                            <option class="" value="8172">
-                    z-deactivated-navigatorgov.com
-                </option>
-            </select> 
+                    Site:
+                    <select name="site_code" id="domainID" class="domain-select select-list-medium" style="width:200px">
+                        <option class="" value="GOV" selected="true">Governing</option>
+                        <option class="" value="GT" selected="true">Govtech</option>
+                        <option class="" value="EM" selected="true">Emergency Management</option>
+                        <option class="" value="CV" selected="true">Converge</option>
+                        <option class="" value="CDG" selected="true">CDG</option>
+                        <option class="" value="ER" selected="true">eRepublic</option>  
+                    </select> 
+            
                 </div>
                 <div class="grid_8">
-                    Destination:    
-                        <select name="previewDestID" id="previewDestID" class="select-list-medium" style="width:200px">
-                                <option class="" value="563137">
-                    &nbsp;&nbsp;clk.navigatored.com
-                </option>
-                            <option class="" value="563532">
-                    &nbsp;&nbsp;&nbsp;&nbsp;Blogs
-                </option>
-                            <option class="" value="563537">
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Economic Stimulus
-                </option>
-                            <option class="" value="563547">
-                    &nbsp;&nbsp;&nbsp;&nbsp;CIO Interviews
-                </option>
-                            <option class="" value="563552">
-                    &nbsp;&nbsp;&nbsp;&nbsp;News
-                </option>
-            </select>   
+                    Section:    
+                   <select name="previewDestID" id="previewDestID" class="select-list-medium" style="width:200px">
+                        <option class="" value="563137">&nbsp;&nbsp;clk.navigatored.com       </option>
+                        <option class="" value="563532"> &nbsp;&nbsp;&nbsp;&nbsp;Blogs        </option>
+                        <option class="" value="563537"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Economic Stimulus    </option>
+                   </select>   
                 </div>
                 <img src="/images/btn_preview.png" style="margin-top: 3px;">
                 <br clear="all">
@@ -122,14 +72,14 @@
   
         <div class="border boxstyle2">
             <div class="m-10">
-                <h3>ID: 123123</h3>
-                <h6>Status: Ready</h6>
+                <h3>ID: {$article->contents_pk}</h3>
+                <h6>Status: {$article->contents_status}</h6>
             </div>                                                           
         </div> 
         <div class="border boxstyle2">
             <div class="m-10">
-                Created: 10/10/11 - 08:48AM<br>
-                Modified: 10/11/11 - 04:30PM
+                Created:&nbsp; {$article->contents_create_date}<br>
+                Modified: {$article->articles_update_date}
             </div>                                                           
         </div>         
   </div>
@@ -150,7 +100,7 @@
     <div class="boxstyle1">
                 <div class="formactions">            
                     <img src="/images/btn_save.png"  onclick="$('#id_details_form').submit();">
-                    <img src="/images/btn_cancel.png">
+                    <img src="/images/btn_cancel.png" onclick="document.location='/cms/articles' ">
                 </div>  
      </div>    
 </div>
@@ -177,28 +127,40 @@
                 </div>     
                 -->   
                 
-                <input type="hidden" name='pk' value="{$article->pk}" />
+                <input type="hidden" name='contents_pk' value="{$article->contents_pk}" />
+                <input type="hidden" name='contents_status' value="{$article->contents_status}" />
+                 <fieldset> 
+                 
+                 
+                <div>
+                    <label>Status:</label>
+                    <select name="contents_status" class="select-list-medium" style="width:200px">
+                            <option  value="LIVE" {if $article->contents_status == 'LIVE'}selected='selected'{/if}>&nbsp;&nbsp;Live</option>
+                            <option  value="IN_PROGRESS" {if $article->contents_status == 'IN_PROGRESS'}selected='selected'{/if}>&nbsp;&nbsp;In Progress</option>
+                    </select>
+                </div>               
                 
-                               
-                <fieldset>                      
+                
+                
+                                    
                         <div>
                             <label class="error">Title:
                             <span class="ml-10">This line explains where this is displayed.)
                             </span></label>
-                            <input type="text" name="title" class="required" 
-                            value="{$article->title}">
+                            <input type="text" name="contents_title" class="required" 
+                            value="{$article->contents_title}">
                         </div>
                         <div>
                             <label>Display Title:
                             <span class="ml-10">This line explains where this is displayed.
                             </span></label>
-                            <input type="text" name="display_title" class="required" 
-                            value="{$article->display_title}">
+                            <input type="text" name="contents_display_title" class="required" 
+                            value="{$article->contents_display_title}">
                         </div>          
                         <div>
                             <label>Author:</label>
-                            <select  name="author" class="required">
-                                 <option value="{$article->main_author_fk}" >{$article->first_name} {$article->last_name}</option>
+                            <select  name="contents_main_authors_fk" class="required">
+                                 <option value="{$article->contents_main_authors_fk}" >{$article->users_first_name} {$article->users_last_name}</option>
                             </select> 
                         </div>
                        
@@ -206,23 +168,22 @@
                             <label>URL Resource Name: <a href="#">Edit</a><br>
                             <span>Do not include the '.html' suffix, it will be appended to the URL automatically.
                             </span></label>
-                            <input type="text" name="url_name" class="restricted" 
-                            value="{$article->url_name}">
+                            <input type="text" name="contents_url_name" class="restricted" 
+                            value="{$article->contents_url_name}">
                         </div>                                                                                             
                         <div>
                             <label>Published Date:</label>
-                            <input type="text" name="create_date" class="required" 
-                            value="{$article->create_date}">                                        
+                            <input type="text" name="contents_create_date" class="required" 
+                            value="{$article->contents_create_date}">                                        
                         </div>
            
                         <div>
                             <label>Abstract:</label>
-                            <textarea type="text" name="summary" >{$article->summary}
-                            </textarea>
+                            <textarea type="text" name="contents_summary" >{$article->contents_summary}</textarea>
                         </div> 
                         <div >
                             <label>Body:</label>
-                            <textarea id="id_body" type="text" name="body" rows="25" class="required"> {$article->body}</textarea>
+                            <textarea id="id_body" type="text" name="articles_body" rows="25" class="required">{$article->articles_body}</textarea>
                         </div>   
                                               
                 </fieldset>              
@@ -552,11 +513,11 @@
         <table style="background:#eeeeee;">
                 <tr>
                     <td colspan="2" class="align-r" width="60%">Version: </td> 
-                    <td>3</td>                 
+                    <td>{$article->articles_version}</td>                 
                 </tr>
                 <tr>
                     <td colspan="2" class="align-r" width="40%">Live Version: </td>    
-                    <td>3</td>            
+                    <td>{$article->contents_live_version}</td>            
                 </tr>  
         </table>         
         <div class="m-10">
@@ -567,7 +528,7 @@
                     <td><a href="#">10/10/11 - 08:57AM</a></td>
                 </tr>
                 <tr><td colspan="3" style="padding:0 0 0 40px;">Action: Approved</td></tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Status: Ready</td></tr>
+                <tr><td colspan="3" style="padding:0 0 0 40px;">Status: {$article->contents_status}</td></tr>
                 <tr><td colspan="3" style="padding:0 0 15px 40px;">Assigned:<br>
  eRepubic - Editors</td></tr>
                 <tr style="padding-bottom:15px;">
@@ -599,18 +560,7 @@ Elaine Pittman</td></tr>
         
         </div> 
                 <!-- / Version History --> 
-                
-        <!-- Author History -->       
-        <div class="border boxstyle2">
-        <h5>Author Assoc. History</h5>  
-        <div class="m-10">
-            <p>No history has been logged.</p>
-        </div>
-           
-        
-        </div> 
-                <!-- / Author History --> 
-    
+                   
       
   </div> 
    
