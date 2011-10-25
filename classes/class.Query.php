@@ -31,6 +31,8 @@ class Query  implements Iterator
     
     public static function Escape($str)
     {
+        $str = str_replace('\n','',$str);
+        $str = str_replace('\t','',$str);
         return self::$mConnection->real_escape_string($str);
     }
     
@@ -132,6 +134,17 @@ class Query  implements Iterator
             return $this->mRow->$var;    
     }
     
+    /**
+	 * SetValue is usefull for aliasing / renaming fields
+	 * @param String $field
+	 * @param $value
+     */
+    public function SetValue($field, $value)
+    {
+        if(! $this->mRow)
+           return null;   
+        $this->mRow->$field = $value;    
+    }
        
     public function ToArray()
     {

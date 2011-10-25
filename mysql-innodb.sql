@@ -4,6 +4,7 @@
 -- pk should be tablename_pk
 -- foreign keys should be in the format:     []foreigntablename_fk
 
+drop table textfields;
 drop table media;
 drop table articles;
 drop table targets;
@@ -58,6 +59,7 @@ CREATE TABLE
     (
         contents_pk INT NOT NULL AUTO_INCREMENT, 
         contents_live_version INT NOT NULL,
+        contents_proof_version INT ,    
         contents_url_name VARCHAR(500),
         contents_title VARCHAR(150) NOT NULL,
         contents_display_title VARCHAR(150),
@@ -109,6 +111,23 @@ CREATE TABLE articles
         FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
        
+-- holds archived text fields from  pages and potentially other types
+CREATE TABLE textfields   
+    (
+        -- first 3 field are required for all content extension tables  
+        textfields_table VARCHAR(30) NOT NULL, --  tablename
+        textfields_table_fk INT NOT NULL,      --  the pk in that table
+        textfields_field VARCHAR(30) NOT NULL, --  fieldname
+        textfields_version INT NOT NULL,       --  the version 
+        
+        textfields_body TEXT NOT NULL,         --  the actual text
+        textfields_authors_fk INT,             --  the author of the text
+        textfields_date TIMESTAMP,
+        PRIMARY KEY (textfields_table, textfields_table_fk, textfields_field, textfields_version), 
+        FOREIGN KEY (textfields_authors_fk) REFERENCES users(users_pk)
+    )engine InnoDB;
+       
+       
        
 CREATE TABLE modules   
     (
@@ -125,13 +144,13 @@ CREATE TABLE modules
 CREATE TABLE pages   
     (
         pages_pk INT NOT NULL AUTO_INCREMENT,
-        pages_version INT NOT NULL ,     
+        pages_live_version INT NOT NULL ,    
+        pages_proof_version INT,     
         pages_site_code VARCHAR(20),         -- GOV, GT, EM, CV, DC, PCIO
         pages_title VARCHAR(150) ,             --  for internal use
         pages_display_title VARCHAR(150) ,    
         pages_url     VARCHAR(50)   NOT NULL,    -- like: /workforce
         pages_type VARCHAR(50)   NOT NULL,     --  TOPIC
-        pages_body TEXT  ,                        --  for simple page like about
         pages_no_robots  BIT,         --  this should set the no_robots line in the <head>
         pages_password VARCHAR(20)  , --  for customer preview only
         pages_status VARCHAR(20),       -- like 'LIVE', 'TEST','OLD' (only 1 version should be live)

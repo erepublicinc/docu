@@ -116,8 +116,7 @@ function savePage()
     });
 }
 var ckConfig = {toolbar :
-    [
-     ['Source', '-','Undo','Redo','PasteFromWord'],
+    [['Source', '-','Undo','Redo','PasteFromWord'],
      ['Find','Replace','-','SelectAll','RemoveFormat'],
      ['Link', 'Unlink', 'Image'],           
      ['Bold', 'Italic','Underline','TextColor','Blockquote', 'SpecialChar','NumberedList','BulletedList']
@@ -126,35 +125,36 @@ var editor = null;
 var edited_div = null;
 function closeEditor()
 {
-	if ( editor ){
+	if (editor){
+		editor.updateElement();
 	    editor.destroy();
-        editor = null;
 	}
 	edited_div = null;
 }
 
-function edit( div )
+function edit( div, origin )
 {
+    alert('edited_div '+edited_div+'   new div: '+div+ ' origin: '+origin);	
     if(edited_div == div)
     {
-	   closeEditor();
+    	closeEditor();
     }
-	else
+    else
 	{  
-	   closeEditor();
+    	closeEditor();
 	   edited_div = div;  
-       editor = CKEDITOR.replace( div,ckConfig );
+       editor = CKEDITOR.replace(div, ckConfig);
 
-       var writer = editor.dataProcessor.writer;
+     //  var writer = editor.dataProcessor.writer;
         // The character sequence to use for every indentation step.
-        writer.indentationChars = '-'; //'\t';
+    //    writer.indentationChars = ' '; //'\t';
         // The character sequence to be used for line breaks.
-        writer.lineBreakChars = '<br>' ; //'\n';      
+    //    writer.lineBreakChars = ' ' ; //'\n';      
     }
 }
 
 function save()
-{
+{ 
 	closeEditor();
 	savePage();
 }
@@ -167,16 +167,24 @@ $(document).ready(function(){
           $e = jQuery.Event("focus");
           $(this).children().first().trigger($e);
       });
-
+/*
+      $('.editTextInPlace').dblclick(function(){ 
+          var val = $(this).text();
+          $(this).html('<textarea rows="50" colls="100">'+val +'</textarea>' );
+          $e = jQuery.Event("focus");
+          $(this).children().first().trigger($e);
+      });
+*/      
       $('.editInPlace').focusout(function(){  	 
           var newval = $(this).children().first().val()  ;
     	  $(this).html(newval);
       });  
 
       $('.editTextInPlace').dblclick(function(){ 
-    	  if ( editor )
-    	        editor.destroy();
-    	    editor = CKEDITOR.replace( $(this).attr("id"));
+    	 // if ( editor )
+    	 //       editor.destroy();
+    	  edit( $(this).attr("id") )
+    	    
       });
  
 });

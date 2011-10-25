@@ -3,18 +3,23 @@ class CmsHome extends WebPage
 {
     
         
-    public function __construct($data)
+    public function __construct($websiteObject, $arguments)
     {        
-        parent::__construct($data);
+            
+        parent::__construct($websiteObject, $arguments);
+        
+        $this->mMainTpl = 'cmsHome.tpl';
+        
+        
+        $site    = strtoupper($arguments[0]);
+        //die($site);
+        
+        $p = Page::GetPages($site, false);
+        $this->mSmarty->assign('pages',$p);
+        $this->mSmarty->assign('site_code',$arguments[0]);
     }
     
-    public function Display()
-    {
-       
-     //   $this->mSmarty->assign('articles', $arts);
-        $this->mMainTpl = 'cmsHome.tpl';
-      
-    }
+  
     
     
     

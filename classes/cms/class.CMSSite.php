@@ -52,7 +52,7 @@ class CMSSite extends Website
         }
 
         
-        // allow maapings of classes  according to the website
+        // allow mappings of classes  according to the website
         switch($site)
         {          
             case 'EM' :
@@ -60,7 +60,8 @@ class CMSSite extends Website
             break;
             
             default: 
-                        $map = array('articles' => 'EditArticle', 'article' => 'EditArticle','new_article' => 'EditArticle') ;
+                        $map = array('articles' => 'EditArticle', 'article' => 'EditArticle','new_article' => 'EditArticle',
+                                      'pages' => 'EditPage', 'page' => 'EditPage','new_page' => 'EditPage') ;
         }
             
         if(count($pathSegments) > 0 && $map && isset($map[$pathSegments[0]]))

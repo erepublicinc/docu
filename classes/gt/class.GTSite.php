@@ -24,6 +24,9 @@ class GTSite extends Website
            ,"/bids/"                        => "BidPage"
            ,"/legacy/"                      => "BidPage"
          );
+         
+         //  $this->_mClassMapping = Page::GetClassMapping();
+         
     }
     
       
