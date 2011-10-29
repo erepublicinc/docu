@@ -121,7 +121,7 @@ class Content
              // this is the mssql version
             /* $sql="SELECT  * FROM contents   
                JOIN targets
-                      JOIN pages   ON pages_pk = targets_pages_fk 
+                      JOIN pages   ON pages_id = targets_pages_id 
                ON targets_contents_fk = contents_pk 
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status $topX ";
                */
@@ -129,7 +129,7 @@ class Content
             // this is the mysql version
             $sql="SELECT  * FROM  
                 (contents  JOIN targets ON targets_contents_fk = contents_pk )
-                           JOIN pages   ON pages_pk = targets_pages_fk           
+                           JOIN pages   ON pages_id = targets_pages_id           
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status $topX ";
         }
         else 
@@ -160,7 +160,7 @@ class Content
         $contents =  array();       
         $topX     = "LIMIT $skip, $limit ";
         $types    = '';  
-        $status   = '';     
+        $statusStr   = '';     
         
         if($contentType != 'ALL')
         {  
@@ -169,7 +169,7 @@ class Content
         
         if($status != 'ALL')
         {
-            $sql .= " AND contents_status = '$status' ";
+            $statusStr = " AND contents_status = '$status' ";
         }
         
         if($url)
@@ -180,35 +180,37 @@ class Content
              $sql="SELECT  * FROM contents 
                JOIN targets
                   JOIN pages
-                  ON pages_pk = targets.page_fk 
-               ON targets.contents_fk = contents_pk 
+                  ON pages_id = targets_pages_id 
+               ON targets_contents_fk = contents_pk 
                WHERE page_url = '$url'   $types $status $topX ";
             */
             // the mysql version
              $sql="SELECT  * FROM 
-               ( contents JOIN targets ON targets.contents_fk = contents_pk )
-                          JOIN pages   ON pages_pk = targets.page_fk             
-               WHERE page_url = '$url'   $types $status $topX ";
+               ( contents JOIN targets ON targets_contents_fk = contents_pk )
+                          JOIN pages   ON pages_id = targets_page_id             
+               WHERE page_url = '$url'   $types $statusStr $topX ";
         }
         else 
         {
             // use the current page
             $sql="SELECT  * FROM contents 
                JOIN targets 
-               ON targets.contents_fk = contents_pk 
-               WHERE targets.pages_fk = ". $CONFIG->current_page_pk ."  $types $status $topX ";
+               ON targets_contents_fk = contents_pk 
+               WHERE targets_pages_id = ". $CONFIG->current_page_id ."  $types $statusStr $topX ";
         }
       
-       
+ //die($sql);      
         
         $result = new Query($sql);
+  //return $result;      
         foreach($result as $content)
-        {
+        { 
             switch($content->contents_type)
-            {
+            { 
                 case 'ARTICLE':      $contents[] = new Article($content);     break;
                 case 'EVENT':        $contents[] = new Event($content);       break;
                 case 'LIBRARY_ITEM': $contents[] = new LibraryItem($content); break;
+                default:             $contents[] = new Content($content);     break;
             }
         }
         return $contents;
@@ -357,6 +359,9 @@ class Content
     public static function GetAllData($pk, $extraTable, $version=0)
     {    
          $theversion = $version > 0 ? $version : "contents_live_version"; 
+         
+         $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
+         
          $sql=array();
   /*   mssql    
          $sql[] = "SELECT * FROM  contents c 
@@ -374,8 +379,9 @@ class Content
                  ON u.users_pk = c.contents_main_authors_fk              
                  WHERE c.contents_pk = $pk ";
          
+         // add the targets
 		 $sql[] = "SELECT * 
-		          FROM targets  JOIN pages ON pages_pk = targets_pages_fk	
+		          FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
 		          WHERE targets_contents_fk = $pk "; 
 		          
 		            

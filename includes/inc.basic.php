@@ -2,6 +2,9 @@
 require_once('Smarty.class.php'); // !!! needs to be loaded before registering our autoload function
 
 // *********** GLOBALS
+$SITENAMES = array( 'GT'=>'Government Technology','GOV'=>'Governing', 'ALL'=> 'All eRepublic sites', 
+                    'EM'=>'Emergency Management Magazine', 'CV'=>'Converge Magazine', 'ER'=>'eRepublic',
+                    'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education');
 $CONFIG;
 
 function __new_autoload($class_name)
@@ -15,9 +18,9 @@ function __new_autoload($class_name)
 }
 spl_autoload_register('__new_autoload'); // needed because of the new smarty (version 3)code 
 
-// do the machine specific setup later the website may add additional settings 
+// do the machine specific setup. Later the website may add additional settings 
 $CONFIG = Configuration::InitConfig();
-//$CONFIG->Dump();
+//$CONFIG->Dump();  // to checkout the settings
 
 
 // removes ; and '  to avoid sql injection 
@@ -73,6 +76,15 @@ function setup_smarty($test=false)
         $smarty->testInstall(); // to check
     return $smarty;    
 }
+
+
+function getSiteName($code)
+{
+    global $SITENAMES;
+    return $SITENAMES[$code];
+}
+
+
 
     
 //  this debug class adds timing info to the bottom of the page in a comment

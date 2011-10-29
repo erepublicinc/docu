@@ -10,22 +10,20 @@ class GTSite extends Website
         //$this->mDefaultModules = array(....);    // set the sitewide modules here
         
         
-        parent::__construct();
+       
+        //die( __CLASS__ .' '. __FUNCTION__ );
         global $CONFIG;
         $CONFIG->SetValue('tpl_path','/var/www/newgt/html/gt/tpl');
         $CONFIG->SetValue('site_code','GT');
+        
+        parent::__construct();
     }
     
     
     protected function _InitClassMapping()
     {
-        $this->_mClassMapping = array(
-            "/"                             => "HomePage"
-           ,"/bids/"                        => "BidPage"
-           ,"/legacy/"                      => "BidPage"
-         );
-         
-         //  $this->_mClassMapping = Page::GetClassMapping();
+       
+        $this->_mClassMapping = Page::GetClassMapping();
          
     }
     

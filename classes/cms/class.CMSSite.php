@@ -10,15 +10,14 @@ class CMSSite extends Website
         $fname = rtrim($fname,'# ');
         
         //$this->mDefaultModules = array(....);    // set the sitewide modules here
-        
-        
-        parent::__construct();
+       
         global $CONFIG;
         $CONFIG->SetValue('tpl_path','/var/www/newgt/html/cms/tpl');
         $CONFIG->SetValue('site_code', 'CMS');
+        parent::__construct();
     }
     
-    
+    // this is a stub because we don't use this , we'll overide _GetPageClassName ( see below)
     protected function _InitClassMapping()
     {
         $this->_mClassMapping = array();
@@ -33,7 +32,8 @@ class CMSSite extends Website
     protected function _GetPageClassName()
     {  
         global $CONFIG;
-        $uri            = parse_url($_SERVER['REQUEST_URI']);
+        $uri            = strtolower( $_SERVER['REQUEST_URI']);
+        $uri            = parse_url($uri);
         $path           = trim($uri['path'], "/");
         strtolower($path);
         $pathSegments   = explode("/", $path);
@@ -41,13 +41,16 @@ class CMSSite extends Website
         $site           = 'ALL'; 
         $this->_mClassName = 'CmsHome'; // default
         
-        
+        if($pathSegments[0] == 'preview')
+            array_shift($pathSegments);
+            
         if($pathSegments[0] == 'cms')
             array_shift($pathSegments);
         
         if(in_array($pathSegments[0], array('gt','gov','em','cv')))
         {
             $site = strtoupper($pathSegments[0]);
+            $CONFIG->SetValue('cms_site_code',$site);
             array_shift($pathSegments);
         }
 
@@ -69,7 +72,6 @@ class CMSSite extends Website
             $this->_mClassName = $map[$pathSegments[0]] ;
         }
       
-        array_unshift($pathSegments, $site);
         $this->_mClassArguments = $pathSegments;
 //die  ("page class ".$this->_mClassName);       
         return true;

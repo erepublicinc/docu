@@ -1,6 +1,7 @@
+ 
+ homepage
  <ul>
     {foreach $articles as $article}
-       <li> <a href= "" >{$article->display_title} </a> </li>
-    
+        <li> <a href= "$article->contents_url_name" >{$article->contents_title} </a> </li>   
     {/foreach}
     </ul>

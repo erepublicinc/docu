@@ -111,7 +111,7 @@ CREATE TABLE articles
         FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
        
--- holds archived text fields from  pages and potentially other types
+-- holds archived text fields from  ? and potentially other types
 CREATE TABLE textfields   
     (
         -- first 3 field are required for all content extension tables  
@@ -128,24 +128,17 @@ CREATE TABLE textfields
     )engine InnoDB;
        
        
-       
-CREATE TABLE modules   
-    (
-        modules_pk INT NOT NULL AUTO_INCREMENT,
-        modules_title VARCHAR(150),             --  for internal use
-        modules_display_title VARCHAR(150),    
-        modules_php_class VARCHAR(150),  
-        modules_json_parameters VARCHAR(250),
-        PRIMARY KEY ( modules_pk)
-    )  engine InnoDB ;
+      
 
 -- to see a version that's not the live version add ?version=23&pw=govtech123 ( to see a version that's not live you need to be logged in or have the pw param 
 -- drop table pages;
 CREATE TABLE pages   
     (
         pages_pk INT NOT NULL AUTO_INCREMENT,
-        pages_live_version INT NOT NULL ,    
-        pages_proof_version INT,     
+        pages_id INT NOT NULL,               --  this id does not change with a new version,  
+        pages_version INT NOT NULL ,    
+        pages_is_preview BIT,
+        pages_is_live BIT,     
         pages_site_code VARCHAR(20),         -- GOV, GT, EM, CV, DC, PCIO
         pages_title VARCHAR(150) ,             --  for internal use
         pages_display_title VARCHAR(150) ,    
@@ -156,33 +149,65 @@ CREATE TABLE pages
         pages_status VARCHAR(20),       -- like 'LIVE', 'TEST','OLD' (only 1 version should be live)
         pages_php_class VARCHAR(20),    --  the class that renders this page  
         pages_authors_fk INT NOT NULL,   --  the last person to edit this page 
+        pages_body TEXT, 
         
-        
-        PRIMARY KEY (pages_pk, pages_version)
+        PRIMARY KEY (pages_pk)
     )  engine InnoDB ;
 
 
 -- drop table targets; 
 CREATE TABLE targets   
     (
-        targets_pages_fk INT NOT NULL ,
+        targets_pages_id INT NOT NULL ,
         targets_contents_fk INT NOT NULL ,
         targets_pin_position  INT DEFAULT 0 NOT NULL,           --  normally  0, but if not null is is the pinned position (1 is first )     
         targets_live_date TIMESTAMP,                                      --  articles will only show between live and dead dates
         targets_dead_date TIMESTAMP,
-        PRIMARY KEY (targets_pages_fk, targets_contents_fk),
-        FOREIGN KEY (targets_pages_fk) REFERENCES pages (pages_pk)  ON DELETE CASCADE,   
+        PRIMARY KEY (targets_pages_id, targets_contents_fk),
+        -- FOREIGN KEY (targets_pages_id) REFERENCES pages (pages_id)  ON DELETE CASCADE,   
         FOREIGN KEY (targets_contents_fk) REFERENCES contents (contents_pk)   ON DELETE CASCADE        
     )engine InnoDB;   
+
+    
+CREATE TABLE modules   
+    (
+        modules_pk INT NOT NULL AUTO_INCREMENT,
+        modules_title VARCHAR(150),             --  for internal use
+        modules_display_title VARCHAR(150),    
+        modules_php_class VARCHAR(150),  
+        modules_json_parameters VARCHAR(250),
+        PRIMARY KEY ( modules_pk)
+    )  engine InnoDB ;
+
+CREATE TABLE modules__pages  
+    (
+        modules_fk INT NOT NULL ,
+        pages_fk INT NOT NULL ,
+        link_type VARCHAR(30),
+        link_order INT,
+        PRIMARY KEY (modules_fk, pages_fk),
+        FOREIGN KEY (modules_fk) REFERENCES modules (modules_pk)   ON DELETE CASCADE ,
+        FOREIGN KEY (pages_fk) REFERENCES pages (pages_pk)   ON DELETE CASCADE 
+    )  engine InnoDB ;
+   
+    
+CREATE VIEW max_page_version as
+(
+SELECT pages_id AS mpv_pages_id, MAX(pages_version) AS mpv_pages_version FROM pages GROUP BY pages_id
+);
+    
+
+    
+
 
 -- creteing the first user
 insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
 insert into roles(roles_users_fk,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 
-insert into pages (pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
-    values(1,'GT','homepage','Government Technology','/','HOMEPAGE',' ' ,'LIVE','Homepage',3);
-insert into pages (pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
-    values(1,'GT','about','About','/about','',' ' ,'LIVE','StaticPage',3);
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
+    values(1,1,1,1,'GT','homepage','Government Technology','/','HOMEPAGE',' homepage ' ,'','Homepage',3);
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_body,pages_status,pages_php_class,pages_authors_fk) 
+    values(2,1,1,1,'GT','about','About','/about','',' about gt ' ,'','StaticPage',3);
 
 -- ----------------------------------------------------------------------------------------
 
@@ -227,4 +252,5 @@ on c.content_pk = tf.content_pk
 where tf.revision <= c.published.revision  
      
    
-  
+  -- --------------------- examples
+  SELECT @last_version := pages_version , @last_pk := pages_pk FROM pages WHERE pages_version  = (select max(pages_version) from pages where pages_id = 2   ) and  pages_id = 2

@@ -43,14 +43,25 @@ abstract class Website
     
     public $mUser;         // do we need this ?
     protected $_mClassName;  //name of the page class
-
+    public $mPageId;  
+    public $mPagePk;  
+    
     public $mDefaultModules = array();     //Array of site wide default modules
     
     public $mSYSTEM_ENTRY_TIME;
     public function __construct()
     {
-
-    	$this->_InitClassMapping();
+        global $CONFIG;  
+        $uri            = parse_url($_SERVER['REQUEST_URI']);
+        $path           = rtrim($uri['path'], "/");
+        $pathSegments   = explode("/", $path);
+        
+        
+        $mode = $pathSegments[0] == 'preview' ? 'PREVIEW': 'LIVE';
+        $CONFIG->SetValue('mode', $mode);
+        $CONFIG->SetValue('site_name', getSiteName($CONFIG->site_code));
+        
+        $this->_InitClassMapping();
 
         // restore the Query string that was changed by the 404
         $this->_modifyEnvironment($_SERVER['REQUEST_URI']);
@@ -58,6 +69,7 @@ abstract class Website
         $this->_mClassName = null;
 
         setlocale(LC_MONETARY, 'en_US.UTF-8');
+        //die( __CLASS__ .' '. __FUNCTION__ );
     }
 
     /**
@@ -65,8 +77,12 @@ abstract class Website
      */
     public function Render()
     { 
+        // die( __CLASS__ .' '. __FUNCTION__ );
         //$this->_modifyEnvironment($_SERVER['REQUEST_URI']); moved to the constructor
         $this->_GetPageClassName(); 
+        
+   
+        
         $this->_LoadPageClass(); 
         if (!empty($this->page))
         {  
@@ -91,17 +107,28 @@ abstract class Website
      */
     protected function _GetPageClassName()
     {
-        $uri            = parse_url($_SERVER['REQUEST_URI']);
+        global $CONFIG; 
+        
+        $uri            = strtolower( $_SERVER['REQUEST_URI']);
+        $uri            = parse_url($uri);
         $path           = rtrim($uri['path'], "/");
         $pathSegments   = explode("/", $path);
-        $numOfSegments  = count($pathSegments);
-
+        
+    
+        if( $pathSegments[0] == 'preview')
+        {
+             $array_shift($pathSegments);
+        }     
+    
+                        
+ 
         /**
          * We need to create key for the _mClassMapping array that maps to a page class name.
          * To get the key, we need to explode the path into segments and
          * test the key validity as we loop through the segments array.
          * If the key is not correct, we know that it is an argument for the page.
          */
+        $numOfSegments  = count($pathSegments);
         for ($i = 0; $i < $numOfSegments; $i++)
         {
         	/* Creating the key (aka the path) */
@@ -110,14 +137,18 @@ abstract class Website
         	/* Check if the key (path) returns a value from the _mClassMapping array */
         	if (empty($this->_mClassMapping[$tmp_path]) === false)
         	{
-        		$this->_mClassName = $this->_mClassMapping[$tmp_path];
+        		$this->_mClassName = $this->_mClassMapping[$tmp_path]['class'];
+        		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping[$tmp_path]['pages_pk']);
+        		$CONFIG->SetValue('current_page_id', $this->_mClassMapping[$tmp_path]['pages_id']);
                 break; /* we no longer need to check the rest of the segments since we found our page class */
         	}
         	/* Check if the key (path) along with a trailing path separator returns a value from the _mClassMapping array */
-        	elseif (empty($this->_mClassMapping["{$tmp_path}/"]) === false)
+        	elseif (empty($this->_mClassMapping["{$tmp_path}/"]['class']) === false)
         	{
-        		$this->_mClassName = $this->_mClassMapping["{$tmp_path}/"];
-                break;// we no longer need to check the rest of the segments since we found our page class 
+        		$this->_mClassName = $this->_mClassMapping["{$tmp_path}/"]['class'];
+        		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping["{$tmp_path}/"]['pages_id']);
+        		$CONFIG->SetValue('current_page_id', $this->_mClassMapping["{$tmp_path}/"]['pages_pk']);
+        		break;// we no longer need to check the rest of the segments since we found our page class 
         	}
         	// If no page class has found we know its a class arguments 
         	else
@@ -205,6 +236,8 @@ abstract class Website
         }
         return $path;
     }
+    
+    
 }
 
 

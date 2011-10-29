@@ -13,17 +13,21 @@ class EditPage extends WebPage
      *          2:   [optional] pk of the page 
      */
     public function __construct($websiteObject, $arguments)
-    {       
+    {   
+        global $CONFIG;    
         parent::__construct($websiteObject, $arguments); 
         
-        $site    = strtoupper($arguments[0]);
-        $command = $arguments[1];
-        $pk      = 0 + $arguments[2]; 
-//die("site: $site  command: $command  pk: $pk");        
-
+        $site    = $CONFIG->cms_site_code;
+        $command = $arguments[0];
+        $pk      = 0 + $arguments[1]; 
+//die("site: $site  command: $command  pk: $pk");  
+   
+        $this->mSmarty->assign('site_code', $site);
+        $this->mSmarty->assign('site_name', getSiteName($site));
+//$CONFIG->Dump(); die( getSiteName($site));           
         if($command == 'pages')
         {
-            $pages = Pages::GetPages($site, false);
+            $pages = Page::GetPages($site, TRUE);
           //  foreach($arts as $a) echo $a->contents_pk;     die;   
             $this->mSmarty->assign('pages', $pages );
             $this->mMainTpl = 'listPages.tpl';
@@ -38,7 +42,7 @@ class EditPage extends WebPage
         {
             
             $p = new Page($_POST);
-            $pk = $p.Save();
+            $pk = $p->Save();
        
             header("LOCATION: /cms/$site/pages");
             die; //============================>
@@ -57,7 +61,7 @@ class EditPage extends WebPage
         } 
         else 
         {
-             $page =  Article::GetArticle($pk);
+             $page =  Page::GetDetails($pk);
         }
         
         $this->mSmarty->assign('page',$page);

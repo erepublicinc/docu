@@ -14,7 +14,7 @@ class CmsHome extends WebPage
         $site    = strtoupper($arguments[0]);
         //die($site);
         
-        $p = Page::GetPages($site, false);
+        $p = Page::GetPages($site, TRUE);
         $this->mSmarty->assign('pages',$p);
         $this->mSmarty->assign('site_code',$arguments[0]);
     }

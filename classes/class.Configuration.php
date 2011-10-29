@@ -9,7 +9,7 @@ class Configuration
     private static $_mInstance = null; // the only instance
    
     public function __get($k)
-    {
+    {   //echo("CONFIG __get $k <br>");
         return $this->_mFields[$k];
     }
     
@@ -20,7 +20,9 @@ class Configuration
         foreach($this->_mFields as $key => $value)
         {
             if(stripos($key,'password')=== false)
-             echo("$key => $value <br>\n");
+               echo("$key => $value <br>\n");
+            else 
+               echo("$key => ******* <br>\n");
         }
         echo("</pre>\n");
     }
@@ -31,7 +33,7 @@ class Configuration
      * using this function instead of __set  eliminates accidental asignments
      */
     public function SetValue($k, $v, $overwrite=false)
-    {
+    {   //echo("CONFIG set $k, $v  <br>");
         if($overwrite || ! isset($this->_mFields[$k]))
         {
             $this->_mFields[$k] = $v;
@@ -49,6 +51,11 @@ class Configuration
            return self::$_mInstance;
                  
         $fields = array();
+        
+        // set the environment
+        
+        $fields['environment'] =    true          ? 'LIVE': 'PREVIEW'; 
+        
         
         $fileName =  PHP_OS === "WINNT" ? "C:/Program Files/Apache Software Foundation/Apache2.2/htdocs/web_db_config.ini"  
                                     :  "/var/www/html/web_db_config.ini";  ;        

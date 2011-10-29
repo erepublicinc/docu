@@ -1,4 +1,4 @@
-<div>
+<div class="container_24">
 
 <ul>
 {foreach $contents as $c}

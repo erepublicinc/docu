@@ -1,7 +1,7 @@
 <?php
 
 
-class HomePage extends WebPage
+class StaticPage extends WebPage
 {
     
     public function __construct($data)
@@ -11,12 +11,13 @@ class HomePage extends WebPage
     }
     
     public function Display(){
-        //die( __CLASS__ .' '. __FUNCTION__ );
-        $arts = Content::GetPageContents();
-//echo"<pre>"; print_r($arts); die;               
+       
+        $p = Page::GetDetails();
         
-        $this->mSmarty->assign('articles', $arts);
-        $this->mMainTpl = 'homepage.tpl';
+//echo"<pre>"; print_r($p); die;               
+        
+        $this->mSmarty->assign('page', $p);
+        $this->mMainTpl = 'staticPage.tpl';
 
    
         parent::Display();
@@ -32,3 +33,4 @@ class HomePage extends WebPage
     protected  function _InitPage(){}
     
 }
+

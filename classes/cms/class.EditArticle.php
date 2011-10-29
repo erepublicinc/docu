@@ -13,14 +13,18 @@ class EditArticle extends WebPage
      *          2:   [optional] pk of the article 
      */
     public function __construct($websiteObject, $arguments)
-    {       
+    {   
+        global $CONFIG;     
         parent::__construct($websiteObject, $arguments); 
         
-        $site    = strtoupper($arguments[0]);
-        $command = $arguments[1];
-        $pk      = 0 + $arguments[2]; 
+        $site    = $CONFIG->cms_site_code;
+        $command = $arguments[0];
+        $pk      = 0 + $arguments[1]; 
 //die("site: $site  command: $command  pk: $pk");        
-
+        $this->mSmarty->assign('site_code', $site);
+        $this->mSmarty->assign('site_name', getSiteName($site));
+        
+        
         if($command == 'articles')
         {
             $arts = Article::GetArticles($site,null,50,0,'ALL');
