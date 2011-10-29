@@ -58,7 +58,7 @@ class Page
         {
             $p->body      = Query::Escape($body);
         }
-       
+        
         if($this->mFields->pages_pk  > 0)
             return $this->SaveExisting($p);
         return $this->SaveNew($p);    
