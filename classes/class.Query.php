@@ -22,12 +22,16 @@ class Query  implements Iterator
 
     private static $mAdminMode = false;
     
+    
+    private $mRows = array();
+    private $mRowIndex = -1;
+    private $eof = false;       // end of input has been reached
     // members    
-    private $mRow;             // holds the current row
+//    private $mRow;             // holds the current row
     private $mResultSet;       // returned by the query
     private $mNumQueries;      // number of queries  default =1
     
-    private $mPosition;
+    
     
     public static function Escape($str)
     {
@@ -42,20 +46,21 @@ class Query  implements Iterator
      * @param cacheid if this is set the 
      * @param int max age for a cached item 
      */
-    function __construct($query, $cacheId = '', $maxeAge = 100)
+    function __construct($sql, $cacheId = '', $maxeAge = 100)
     {
+        
         $this->mNumQueries = 1;
         
         if(self::$mConnection == null)
              self::OpenDb(); 
                    
-        if(is_array($query))
+        if(is_array($sql))
         {
             $mq = '';
-            $this->mNumQueries = count($query);
+            $this->mNumQueries = count($sql);
             
             // conactenate the queries separated by ;
-            foreach ($query as $q)               
+            foreach ($sql as $q)               
                 $mq .= $q.';';           
 //print_r($mq)   ; die;  
         
@@ -69,13 +74,13 @@ class Query  implements Iterator
         else
         {
             // standard query use 
-            $this->mResultSet = self::$mConnection->query($query );         
+            $this->mResultSet = self::$mConnection->query($sql );         
         }
         
         if($this->mResultSet === false)
         {   
-            if( $this->mNumQueries == 1) echo "$query <br>\n";   else echo "$mq <br>\n";      
-            logerror(self::$mConnection->error, __FILE__ . __LINE__);
+            if( $this->mNumQueries == 1) echo "$sql <br>\n";   else echo "$mq <br>\n";      
+            logerror("Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error , __FILE__ . __LINE__);
         }
         elseif ($this->mResultSet !== TRUE)
             $this->next(); // to load the first row
@@ -83,19 +88,20 @@ class Query  implements Iterator
     
     /**
      * does a transction on the array of sql queries
-     * @param array $queryArray 
+     * @param array $sql 
+     * @return    true, false, or the first result row
      */
-    public static function sTransaction($queryArray)
+    public static function sTransaction($sql)
     {
         if(self::$mConnection == null)
              self::OpenDb(); 
                          
         self::$mConnection->autocommit(false);
 
-//print_r($queryArray)   ; die;     
-        foreach($queryArray as $sql)
+//dump($sql);   
+        foreach($sql as $query)
         {
-            $result = self::$mConnection->query($sql);
+            $result = self::$mConnection->query($query);
             if($result === false)
             {
                 $errorString = self::$mConnection->error;
@@ -104,34 +110,34 @@ class Query  implements Iterator
                 logerror("statement: $sql  $errorString", __FILE__ . __LINE__);
                 return false;
             }
-            /*
-            elseif(is_object($result)) {
-                $o = $result->fetch_object();
-                if(! empty($o->pk))
-                {
-                     $pk = $resultSet->pk;
-                     echo ('pk: '.$pk);
-                }
-            } */
         }
-             
         self::$mConnection->commit();
         self::$mConnection->autocommit(true);
-              
+
+        if ($result !== TRUE)
+        {
+           $r =  $result->fetch_object(); // return the first row
+           return $r;
+        }
         return true;
     }
     
     function __destruct()
     {
-        if($this->mresultSet)
-           $this->mresultSet->free();
+        if($this->mResultSet && is_object($this->mResultSet))
+           $this->mResultSet->free();
     }
     
     function __get($var)
     {
+        /*
         if(! $this->mRow)
            return null;   
-            return $this->mRow->$var;    
+            return $this->mRow->$var;
+        */      
+        if($this->mRowIndex < 0)
+           return null;     
+        return $this->mRows[$this->mRowIndex]->$var;   
     }
     
     /**
@@ -141,14 +147,22 @@ class Query  implements Iterator
      */
     public function SetValue($field, $value)
     {
+        /*
         if(! $this->mRow)
            return null;   
-        $this->mRow->$field = $value;    
+        $this->mRow->$field = $value;  
+        */  
+       if($this->mRowIndex < 0)
+           return null;     
+        $this->mRows[$this->mRowIndex]->$field= $value;
     }
        
     public function ToArray()
     {
-       return array($this->mRow);
+       //return array($this->mRow);
+       if($this->mRowIndex < 0)
+           return null; 
+       return (array) $this->mRows[$this->mRowIndex] ;   
     }
     
     
@@ -204,7 +218,7 @@ class Query  implements Iterator
     public static function OpenDb($admin = false)
     {
         global $CONFIG;
-        $CONFIG->db_dbname = 'newgt2';
+        $CONFIG->SetValue('db_dbname','newgt2', true);
                               
         if($admin)
         {   
@@ -229,28 +243,46 @@ class Query  implements Iterator
     
     // these are the iterator functions
     public function rewind() {
-        $this->mPosition = 0;
+        $this->mRowIndex = 0;
     }
 
     public function current() {
-        return $this->mRow;
+        if($this->mRowIndex > -1 && $this->mRowIndex < count($this->mRows))
+            return $this->mRows[$this->mRowIndex];
+        return null;    
     }
 
     public function key() {
-        return $this->mPosition;
+        return $this->mRowIndex;
     }
 
     public function next() {
-        $this->mRow = $this->mResultSet->fetch_object();
+        //$this->mRow = $this->mResultSet->fetch_object();
+        
+        $this->mRowIndex++; 
+        if(! $this->eof)
+        {
+            $o = $this->mResultSet->fetch_object();
+            if($o)
+            {
+                $this->mRows[] = $o; 
+            }
+            else
+            {
+                $this->eof =true;
+            }
+        }       
     }
 
     public function valid() {
-        return  (boolean) $this->mRow ; 
+        //return  (boolean) $this->mRow ; 
+        return ($this->mRowIndex > -1 && $this->mRowIndex < count($this->mRows) );
     }
     // end of the iterator functions
     
 }
 
+// automatically open the database on loading of this class
 Query::OpenDb(); 
 
 

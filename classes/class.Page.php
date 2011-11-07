@@ -1,8 +1,13 @@
 <?
-
+/**
+ * 
+ * Page  fills the role of the Clickability 'Website Section'
+ * @author michael
+ *
+ */
 class Page 
 {
-    protected $mFields = null;
+    protected $mFields = null;            // object of database field values
      
     public function __construct($params)
     {
@@ -10,30 +15,14 @@ class Page
           $this->mFields = $params;  
       elseif(is_array($params))
           $this->mFields = (object) $params;
-
- /*       
-        if(is_object($params))
-        {
-            $this->mFields =  $params; 
-        }      
-        elseif(is_array($params)) 
-        {
-            $this->mFields = new stdClass();
-            foreach($params as $key => $value )
-            {
-                $this->mFields->$key = $value;
-            }
-            $this->mFields = $fields;
-        }
- */    
+ 
     }
     /**
      * setting live_version or proof_version to 0 , will cause these versions to be set to the most recent version
      * update_version is the version to update, if set to 0 we will create a new version if -1 we will not update the text field
      */
     public function Save()
-    {
-//echo'<pre>'; print_r($this->mFields); die();              
+    {           
         // clean it up before saving
         $f = $this->mFields;
         $p            = new stdClass(); 
@@ -63,10 +52,19 @@ class Page
             return $this->SaveExisting($p);
         return $this->SaveNew($p);    
     }
+
+    protected function SaveNew($p)
+    {          
+        $sql = array(); 
+        $sql[]= "SELECT @page_id := MAX(pages_id) +1 FROM pages";
+        $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_no_robots, pages_status, pages_php_class,pages_authors_fk,pages_body) 
+                  values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body')";   
+        return Query::sTransaction($sql);
+    }
+    
     
     protected function SaveExisting($p)
-    {
-                
+    {               
         $sql = array();
      
         if($p->new_version == 0) //  means: keep the same version
@@ -98,40 +96,34 @@ class Page
             
             // now we have to copy all module links from the previous version to this version
             $sql[] = "INSERT INTO modules__pages (modules_fk, pages_fk,link_type,link_order) SELECT modules_fk, @new_pk,link_type,link_order FROM modules__pages WHERE pages_fk = $p->pk";
-        }
-//echo'<pre>'; print_r($sql); die();       
+        }      
         return Query::sTransaction($sql);       
     }
     
-    protected function SaveNew($p)
-    {  
-
-        
-        $sql = array();
-        
-        $sql[]= "SELECT @page_id := MAX(pages_id) +1 FROM pages";
-                 
-        $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_no_robots, pages_status, pages_php_class,pages_authors_fk,pages_body) 
-                  values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body')";
-//echo'<pre>'; print_r($sql); die();    
-        return Query::sTransaction($sql);
-    }
     
-        
+    /**
+     * Makes this version of the page live
+     * @param int $pages_id
+     * @param int $version
+     */    
     static public function MakeLive($pages_id, $version)
     {
         $sql = array();
-        $sql[]= "UPDATE pages set is_live = 0 where pages_id = $p->pages_id";
-        $sql[]= "UPDATE pages set is_live = 1 where pages_id = $p->pages_id and pages_version = $version";  
+        $sql[]= "UPDATE pages set pages_is_live = 0 where pages_id = $p->pages_id";
+        $sql[]= "UPDATE pages set pages_is_live = 1 where pages_id = $p->pages_id and pages_version = $version";  
         return Query::sTransaction($sql);    
     }
 
-           
-    static public function MakeProof($pages_id, $version)
+    /**
+     * Makes this version of the page Preview
+     * @param int $pages_id
+     * @param int $version
+     */            
+    static public function MakePreview($pages_id, $version)
     {
         $sql = array();
-        $sql[]= "UPDATE pages set is_proof = 0 where pages_id = $p->pages_id";
-        $sql[]= "UPDATE pages set is_proof = 1 where pages_id = $p->pages_id and pages_version = $version";  
+        $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $p->pages_id";
+        $sql[]= "UPDATE pages set pages_is_preview = 1 where pages_id = $p->pages_id and pages_version = $version";  
         return Query::sTransaction($sql);    
     }
    
@@ -139,7 +131,7 @@ class Page
     /**
      * Gets all pages default: only live pages for current site
      * @param char $sitecode  "ALL" for all 
-     * @param bool $allPages  // otherwise you only get the live pages
+     * @param bool $allPages  // if false, you only get the live pages
      */
     static public function getPages($sitecode = null, $allPages = false)
     {
@@ -171,12 +163,13 @@ class Page
             $sql .= " $WHERE_AND $liveField = 1 ";
         }   
         $sql .= ' ORDER BY pages_site_code, pages_url, pages_version';
-        
+       
         return new Query($sql);
     }    
    
-    /*
+    /**
      * returns a class mapp array for current site
+     * @param String sitecode
      */
     static public function  GetClassMapping ($sitecode = NULL)
     {
@@ -185,9 +178,9 @@ class Page
         
         $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
         
-        $sql="SELECT * FROM pages WHERE pages_site_code = '$site' AND  $liveField = 1";
+        $sql="SELECT pages_id, pages_pk, pages_php_class
+              FROM pages WHERE pages_site_code = '$site' AND  $liveField = 1";
         
-        //$CONFIG->dump(); die;
         $pages=new Query($sql);
         
         $pageArray = array();
@@ -195,7 +188,6 @@ class Page
         {
             $pageArray[$p->pages_url] = array('class'=> $p->pages_php_class,'pages_id'=> $p->pages_id, 'pages_pk'=> $p->pages_pk );        
         }
-        //echo "<pre>"; print_r($pageArray); die;
         return $pageArray;
     }
     
@@ -221,13 +213,24 @@ class Page
         return new Query($sql);       
     }
     
+    /**
+     * returns all fields
+     * @param int $pk
+     */
     static public function  GetDetails($pk = 0)
     {
         global $CONFIG;
-        $pk = ($pk == 0) ? $CONFIG->current_page_pk : $pk;
-        return new Query("SELECT * FROM pages WHERE pages_pk = $pk");       
+        if($pk == 0) 
+            $pk = intval($CONFIG->current_page_pk);
+        $r =  new Query("SELECT * FROM pages WHERE pages_pk = $pk");
+        //dump($r); 
+        return $r;     
     }
-        
+
+    /**
+     * Deletes the page
+     * @param unknown_type $pk
+     */
     static public function  DeletePage($pk)
     {
         $sql="UPDATE pages SET pages_status='DELETED', pages_is_live = 0, pages_is_preview = 0 WHERE pages_pk = $pk";
@@ -235,18 +238,58 @@ class Page
     }
     
     
+// ====================== TARGETS ==========================
+    /**
+     * Gets all targets for a page
+     * @param int pages_id
+     */
+    static public function GetTargets($id)
+    {
+        $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title 
+                FROM targets JOIN pages ON pages_id = targets_pages_id WHERE pages_id = $id";
+        return new Query($sql);
+    }    
     
-    static public function sYaasCreateTarget($params)
+    /**
+     * Creates a target 
+     * @param array or object $params  with:  targets_pages_id   and targets_contents_fk
+     */
+    static public function sYaasSaveTarget($params)
     {
         if(! User::Authorize('ADMIN'))
         {
             return('unauthorized');
         }
-        $page    = $params->targets_pages_id;
-        $content = $params->targets_contents_fk;
-        $sql = "INSERT INTO targets (targets_pages_id, targets_contents_fk) values($page, $content)";
+        
+        if(is_array($params))
+            $params = (object)$params;
+//dump($params);            
+        $pk        = intval($params->targets_pk);
+        $page      = intval( $params->targets_pages_id);
+        $content   = intval( $params->targets_contents_fk);
+        $live_date = Query::Escape($params->targets_live_date);
+        $dead_date = Query::Escape($params->targets_dead_date);
+        $archive_date = Query::Escape($params->targets_archive_date);
+        $pin       = $params->targets_pin_position ? intval($params->targets_pin_position) : 999999;
+        
+        if($params->record_state == 'dirty')
+        {
+            $sql = "UPDATE targets SET  targets_live_date= '$live_date', targets_dead_date = '$dead_date',  targets_archive_date= '$archive_date',  targets_pin_position = $pin 
+                    WHERE targets_pages_id = $page AND targets_contents_fk = $content";
+        }
+        elseif ($params->record_state == 'new')
+        {
+            $sql = "INSERT INTO targets (targets_pages_id, targets_contents_fk, targets_live_date,  targets_archive_date, targets_dead_date, targets_pin_position) 
+                                  VALUES($page, $content, '$live_date', '$archive_date', '$dead_date', $pin)";
+        }
+        else 
+        {
+            logerror(" unexpected state: $params->record_state "  ,__FILE__ . __LINE__);
+        }
         return new Query($sql);
     }
+    
+   
     
 }
 

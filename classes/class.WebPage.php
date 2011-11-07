@@ -63,8 +63,9 @@ abstract class WebPage
     // @var string The Smarty Cache Id
     private $_mSmartyCacheId;
 
-
-
+    protected $mDateFormat;
+    protected $mTimeFormat;
+   protected  $mDateTimeFormat;
     /**
      * The page constructor
      * @param Website $website class instance
@@ -74,13 +75,18 @@ abstract class WebPage
     {
         $this->mWebsite    = $website;
         $this->mArguments  = $args;
+        
+        $this->mDateFormat      = $website->mDateFormat;
+        $this->mTimeFormat      = $website->mTimeFormat;
+        $this->mDateTimeFormat  = $website->mDateTimeFormat;
+        
         $this->mSideModules['left'] = array_merge((array)$this->mSideModules['left'], (array)$this->mWebsite->mDefaultModules['left']);
      //   $this->_InitIncludes();        // empty for now
         $this->_InitCaching();         // in derived class
         
         // call SetupSmarty with 'false   turn caching off 
         $this->SetupSmarty(($this->_mAllowCaching || $this->_mMainTplCaching));
-
+       
         // Determines the necessity to call _InitPage(); 
       //  $this->_InitPageCheck();
     }
@@ -100,7 +106,11 @@ abstract class WebPage
         
         $template = $template ? $template : $this->mDefaultTpl;
         $cache_id = $cache_id ? $cache_id : $this->_mSmartyCacheId;
-      
+
+        
+        $this->_SmartySetVars();  // not sure when this should be called
+        
+ 
         $this->mSmarty->display($template); //, $cache_id, $cache_id);
 
         return true;
@@ -110,23 +120,24 @@ abstract class WebPage
 public function SetupSmarty($allow_caching = true, $callback = null)
     {
         global $CONFIG;
-        
+/*        
         if ((bool) $_SERVER['HTTPS'] != (bool) $this->mSecureMode)
         {
             $url = ($_SERVER['HTTPS'] ? 'http://' : 'https://') . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
             header('Location: ' . $url);
             exit();
         }
-
+*/
         //Construct and initialize the smarty object
         $this->mSmarty = new Smarty();
         $dir = $CONFIG->tpl_path; 
         $this->mSmarty->setTemplateDir($dir);
-        $this->mSmarty->setCompileDir("$dir/templates_c");
+        $this->mSmarty->setCompileDir($dir.'/templates_c');
         $this->mSmarty->setCacheDir($dir.'/cache'); 
         $this->mSmarty->setConfigDir($dir.'/configs'); 
 
-
+    
+/*
         // Lets define the cache ID so
         // we can use the cache instead
         $this->_mSmartyCacheId  = $this->_GetCacheId();
@@ -140,7 +151,7 @@ public function SetupSmarty($allow_caching = true, $callback = null)
             $this->mSmarty->setCompileCheck(false); 
             $this->mSmarty->setCacheLifetime($this->_mSmartyCacheLifetime);
         }
-      
+  */    
         return null;
     }
     
@@ -192,16 +203,19 @@ public function SetupSmarty($allow_caching = true, $callback = null)
     
 protected function _SmartySetVars()
     {
-        $this->mSmarty->assign("page_title",    $this->mPageTitle);
+        $this->mSmarty->assign('page', Page::GetDetails());
+        $this->mSmarty->assign('DATE_FORMAT',    $this->mDateFormat ); 
+        $this->mSmarty->assign('TIME_FORMAT',    $this->mTimeFormat );  
+        $this->mSmarty->assign('DATETIME_FORMAT',$this->mDateTimeFormat );     
         $this->mSmarty->assign("onload",        implode("; ", $this->mBodyOnloads));
         $this->mSmarty->assign("javascripts",   $this->mJavaScripts);
         $this->mSmarty->assign("meta_tags",     $this->mMetaTags);
         $this->mSmarty->assign("stylesheets",   $this->mStylesheets);
         $this->mSmarty->assign("themedir",      $this->mThemeDir);
         $this->mSmarty->assign("main_tpl",      $this->mMainTpl);
-        $this->mSmarty->assign("webpage",       $this);
+      
         $this->mSmarty->assign("sideModules",   $this->mSideModules);
-        $this->mSmarty->assign("sessid",        session_id());
+      //  $this->mSmarty->assign("sessid",        session_id());
         return true;
     }
 
@@ -210,7 +224,8 @@ protected function _SmartySetVars()
      */
     public function _error_404()
     {
-  
+              header('HTTP/1.1 404 Not Found');
+             die("<h1>Error 404 :  page not found</h1>");
     }
     
     //=================================== abstract methods to be implemented by the derived page classes ===================

@@ -48,6 +48,10 @@ abstract class Website
     
     public $mDefaultModules = array();     //Array of site wide default modules
     
+    public $mDateFormat     = '%D';
+    public $mTimeFormat     = '%I:%M %p';
+    public $mDateTimeFormat = '%m/%d/%y %I:%M %p';
+    
     public $mSYSTEM_ENTRY_TIME;
     public function __construct()
     {
@@ -206,7 +210,7 @@ abstract class Website
             parse_str($_SERVER['QUERY_STRING'], $fake_get);
             parse_str($_SERVER['REDIRECT_QUERY_STRING'], $real_get);
             $_GET = array_merge($real_get, $fake_get);
-
+           
             // Set QUERY_STRING
             $_SERVER['QUERY_STRING'] = http_build_query($_GET);
         }

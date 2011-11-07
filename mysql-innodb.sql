@@ -52,6 +52,22 @@ CREATE TABLE  media
         medi_alt_text VARCHAR(255)  ,                  --  alt text
         PRIMARY KEY (media_pk)
     )engine InnoDB;
+
+CREATE TABLE    media__contents
+    (
+        media_fk INT NOT NULL,
+        contents_fk INT NOT NULL,
+        link_type VARCHAR(30),
+        link_order INT,
+        PRIMARY KEY (media_fk, contents_fk),
+        FOREIGN KEY (media_fk)    REFERENCES media (media_pk)      ON DELETE CASCADE,
+        FOREIGN KEY (contents_fk) REFERENCES contents (contents_pk)ON DELETE CASCADE       
+    ) ENGINE InnoDB ;
+    
+        
+
+        
+    
     
 -- drop table contents;   
 CREATE TABLE
@@ -110,6 +126,29 @@ CREATE TABLE articles
         FOREIGN KEY (articles_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE,  
         FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
+
+    
+           
+ CREATE TABLE comments
+    (
+        comments_pk INT NOT NULL AUTO_INCREMENT,
+        comments_fk INT NOT NULL,
+        comments_title  VARCHAR(100)   NOT NULL,
+        comments_body   TEXT  ,
+        comments_commenter VARCHAR(50)   NOT NULL,
+        comments_email VARCHAR(50),
+        comments_ranking INT default 0,
+        comments_date   datetime NOT NULL,
+        comments_flagged VARCHAR(50),
+        comments_contents_fk  INT NOT NULL,
+        PRIMARY KEY (comments_pk),
+        FOREIGN KEY (comments_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE
+    )ENGINE InnoDB;
+           
+       
+
+       
+       
        
 -- holds archived text fields from  ? and potentially other types
 CREATE TABLE textfields   
@@ -154,6 +193,10 @@ CREATE TABLE pages
         PRIMARY KEY (pages_pk)
     )  engine InnoDB ;
 
+    
+create index  pages_id on pages(pages_id);            
+
+
 
 -- drop table targets; 
 CREATE TABLE targets   
@@ -161,10 +204,11 @@ CREATE TABLE targets
         targets_pages_id INT NOT NULL ,
         targets_contents_fk INT NOT NULL ,
         targets_pin_position  INT DEFAULT 0 NOT NULL,           --  normally  0, but if not null is is the pinned position (1 is first )     
-        targets_live_date TIMESTAMP,                                      --  articles will only show between live and dead dates
-        targets_dead_date TIMESTAMP,
+        targets_live_date DATETIME,                                      --  articles will only show between live and dead dates
+        targets_archive_date DATETIME DEFAULT '1000-01-01',  
+        targets_dead_date DATETIME DEFAULT '1000-01-01',
         PRIMARY KEY (targets_pages_id, targets_contents_fk),
-        -- FOREIGN KEY (targets_pages_id) REFERENCES pages (pages_id)  ON DELETE CASCADE,   
+        FOREIGN KEY (targets_pages_id) REFERENCES pages (pages_id)  ON DELETE CASCADE,   
         FOREIGN KEY (targets_contents_fk) REFERENCES contents (contents_pk)   ON DELETE CASCADE        
     )engine InnoDB;   
 
@@ -195,7 +239,10 @@ CREATE VIEW max_page_version as
 (
 SELECT pages_id AS mpv_pages_id, MAX(pages_version) AS mpv_pages_version FROM pages GROUP BY pages_id
 );
-    
+create view current_pages as
+(
+ SELECT * FROM pages JOIN max_page_version ON mpv_pages_id = pages_id  AND  pages_version = mpv_pages_version 
+);    
 
     
 

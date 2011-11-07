@@ -16,7 +16,7 @@ class HomePage extends WebPage
 //echo"<pre>"; print_r($arts); die;               
         
         $this->mSmarty->assign('articles', $arts);
-        $this->mMainTpl = 'homepage.tpl';
+        $this->mMainTpl = 'homePage.tpl';
 
    
         parent::Display();

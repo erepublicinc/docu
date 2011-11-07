@@ -37,22 +37,8 @@ function logerror($txt, $location)
 }
 
 
-/** like print_r   for objects
- * @param objct $p 
- */
-function print_o($p)
-{
-    echo "<br>\n";
-    $keys = get_object_vars($p);          
-    foreach($keys as $field => $value)
-    {
-        echo("$field -> $value <br>\n");
-    }
-    echo "<br>\n";
-}
 
-
-
+/*
 function setup_smarty($test=false)
 {
     global $CONFIG;
@@ -76,7 +62,7 @@ function setup_smarty($test=false)
         $smarty->testInstall(); // to check
     return $smarty;    
 }
-
+*/
 
 function getSiteName($code)
 {
@@ -85,6 +71,14 @@ function getSiteName($code)
 }
 
 
+function dump($v, $die = true)
+{
+    echo("<pre>");
+    //var_dump($v);
+    print_r($v);
+    if($die)
+        die;
+}
 
     
 //  this debug class adds timing info to the bottom of the page in a comment

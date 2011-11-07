@@ -1,15 +1,11 @@
 <?php
 class CMSSite extends Website
-{
-     
-    
+{    
     function __construct()
     {
         // Check if this page already exists in our cache of complete pages
         $fname = str_replace('/', '#',  $_SERVER['REDIRECT_URL']);
         $fname = rtrim($fname,'# ');
-        
-        //$this->mDefaultModules = array(....);    // set the sitewide modules here
        
         global $CONFIG;
         $CONFIG->SetValue('tpl_path','/var/www/newgt/html/cms/tpl');
@@ -47,7 +43,7 @@ class CMSSite extends Website
         if($pathSegments[0] == 'cms')
             array_shift($pathSegments);
         
-        if(in_array($pathSegments[0], array('gt','gov','em','cv')))
+        if(in_array($pathSegments[0], array('gt','gov','em','cv','all')))
         {
             $site = strtoupper($pathSegments[0]);
             $CONFIG->SetValue('cms_site_code',$site);

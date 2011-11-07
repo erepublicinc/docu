@@ -27,24 +27,22 @@ class Content
             );
     
     
-    // initialized with a row from the contents table, or with a pk
+    /** 
+     * initialized with a row from the contents table, or with a pk
+     * @param array, object or int 
+     */
     protected function __construct($params)
     { //print_r($params); die;
         $this->mSqlStack = array();
+        
+        if(is_array($params))
+            $params = (object) $params;
+        
         if(is_object($params))
         {
             $this->mFields =  $params; //echo('create contetn'.$row->title);
             $this->mPk     = ($params->contents_pk >0)? $params->contents_pk :0;
         }      
-        elseif(is_array($params) )
-        {
-            $this->mFields = new stdClass();
-            foreach($params as $key => $value )
-            {
-                $this->mFields->$key = $value;
-            }
-            $this->mPk = $params['contents_pk'] >0 ? $params['contents_pk'] : 0;
-        }
         elseif( is_integer($params))
         {
             $this->mPk =$params;
@@ -60,12 +58,7 @@ class Content
     {
         return $this->mFields;
     }
-    
-    public function getTargets()
-    {
-        
-    }
-    
+      
     
     protected function Save()
     {
@@ -75,8 +68,10 @@ class Content
           return $this->SaveNew();
     }
     
-    
-
+    /**
+     * Makes a version  live
+     * @param int $version
+     */
     public function setLiveVersion( $version)
     {
         if(! $this->mPk)
@@ -86,16 +81,28 @@ class Content
         return $q->version;
     }
 
+ 	/**
+     * Makes a version  Preview
+     * @param int $version
+     */
+    public function setPreviewVersion( $version)
+    {
+        if(! $this->mPk)
+            return logerror('called setLiveVersion, pk == 0');
+        Query::SetAdminMode();
+        $q = new Query("UPDATE contents SET contents_preview_version = $version WHERE contents_pk = $this->mPk");
+        return $q->version;
+    }
     
-    /** GetContentByType , primarily used by cms
+    /** 
+     * GetContentByType , primarily used by cms
      * @param content type  content types you want
      * @param Site [optional] default = null is all sites
      * @param limit [optional] default =10 , number of items to return
      * @param startAt [optional] default =0 , where to start (for paging)
      * @param string status 
      * @return array of contentItems
-     */
-    
+     */  
     public static function GetContentByType($contentType , $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')    
     {   
        global $CONFIG;
@@ -127,10 +134,12 @@ class Content
                */
             
             // this is the mysql version
-            $sql="SELECT  * FROM  
-                (contents  JOIN targets ON targets_contents_fk = contents_pk )
+            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_authors_fk  
+                FROM  (contents  JOIN targets ON targets_contents_fk = contents_pk )
                            JOIN pages   ON pages_id = targets_pages_id           
-               WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status $topX ";
+               WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status
+               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_authors_fk  
+               $topX ";
         }
         else 
         {
@@ -138,14 +147,14 @@ class Content
            $sql="SELECT  * FROM contents 
                WHERE contents_type = '$contentType'   $status $topX ";
         }
-   
-       
+        
+//die($sql);        
         return new Query($sql);          
     } 
     
     
-    
     /**
+     * this functions is called by pages who want to get their data
      * @param String content type [optional] default: ALL   returneparated list of content types you want
      * @param String Url [optional] default = 0 is current url like /blogs/joesblog
      * @param number limit [optional] default =10 , number of items to return
@@ -157,11 +166,11 @@ class Content
     {
         global $CONFIG;
         
-        $contents =  array();       
-        $topX     = "LIMIT $skip, $limit ";
-        $types    = '';  
-        $statusStr   = '';     
-        
+        $contents  =  array();       
+        $topX      = "LIMIT $skip, $limit ";
+        $types     = '';  
+        $statusStr = '';     
+        $orderStr  = ' ORDER BY targets_pin_position, targets_live_date desc' ;
         if($contentType != 'ALL')
         {  
             $types = " AND contents_type = '$contentType' ";
@@ -187,8 +196,9 @@ class Content
             // the mysql version
              $sql="SELECT  * FROM 
                ( contents JOIN targets ON targets_contents_fk = contents_pk )
-                          JOIN pages   ON pages_id = targets_page_id             
-               WHERE page_url = '$url'   $types $statusStr $topX ";
+                          JOIN pages   ON pages_id = targets_pages_id             
+               WHERE pages_url = '$url' AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
+                 $types $statusStr  $orderStr $topX ";
         }
         else 
         {
@@ -196,10 +206,12 @@ class Content
             $sql="SELECT  * FROM contents 
                JOIN targets 
                ON targets_contents_fk = contents_pk 
-               WHERE targets_pages_id = ". $CONFIG->current_page_id ."  $types $statusStr $topX ";
+               WHERE targets_pages_id = ". $CONFIG->current_page_id ." 
+               AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
+                $types $statusStr   $orderStr $topX ";
         }
       
- //die($sql);      
+//die($sql);      
         
         $result = new Query($sql);
   //return $result;      
@@ -216,6 +228,24 @@ class Content
         return $contents;
     }
     
+    /**
+     * Gets all data in case you only know the urlname   ( like a detail page)
+     * @param String $urlName
+     */
+    public static function GetContentByUrl($urlName)
+    {
+        $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+                  FROM contents JOIN users on users_pk = contents_main_authors_fk 
+                  WHERE contents_url_name = '$urlName'";
+        $r = new Query($sql);        
+        
+        $sql = "SELECT * FROM $r->contents_extra_table WHERE {$r->contents_extra_table}_contents_fk = $r->contents_pk AND {$r->contents_extra_table}_version = $r->contents_live_version";
+        $r2 = new Query($sql);
+        
+        // combine the 2 results into 1 content object  
+        $c = new Content( array_merge($r->ToArray(), $r2->ToArray() ));
+        return $c;
+    }
         
     /**
      * 
@@ -256,18 +286,107 @@ class Content
      
         array_unshift($this->mSqlStack, $sql);
 
-//        $sql = 'SELECT @pk as pk';
-//        array_push($this->mSqlStack, $sql);
+        // to return the pk
+        $sql = 'SELECT @pk as pk';
+        array_push($this->mSqlStack, $sql);
         
-        $result = Query::sTransaction($this->mSqlStack);
-   
-        return true;
+        $result =  Query::sTransaction($this->mSqlStack);
+        if($result != false)
+            return $result->pk;
+        return false;    
     }
 
-    
-
    
+    /** Update a content item
+     *    we will only update the fields that are present and leave the rest alone
+     *    @param bool $newVersion to see if we have to increase the live version 
+     *    @return   false (in case of failure,  otherwise the pk of the content item
+     */
+    protected function SaveExisting($newVersion = TRUE)
+    { 
+ 
+        // the default status is  'IN_PROGRESS'; 
+        $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
+   
+        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
+        if($this->mFields->contents_status == 'LIVE')
+        {
+            if($newVersion)  
+               $newvalues .= ',contents_live_version = @v ';
+            else  
+               $newvalues .= ',contents_live_version = @v -1';  
+        }
+        // this needs to be first,   get the version number by looking for the highest and adding 1
+        $extraTable = $this->mExtraTable;
+        array_unshift($this->mSqlStack, " SELECT @v := max(${extraTable}_version)+1 FROM $this->mExtraTable GROUP BY ${extraTable}_contents_fk HAVING ${extraTable}_contents_fk= $this->mPk");
+        
+        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
+
+        $result = Query::sTransaction($this->mSqlStack);
+        if($result != false)
+            return $this->mFields->contents_pk;
+        return false;  
+    }
+      
+  
+    /** 
+     * This static class can be called by a yaas function 
+     * @param int $pk of the object
+     * @param string $extraTable the table to be joined
+     * @param int $version  the requested version 0 = the live version
+     * @return a Query object with 2 result sets:  1. content item,   2. its targets
+     */
+    public static function GetAllData($pk, $extraTable, $version=0)
+    {  
+        global $CONFIG;  
+         $theversion = $version > 0 ? $version : "contents_live_version"; 
+         
+         $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
+         
+         $sql=array();
+  /*   mssql    
+         $sql[] = "SELECT * FROM  contents c 
+                 JOIN $extraTable t 
+                 ON contents_pk = t.contents_fk and t.${extraTable}_version = $theversion     
+                 JOIN users u
+                 ON u.users_pk = c.contents_main_authors_fk              
+                 WHERE c.contents_pk = $pk ";
+  */          			
+         
+         $sql[] = "SELECT * FROM   contents c 
+                 JOIN $extraTable t 
+                 ON contents_pk = t.${extraTable}_contents_fk and t.${extraTable}_version = $theversion     
+                 JOIN users u
+                 ON u.users_pk = c.contents_main_authors_fk              
+                 WHERE c.contents_pk = $pk ";
+ /*        
+         // add the targets
+		 $sql[] = "SELECT * 
+		          FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
+		          WHERE targets_contents_fk = $pk "; 
+*/		          
+		            
+		          
+        return new Query($sql); 
+    }   
     
+    /**
+     * Gets targets for this item
+     * @param int $pk
+     */
+    public static function GetTargets($pk, $onlyActiveTargets = true)
+    {  
+       global $CONFIG;  
+                    
+       $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';   
+       $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title
+       			FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
+		        WHERE targets_contents_fk = $pk  "; 
+  
+       return new Query($sql); 
+    }   
+    
+        
     /**
      * creates a string used for updating a record like: "body='hello', version=12"
      * typical use:    
@@ -303,34 +422,7 @@ class Content
         return  $newvalues;   
     }
    
-    
-    /** Update a content item
-     *    we will only update the fields that are present and leave the rest alone
-     *    @param bool $newVersion to see if we have to increase the live version 
-     */
-    protected function SaveExisting($newVersion = TRUE)
-    { 
- // echo("<pre>"); print_r($this->mFields);   die; 
-        // the default status is  'IN_PROGRESS'; 
-        $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
-   
-        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
-        if($this->mFields->contents_status == 'LIVE')
-        {
-            if($newVersion)  
-               $newvalues .= ',contents_live_version = @v ';
-            else  
-               $newvalues .= ',contents_live_version = @v -1';  
-        }
-        // this needs to be first,   get the version number by looking for the highest and adding 1
-        $extraTable = $this->mExtraTable;
-        array_unshift($this->mSqlStack, " SELECT @v := max(${extraTable}_version)+1 FROM $this->mExtraTable GROUP BY ${extraTable}_contents_fk HAVING ${extraTable}_contents_fk= $this->mPk");
-        
-        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
-
-        return Query::sTransaction($this->mSqlStack);
-    }
-    
+     
     /**
      * retrieves the correct extra data as an object
      * @param datatable
@@ -348,46 +440,12 @@ class Content
         	  			
         return  new Query($sql); 
     }
-    
-    /** 
-     * This static class can be called by a yaas function 
-     * @param int $pk of the object
-     * @param string $extraTable the table to be joined
-     * @param int $version  the requested version 0 = the live version
-     * @return a Query object with 2 result sets:  1. content item,   2. its targets
+
+    /**
+     * Allows you to add more fields to a content object
+     * @param array $fields (like the result of a query)
      */
-    public static function GetAllData($pk, $extraTable, $version=0)
-    {    
-         $theversion = $version > 0 ? $version : "contents_live_version"; 
-         
-         $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
-         
-         $sql=array();
-  /*   mssql    
-         $sql[] = "SELECT * FROM  contents c 
-                 JOIN $extraTable t 
-                 ON contents_pk = t.contents_fk and t.${extraTable}_version = $theversion     
-                 JOIN users u
-                 ON u.users_pk = c.contents_main_authors_fk              
-                 WHERE c.contents_pk = $pk ";
-  */          			
-         
-         $sql[] = "SELECT * FROM   contents c 
-                 JOIN $extraTable t 
-                 ON contents_pk = t.${extraTable}_contents_fk and t.${extraTable}_version = $theversion     
-                 JOIN users u
-                 ON u.users_pk = c.contents_main_authors_fk              
-                 WHERE c.contents_pk = $pk ";
-         
-         // add the targets
-		 $sql[] = "SELECT * 
-		          FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
-		          WHERE targets_contents_fk = $pk "; 
-		          
-		            
-		          
-        return new Query($sql); 
-    }   
+    
     
 } // end of class
 

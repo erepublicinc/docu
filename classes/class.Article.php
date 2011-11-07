@@ -17,6 +17,10 @@ class Article extends Content
          
     }
 
+    /**
+     * returns the pk
+     * @see Content::Save()
+     */
     public function Save()
     { //die("pk ".$this->mPk);
         
@@ -44,8 +48,14 @@ class Article extends Content
          
 
        //  print_o( $this->mFields); die('here2'); 
+        $result = parent::SaveNew();
+        //die("the a pk: ".$result->pk);
         
-        return parent::SaveNew();
+        return $result;
+        
+        if($result != false)
+            return $result->pk;
+        return false;    
     }
     
     protected function SaveExisting($newVersion = TRUE)
@@ -64,7 +74,9 @@ class Article extends Content
         {
            $this->mSqlStack[] = "UPDATE articles set articles_body = $ebody, articles_authors_fk = $author,  articles_update_date = NOW()  where articles_pk = $pk";
         }
+        
         return parent::SaveExisting($newVersion);
+        
     }
      
     
@@ -106,7 +118,7 @@ class Article extends Content
         $d      = new Article($params);
         $result = $d->Save(); 
               
-        return 0; //YaasMakeErrorResponse($params);
+        return $result; //YaasMakeErrorResponse($params);
     }
 }
 

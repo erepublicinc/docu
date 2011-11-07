@@ -27,30 +27,42 @@ class EditPage extends WebPage
 //$CONFIG->Dump(); die( getSiteName($site));           
         if($command == 'pages')
         {
-            $pages = Page::GetPages($site, TRUE);
-          //  foreach($arts as $a) echo $a->contents_pk;     die;   
-            $this->mSmarty->assign('pages', $pages );
-            $this->mMainTpl = 'listPages.tpl';
+           $this->_ListPages($site);
             return; //================================>
         }
         
         
         
 //echo"<pre>"; print_r($_POST); die;        
-        // check if we are saving
+       
         if(!empty($_POST['pages_title']))
         {
-            
-            $p = new Page($_POST);
-            $pk = $p->Save();
-       
-            header("LOCATION: /cms/$site/pages");
-            die; //============================>
+             $this->_SavePage();
+             return; //================================>
         }
         
+        $this->_EditPage($pk, $command);
+        return;
         
         
-        
+       
+       
+    }
+   
+    
+    
+    private function _SavePage()
+    {
+        $p = new Page($_POST);
+        $pk = $p->Save();
+       
+        header("LOCATION: /cms/$site/pages");
+        die;             
+    }
+
+    
+    private function _EditPage($pk, $command)
+    {
         if($command == 'new_page' || $pk == 0)
         { //die($_SESSION['user_first_name']);
             $page = new stdClass();
@@ -60,15 +72,22 @@ class EditPage extends WebPage
            
         } 
         else 
-        {
+        {  
              $page =  Page::GetDetails($pk);
         }
-        
-        $this->mSmarty->assign('page',$page);
+//dump($page);        
+        $this->mSmarty->assign('p',$page); //NOTE   the Smarty var "page"  is already set as the current page
         $this->mMainTpl = 'editPage.tpl';  
-       
     }
-   
+    
+    
+    private function _ListPages($site)
+    {
+          $pages = Page::GetPages($site, TRUE);
+          //dump($pages);   
+          $this->mSmarty->assign('pages', $pages );
+          $this->mMainTpl = 'listPages.tpl';
+    }
     
      protected function _InitCaching(){
         $this->_mAllowCaching = false;
@@ -76,6 +95,6 @@ class EditPage extends WebPage
      
      }
      protected function _InitPage(){}
-     
+   
 }
 
