@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-<title>e.Republic CMS Concept</title>
+<title>e.Republic {$page_title}</title>
 <link rel="stylesheet" href="/css/titan/reset.css" media="screen" type="text/css" />
 <link rel="stylesheet" href="/css/titan/text.css" media="screen" type="text/css" />
 <link rel="stylesheet" href="/css/titan/grid.css" media="screen" type="text/css" />
@@ -52,7 +52,7 @@
 		});
 
 		// Datepicker
-		$('#datepicker').datepicker({
+		$('.datepicker').datepicker({
 			inline: true
 		});
 		
@@ -199,7 +199,7 @@
     <!-- Page title --->
     <div class="grid_24">
     	<div class="ui-widget-content ui-corner-bottom ui-corner-tl bk_color3 p-10" style="margin-top: -11px; border-color:#c4b6a5">
-    		<h1>Emergency Management : Content : Articles</h1>
+    		<h1>{$page_title}</h1>
 		</div>        
     </div>
     <!-- / Page Title -->

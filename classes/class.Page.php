@@ -245,7 +245,7 @@ class Page
      */
     static public function GetTargets($id)
     {
-        $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title 
+        $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title ,pages_site_code
                 FROM targets JOIN pages ON pages_id = targets_pages_id WHERE pages_id = $id";
         return new Query($sql);
     }    

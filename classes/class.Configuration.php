@@ -14,7 +14,7 @@ class Configuration
     }
     
     public function __set($k,$v)
-    {   //echo("CONFIG __get $k <br>");
+    {   
         logerror("trying to set config param: $k   use SetValue instead", 'Configuration');
         return null;
     }

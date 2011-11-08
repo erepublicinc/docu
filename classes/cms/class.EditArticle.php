@@ -30,6 +30,7 @@ class EditArticle extends WebPage
         if($command == 'articles') // list articles
         {
             $this->_listArticles($site);  
+            $this->mPageTitle = getSiteName($site) . " List Articles";
             return;     
         }
         
@@ -41,7 +42,12 @@ class EditArticle extends WebPage
             return;         
         }
         
-        $this->_editArticle($pk, $command);  // edit new or existing article
+        if($command == 'new_article')
+            $this->mPageTitle = getSiteName($site) . " - New - Article";
+        else    
+            $this->mPageTitle = getSiteName($site) . " - Edit - Article";
+        
+            $this->_editArticle($pk, $command);  // edit new or existing article
         return;      
     }
 
@@ -58,6 +64,7 @@ class EditArticle extends WebPage
     
     private function _saveArticle($pk)
     {
+//dump($_POST);        
         $pk = Article::sYaasSave($_POST);                   
         $targets = json_decode($_POST['changed_targets']);
    
@@ -88,14 +95,14 @@ class EditArticle extends WebPage
             $a->users_first_name        = $_SESSION['user_first_name'];
             $a->users_last_name         = $_SESSION['user_last_name'];
             $a->contents_create_date    = time(); //date();
-                       
         } 
         else // edit existing article
         {
              $a =  Article::GetArticle($pk);             
-             $t =  Article::getTargets($pk);      
-                 
+             $t =  Article::GetTargets($pk);      
+             $h =  Content::GetVersionHistory($pk, "articles");    
              $this->mSmarty->assign('targets', $t);
+             $this->mSmarty->assign('history', $h);
              
      /*   
              echo('<pre>');
@@ -107,7 +114,7 @@ class EditArticle extends WebPage
         
         $this->mSmarty->assign('pages', Page::getPages('ALL'));
         
-        $this->mSmarty->assign('article',$a);
+        $this->mSmarty->assign('content',$a);
         
         $this->mSideModules['left'] = array('contentStatusModule.tpl','contentMediaModule.tpl','relatedItemsModule.tpl','versionHistoryModule.tpl');
         $this->mMainTpl = 'editArticle.tpl';  

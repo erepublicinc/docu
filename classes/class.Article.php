@@ -61,14 +61,15 @@ class Article extends Content
     protected function SaveExisting($newVersion = TRUE)
     {
         //print_r($params); die;    
-        $ebody  = Query::Escape($this->mFields->articles_body);
-        $author = $this->mFields->articles_authors_fk   ; 
-        $pk     = $this->mPk;
+        $ebody     = Query::Escape($this->mFields->articles_body);
+        $ecomment  = Query::Escape($this->mFields->articles_comment);
+        $author    = $this->mFields->articles_authors_fk   ; 
+        $pk        = $this->mPk;
         
         if($newVersion)
         {
-           $this->mSqlStack[] = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk, articles_update_date)          
-                     VALUES($pk, @v,'$ebody', $author , NOW())";
+           $this->mSqlStack[] = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk, articles_update_date, articles_comment)          
+                     VALUES($pk, @v,'$ebody', $author , NOW(), '$ecomment')";
         }
         else 
         {

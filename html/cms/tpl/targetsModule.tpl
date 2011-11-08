@@ -46,7 +46,7 @@
     function addTargetInfo(sitecode, title, pid)
     {
         curTargetID = -1;  // means new
-        $("#id_target_site").text(title);
+        $("#id_target_site").text(sitecode);
         $("#id_target_title").text(title);
         $("#id_target_pid").text(pid);      
         $("#id_target_live_time").attr('value', prettyTime());
@@ -125,11 +125,13 @@
 
         <!-- / Targets --> 
 
-   <br clear="all">
-   <br clear="all">
+  
   <div id="id_edit_targets"  style="display:block; ">
-     <div style="border:1px solid">      
-             <div id="wss_accordion"  class="accordion grid_5 alpha" style="height:300px;">
+   <br clear="all">
+   <br clear="all">
+     <div class="grid_5 ui-widget ui-corner-all "  style="padding:5px; border: 1px solid #AAAAAA">    
+      
+             <div id="wss_accordion"  class="accordion grid_5 alpha" >
                   
                   {assign "site" "-"}
                   {foreach $pages as $p}            
@@ -144,13 +146,15 @@
                   {/foreach}
                   </ul>
                   </div>       
-             </div>   <!-- end of accordion -->         
+             </div>   <!-- end of accordion --> 
+             <br clear="all">        
      </div>
       
-     <div class="grid_10   omega" >
+     <div class="grid_12   omega" >
         <h5> Target info</h5>
-        
-        <span id="id_target_site"></span><span id="id_target_title"></span><span id="id_target_pid"></span> <br/>
+        <br clear="all"> 
+        <span id="id_target_site"></span> - <span id="id_target_title"></span>   <span id="id_target_pid" style="display:none"></span> <br/>
+        <br clear="all"> 
         <table>
         <tr>
             <td>live date </td><td><input type="text" id="id_target_live"  class="datepicker date_time"/></td>
@@ -171,7 +175,7 @@
      </div>
          
   </div> <!-- end of id="id_edit_targets" -->
-  
+   <br clear="all">
    </div><!-- end of targets -->
  <!-- =============================================================================== end of enEdit targets ======== -->
         

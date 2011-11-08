@@ -75,13 +75,15 @@ CREATE TABLE
     (
         contents_pk INT NOT NULL AUTO_INCREMENT, 
         contents_live_version INT NOT NULL,
-        contents_proof_version INT ,    
+        contents_preview_version INT ,    
         contents_url_name VARCHAR(500),
         contents_title VARCHAR(150) NOT NULL,
         contents_display_title VARCHAR(150),
         contents_summary VARCHAR(500),
-        contents_create_date TIMESTAMP,
+        contents_create_date DATETIME NOT NULL,
+        contents_update_date DATETIME NOT NULL,
         contents_type VARCHAR(20) NOT NULL,
+        contents_extra_table VARCHAR(30) NOT NULL,
         contents_status VARCHAR(20),
         contents_main_authors_fk INT,
   
@@ -89,7 +91,25 @@ CREATE TABLE
         FOREIGN KEY (contents_main_authors_fk) REFERENCES users(users_pk)      
     )engine InnoDB;
 
-
+    
+-- drop table articles;
+CREATE TABLE articles   
+    (
+        -- first 5 field are required for all content extension tables  
+        articles_contents_fk INT NOT NULL ,
+        articles_version INT  NOT NULL,
+        articles_authors_fk INT,                -- author of latest change
+        articles_update_date DATETIME NOT NULL,
+        articles_comment   VARCHAR(255) ,   --  commit comment
+         
+         
+        articles_type  VARCHAR(20),
+        articles_body   TEXT , 
+       
+        PRIMARY KEY (articles_contents_fk, articles_version),
+        FOREIGN KEY (articles_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE,  
+        FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
+    )engine InnoDB;
 
     
 -- drop table docu_items   ;
@@ -110,24 +130,6 @@ CREATE TABLE specs
         FOREIGN KEY (specs_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;
        
--- drop table articles;
-CREATE TABLE articles   
-    (
-        -- first 3 field are required for all content extension tables  
-        articles_contents_fk INT NOT NULL ,
-        articles_version INT  NOT NULL,
-        articles_authors_fk INT,                -- author of latest change
-        articles_update_date TIMESTAMP,
-         
-        articles_type  VARCHAR(20),
-        articles_body   TEXT , 
-     
-        PRIMARY KEY (articles_contents_fk, articles_version),
-        FOREIGN KEY (articles_contents_fk) REFERENCES contents(contents_pk) ON DELETE CASCADE,  
-        FOREIGN KEY (articles_authors_fk) REFERENCES users(users_pk)
-    )engine InnoDB;
-
-    
            
  CREATE TABLE comments
     (
@@ -161,7 +163,7 @@ CREATE TABLE textfields
         
         textfields_body TEXT NOT NULL,         --  the actual text
         textfields_authors_fk INT,             --  the author of the text
-        textfields_date TIMESTAMP,
+        textfields_date DATETIME,
         PRIMARY KEY (textfields_table, textfields_table_fk, textfields_field, textfields_version), 
         FOREIGN KEY (textfields_authors_fk) REFERENCES users(users_pk)
     )engine InnoDB;

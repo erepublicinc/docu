@@ -213,7 +213,7 @@ protected function _SmartySetVars()
         $this->mSmarty->assign("stylesheets",   $this->mStylesheets);
         $this->mSmarty->assign("themedir",      $this->mThemeDir);
         $this->mSmarty->assign("main_tpl",      $this->mMainTpl);
-      
+        $this->mSmarty->assign("page_title",    $this->mPageTitle);
         $this->mSmarty->assign("sideModules",   $this->mSideModules);
       //  $this->mSmarty->assign("sessid",        session_id());
         return true;

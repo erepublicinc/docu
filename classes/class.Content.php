@@ -344,30 +344,24 @@ class Content
          $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
          
          $sql=array();
-  /*   mssql    
-         $sql[] = "SELECT * FROM  contents c 
-                 JOIN $extraTable t 
-                 ON contents_pk = t.contents_fk and t.${extraTable}_version = $theversion     
-                 JOIN users u
-                 ON u.users_pk = c.contents_main_authors_fk              
-                 WHERE c.contents_pk = $pk ";
-  */          			
-         
+          			        
          $sql[] = "SELECT * FROM   contents c 
                  JOIN $extraTable t 
                  ON contents_pk = t.${extraTable}_contents_fk and t.${extraTable}_version = $theversion     
                  JOIN users u
                  ON u.users_pk = c.contents_main_authors_fk              
                  WHERE c.contents_pk = $pk ";
- /*        
-         // add the targets
-		 $sql[] = "SELECT * 
-		          FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
-		          WHERE targets_contents_fk = $pk "; 
-*/		          
-		            
-		          
-        return new Query($sql); 
+ 		          
+		$result =  new Query($sql);            
+//dump($result->ToArray());		
+		// now copy some fields from the  extra_table into generic fields
+		$fname = $extraTable . '_update_date';	
+		$result->SetValue('update_date',$result->$fname);  
+		
+		$fname = $extraTable . '_comment';
+		$result->SetValue('comment',$result->$fname);   
+		       
+        return $result;
     }   
     
     /**
@@ -379,13 +373,21 @@ class Content
        global $CONFIG;  
                     
        $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';   
-       $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title
+       $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title, pages_site_code
        			FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
 		        WHERE targets_contents_fk = $pk  "; 
   
        return new Query($sql); 
     }   
     
+    public static function GetVersionHistory($pk,$extraTable)
+    {
+        $sql = "SELECT {$extraTable}_version as version, {$extraTable}_update_date as update_date, {$extraTable}_comment as comment, users_first_name, users_last_name, users_email
+                FROM {$extraTable} JOIN users ON {$extraTable}_authors_fk = users_pk
+                WHERE {$extraTable}_contents_fk = $pk ORDER BY {$extraTable}_version DESC";
+//   dump($sql);     
+        return new Query($sql);
+    }
         
     /**
      * creates a string used for updating a record like: "body='hello', version=12"

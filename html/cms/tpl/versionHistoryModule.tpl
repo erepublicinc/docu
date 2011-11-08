@@ -6,48 +6,35 @@
         <table class="bk_color3 ui-corner-all">
             	<tr>
                 	<td colspan="2" class="align-r ui-corner-tl" width="60%"><h6>Live Version:</h6> </td>    
-                    <td class="ui-corner-tr">1</td>            
+                    <td class="ui-corner-tr">{$content->contents_live_version}</td>            
                 </tr>  
             	<tr>
                 	<td colspan="2" class="align-r" width="60%"><h6>Preview Version:</h6> </td>    
-                    <td>2</td>            
+                    <td>{$content->contents_preview_version}</td>            
                 </tr>
-            	<tr>
-                	<td colspan="2" class="align-r" width="60%"><h6>Draft Version:</h6> </td>    
-                    <td>3</td>            
-                </tr>                  
+            	  
 		</table>         
         <div class="m-10">
+        
 			<table class="condenced">
+              {foreach $history as $h}
             	<tr>
                 	<td><input type="checkbox" name="Name"></td>
-                	<td>3</td>
-                    <td><a href="#">10/10/11 - 08:57AM</a></td>
+                	<td>{$h->version}</td>
+                    <td><a  target='_blank' href="/cms/ALL/{$content->contents_type}/{$content->contents_pk}?version={$h->version}" >{$h->update_date|date_format:$DATETIME_FORMAT}</span></td>
 	            </tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Action: Approved</td></tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Status: DRAFT</td></tr>
-                <tr><td colspan="3" style="padding:0 0 15px 40px;">Assigned:<br>
- 					eRepubic - Editors</td></tr>
-            	<tr style="padding-bottom:15px;">
-                	<td><input type="checkbox" name="Name"></td>
-                	<td>2</td>
-                    <td><a href="#">10/10/11 - 08:57AM</a></td>
-	            </tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Action: Approved</td></tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Status: PREVIEW</td></tr>
-                <tr><td colspan="3" style="padding:0 0 15px 40px;">Assigned:<br>
-                    Elain Pittman</td></tr>
-            	<tr style="padding-bottom:15px;">
-                	<td><input type="checkbox" name="Name"></td>
-                	<td>1</td>
-                    <td><a href="#">10/10/11 - 08:57AM</a></td>
-	            </tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Action: Approved</td></tr>
-                <tr><td colspan="3" style="padding:0 0 0 40px;">Status: LIVE</td></tr>
-                <tr><td colspan="3" style="padding:0 0 15px 40px;">Assigned:<br>
-					Elaine Pittman</td></tr>   
+                <tr><td colspan="3" style="padding:0 0 0px 40px;">Author:	{$h->users_first_name} {$h->users_last_name }</td></tr>
+                <tr><td colspan="3" style="padding:0 0 15px 40px;">Comment: <br>{$h->comment }</td></tr>
+            	<tr style="padding-bottom:15px;" />
+              {/foreach}       
             </table>
-                	
-                    <h6 class="mt-15"><a href="#" class="ui-state-default ui-corner-all ml-20 mr-5 pr-10 pl-10 p-5">Compare</a> <a href="#" class="ui-state-default ui-corner-all pr-10 pl-10 p-5">Make Live</a></h6>
+            
+           	
+            <h6 class="mt-15">
+              <a href="#" class="ui-state-default ui-corner-all pr-10 pl-10 p-5">Make Live</a></h6>
         </div>        
     </div> 
+
+
+    
+    
