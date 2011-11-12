@@ -13,6 +13,11 @@ class Configuration
         return $this->_mFields[$k];
     }
     
+    public function __set($k,$v)
+    {   
+        logerror("trying to set config param: $k   use SetValue instead", 'Configuration');
+        return null;
+    }
     
     public function Dump()
     {

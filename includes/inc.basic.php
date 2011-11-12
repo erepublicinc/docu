@@ -7,6 +7,11 @@ $SITENAMES = array( 'GT'=>'Government Technology','GOV'=>'Governing', 'ALL'=> 'A
                     'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education');
 $CONFIG;
 
+define('LATEST_VERSION', -1);
+define('LIVE_VERSION', 0);
+
+
+
 function __new_autoload($class_name)
 {
     if ('parent' == $class_name)
@@ -37,22 +42,8 @@ function logerror($txt, $location)
 }
 
 
-/** like print_r   for objects
- * @param objct $p 
- */
-function print_o($p)
-{
-    echo "<br>\n";
-    $keys = get_object_vars($p);          
-    foreach($keys as $field => $value)
-    {
-        echo("$field -> $value <br>\n");
-    }
-    echo "<br>\n";
-}
 
-
-
+/*
 function setup_smarty($test=false)
 {
     global $CONFIG;
@@ -76,7 +67,7 @@ function setup_smarty($test=false)
         $smarty->testInstall(); // to check
     return $smarty;    
 }
-
+*/
 
 function getSiteName($code)
 {
@@ -85,6 +76,17 @@ function getSiteName($code)
 }
 
 
+function dump($v, $die = true)
+{
+    if(is_object($v) &&  $v instanceof Query)
+        $v = $v->ToArray();
+    
+    echo("<pre>");
+    //var_dump($v);
+    print_r($v);
+    if($die)
+        die;
+}
 
     
 //  this debug class adds timing info to the bottom of the page in a comment
