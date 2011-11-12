@@ -8,7 +8,8 @@ class CMSSite extends Website
         $fname = rtrim($fname,'# ');
        
         global $CONFIG;
-        $CONFIG->SetValue('tpl_path','/var/www/newgt/html/cms/tpl');
+        
+        $CONFIG->SetValue('tpl_path', $CONFIG->install_path . '/html/cms/tpl');
         $CONFIG->SetValue('site_code', 'CMS');
         parent::__construct();
     }

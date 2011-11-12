@@ -10,7 +10,7 @@
 
     var targets = [];
     {foreach $targets as $t}
-      targets.push( {ldelim} record_state:'clean', targets_pages_id:{$t->targets_pages_id}, targets_contents_fk:{$t->targets_contents_fk}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
+      targets.push( {ldelim} record_state:'CLEAN', targets_pages_id:{$t->targets_pages_id}, targets_contents_fk:{$t->targets_contents_fk}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
     {/foreach}      
 
 {literal}   
@@ -23,7 +23,7 @@
         for(var t in targets)
         {
             var target = targets[t];
-            if(target.state != 'clean')
+            if(target.state != 'CLEAN')
             { 
                 dirtyTargets.push(target);
             }
@@ -57,7 +57,7 @@
     { //alert(curTargetID);
         if(curTargetID == -1)
         {
-            targets.push({ record_state:'new',
+            targets.push({ record_state:'NEW',
                            targets_pages_id:$("#id_target_pid").text(),
                            targets_contents_fk:0, 
                            title:$("#id_target_site").text(),
@@ -69,7 +69,7 @@
         }    
         else
         {
-            targets[curTargetID].record_state = 'dirty';
+            targets[curTargetID].record_state = 'DIRTY';
             targets[curTargetID].targets_live_date =    formatTheDate($("#id_target_live").attr('value'), $("#id_target_live_time").attr('value'));
             targets[curTargetID].targets_archive_date = formatTheDate($("#id_target_archive").attr('value'), $("#id_target_archive_time").attr('value'));
             targets[curTargetID].targets_dead_date =    formatTheDate($("#id_target_dead").attr('value'), $("#id_target_dead_time").attr('value'));

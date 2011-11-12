@@ -107,8 +107,13 @@ class Module extends Content
         return new Query($sql);    
     }
 
-    
-    public static function GetModule($pk, $version = 0, $includeAuthor = false)  
+    /**
+     * returns the module details
+     * @param int $pk module pk (pk of the contents object)
+     * @param int $version [default = 0 gets the live version]
+     * @param bool $includeAuthor [default false]
+     */
+    public static function GetDetails($pk, $version = LIVE_VERSION, $includeAuthor = false)  
     {
         return Content::getAllData($pk, "modules", $version, $includeAuthor);
     }

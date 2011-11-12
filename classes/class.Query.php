@@ -48,6 +48,11 @@ class Query  implements Iterator
      */
     function __construct($sql, $cacheId = '', $maxeAge = 100)
     {
+    	global $CONFIG;
+        if($CONFIG->show_sql)
+        {
+        	show_sql($sql);
+        }
         
         $this->mNumQueries = 1;
         
@@ -93,6 +98,12 @@ class Query  implements Iterator
      */
     public static function sTransaction($sql)
     {
+        global $CONFIG;
+        if($CONFIG->show_sql)
+        {
+        	show_sql($sql);
+        }
+        
         if(self::$mConnection == null)
              self::OpenDb(); 
                          
@@ -224,7 +235,7 @@ class Query  implements Iterator
     public static function OpenDb($admin = false)
     {
         global $CONFIG;
-        $CONFIG->SetValue('db_dbname','newgt2', true);
+      //  $CONFIG->SetValue('db_dbname','newgt2', true);
                               
         if($admin)
         {   

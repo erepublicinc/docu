@@ -8,7 +8,7 @@ class GTSite extends Website
         $fname = rtrim($fname,'# ');    
        
         global $CONFIG;
-        $CONFIG->SetValue('tpl_path','/var/www/newgt/html/gt/tpl');
+        $CONFIG->SetValue('tpl_path', $CONFIG->install_path . '/html/gt/tpl');
         $CONFIG->SetValue('site_code','GT');    
         parent::__construct();
     }

@@ -26,14 +26,14 @@ class Page
         // clean it up before saving
         $f = $this->mFields;
         $p            = new stdClass(); 
-        $p->site_code = $f->site_code;
+        $p->site_code = Query::Escape($f->pages_site_code);
         $p->title     = Query::Escape($f->pages_title);
         $p->dtitle    = Query::Escape($f->pages_display_title);
         $p->url       = Query::Escape($f->pages_url);
         $p->status    = Query::Escape(strtoupper($f->pages_status));
         $p->type      = Query::Escape(strtoupper($f->pages_type));
         $p->phpClass  = Query::Escape($f->pages_php_class);
-        $p->comment   = Query::Escape($f->version_comment);
+        $p->comment   = Query::Escape($f->pages_version_comment);
         $p->apk       = $_SESSION['user_pk'];
         $p->is_live   = $f->pages_is_live? 1:0;
         $p->is_preview  = $f->pages_is_preview? 1:0;
@@ -62,7 +62,11 @@ class Page
                 pages_url, pages_type, pages_no_robots, pages_status, pages_php_class, pages_version_users_fk, pages_body, pages_version_comment, pages_version_date) 
                   values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',
                      $p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body','$p->comment', NOW())";   
-        return Query::sTransaction($sql);
+        
+        $sql[] = "SELECT LAST_INSERT_ID() as pk"  ;
+                   
+        $ret = Query::sTransaction($sql);
+        return $ret->pk;
     }
     
     
@@ -105,7 +109,8 @@ class Page
                       FROM modules__pages WHERE pages_fk = $p->pk";
         } 
  // dump($sql);           
-        return Query::sTransaction($sql);       
+        $ret =  Query::sTransaction($sql);
+        return $p->pk;       
     }
     
     
@@ -223,7 +228,7 @@ class Page
     
     /**
      * returns all fields
-     * @param int $pk
+     * @param int $pk [default = 0 returns the current page]
      */
     static public function  GetDetails($pk = 0)
     {
@@ -303,6 +308,7 @@ class Page
      */
     static public function sYaasSaveTarget($params)
     {
+   
         if(! User::Authorize('ADMIN'))
         {
             return('unauthorized');
@@ -310,7 +316,7 @@ class Page
         
         if(is_array($params))
             $params = (object)$params;
-//dump($params);            
+        
         $pk        = intval($params->targets_pk);
         $page      = intval( $params->targets_pages_id);
         $content   = intval( $params->targets_contents_fk);
@@ -319,12 +325,12 @@ class Page
         $archive_date = Query::Escape($params->targets_archive_date);
         $pin       = $params->targets_pin_position ? intval($params->targets_pin_position) : 999999;
         
-        if($params->record_state == 'dirty')
+        if($params->record_state == 'DIRTY')
         {
             $sql = "UPDATE targets SET  targets_live_date= '$live_date', targets_dead_date = '$dead_date',  targets_archive_date= '$archive_date',  targets_pin_position = $pin 
                     WHERE targets_pages_id = $page AND targets_contents_fk = $content";
         }
-        elseif ($params->record_state == 'new')
+        elseif ($params->record_state == 'NEW')
         {
             $sql = "INSERT INTO targets (targets_pages_id, targets_contents_fk, targets_live_date,  targets_archive_date, targets_dead_date, targets_pin_position) 
                                   VALUES($page, $content, '$live_date', '$archive_date', '$dead_date', $pin)";

@@ -33,13 +33,14 @@ class Article extends Content
     protected function SaveNew()
     {       
         $ebody    = Query::Escape($this->mFields->contents_article_body);
+        $etype    = Query::Escape($this->mFields->contents_article_type);
         $ecomment = Query::Escape($this->mFields->contents_version_comment);
         $author   = $this->mFields->contents_author_fk   ;  
         $apk      = $_SESSION['user_pk'];  
 
-        $this->mSqlStack[]  = "INSERT INTO articles(contents_fk, contents_version, contents_article_body, contents_version_users_fk, 
+        $this->mSqlStack[]  = "INSERT INTO articles(contents_fk, contents_version, contents_article_body,  contents_article_type,contents_version_users_fk, 
                                                     contents_version_date, contents_version_comment) 
-                 VALUES(@pk,1,'$ebody', $author, NOW(), '$ecomment')";
+                 VALUES(@pk,1,'$ebody','$etype', $author, NOW(), '$ecomment')";
         
         $this->mFields->contents_main_author_fk = $author;  
          
@@ -88,9 +89,15 @@ class Article extends Content
         return parent::GetContentByType('ARTICLE', $site, $orderby, $limit, $skip , $status) ; 
     }
     
-    public static function GetArticle($pk, $version = LIVE_VERSION)  
+     /**
+     * returns the article details
+     * @param int $pk module pk (pk of the contents object)
+     * @param int $version [default = 0 gets the live version]
+     * @param bool $includeAuthor [default false]
+     */
+    public static function GetDetails($pk, $version = LIVE_VERSION, $includeAuthor = false)   
     {
-        return Content::getAllData($pk, "articles", $version);
+        return Content::getAllData($pk, "articles", $version, $includeAuthor);
     }
     
     

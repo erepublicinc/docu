@@ -269,7 +269,7 @@ class Content
             $this->mFields->contents_main_author_fk = $_SESSION['user_pk'];
         }
         
-        $status = empty($this->mFields->status) ? 'NEW': $this->mFields->status;
+        $status = empty($this->mFields->contents_status) ? 'NEW': $this->mFields->contents_status;
         
         // escape text fields
         $etitle         = Query::Escape($this->mFields->contents_title);
