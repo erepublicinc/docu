@@ -60,6 +60,7 @@ class CMSSite extends Website
             
             default: 
                         $map = array('articles' => 'EditArticle', 'article' => 'EditArticle','new_article' => 'EditArticle',
+                                      'modules' => 'EditModule', 'module' => 'EditModule','new_module' => 'EditModule',
                                       'pages' => 'EditPage', 'page' => 'EditPage','new_page' => 'EditPage') ;
         }
             

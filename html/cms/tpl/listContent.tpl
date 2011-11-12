@@ -40,8 +40,8 @@
             {foreach $contents as $c}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/gt/article/{$c->contents_pk}">{$c->contents_title}</a></td>
-                <td>{$c->contents_create_date|date_format:$DATETIME_FORMAT}</td>
+                <td><a href="/cms/gt/{$record_type}/{$c->contents_pk}">{$c->contents_title}</a></td>
+                <td>{$c->contents_updated_date|date_format:$DATETIME_FORMAT}</td>
                 <td><span {if $c->contents_status == 'LIVE'}  class="ui-icon ui-icon-circle-check float-l mr-5" 
                           {elseif $c->contents_status == 'PREVIEW'}  class="ui-icon ui-icon-circle-check float-l mr-5" 
                           {else} class="ui-icon-tan ui-icon-alert float-l mr-10"

@@ -33,6 +33,7 @@ class Page
         $p->status    = Query::Escape(strtoupper($f->pages_status));
         $p->type      = Query::Escape(strtoupper($f->pages_type));
         $p->phpClass  = Query::Escape($f->pages_php_class);
+        $p->comment   = Query::Escape($f->version_comment);
         $p->apk       = $_SESSION['user_pk'];
         $p->is_live   = $f->pages_is_live? 1:0;
         $p->is_preview  = $f->pages_is_preview? 1:0;
@@ -57,8 +58,10 @@ class Page
     {          
         $sql = array(); 
         $sql[]= "SELECT @page_id := MAX(pages_id) +1 FROM pages";
-        $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_no_robots, pages_status, pages_php_class,pages_authors_fk,pages_body) 
-                  values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body')";   
+        $sql[]= "INSERT INTO pages (pages_id, pages_is_live, pages_is_preview, pages_version, pages_site_code, pages_title, pages_display_title, 
+                pages_url, pages_type, pages_no_robots, pages_status, pages_php_class, pages_version_users_fk, pages_body, pages_version_comment, pages_version_date) 
+                  values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',
+                     $p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body','$p->comment', NOW())";   
         return Query::sTransaction($sql);
     }
     
@@ -72,7 +75,7 @@ class Page
                
              $sql[] = "UPDATE pages SET pages_title = '$p->title', pages_display_title = '$p->dtitle', pages_url='$p->url', pages_type = '$p->type', 
                     pages_no_robots = $p->robots, pages_password = '$p->password', pages_status = '$p->status', pages_php_class = '$p->phpClass', 
-                    pages_authors_fk = $p->apk, pages_body = '$p->body'             
+                    pages_version_users_fk = $p->apk, pages_body = '$p->body'             
         		where pages_pk = $p->pk";
         }
         else  // create a new version
@@ -88,15 +91,20 @@ class Page
             }
             
             // add the new record
-            $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,pages_no_robots, pages_status, pages_php_class,pages_authors_fk,pages_body) 
-                  values($p->id,$p->is_live,$p->is_preview,$p->version+1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,'$p->status','$p->phpClass',$p->apk, '$p->body')";
+            $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,
+                      pages_type,pages_no_robots, pages_status, pages_php_class,pages_version_users_fk,pages_body, pages_version_comment, pages_version_date)  
+                  values($p->id,$p->is_live,$p->is_preview,$p->version+1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,
+                           '$p->status','$p->phpClass',$p->apk, '$p->body','$p->comment', NOW())";  
             
             // get the new record
             $sql[] = 'SELECT @new_pk:= LAST_INSERT_ID()';
             
             // now we have to copy all module links from the previous version to this version
-            $sql[] = "INSERT INTO modules__pages (modules_fk, pages_fk,link_type,link_order) SELECT modules_fk, @new_pk,link_type,link_order FROM modules__pages WHERE pages_fk = $p->pk";
-        }      
+            $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) 
+                      SELECT contents_fk, @new_pk, placement, link_order 
+                      FROM modules__pages WHERE pages_fk = $p->pk";
+        } 
+ // dump($sql);           
         return Query::sTransaction($sql);       
     }
     
@@ -106,12 +114,12 @@ class Page
      * @param int $pages_id
      * @param int $version
      */    
-    static public function MakeLive($pages_id, $version)
-    {
+    static public function SetLiveVersion($pages_id, $version)
+    { 
         $sql = array();
-        $sql[]= "UPDATE pages set pages_is_live = 0 where pages_id = $p->pages_id";
-        $sql[]= "UPDATE pages set pages_is_live = 1 where pages_id = $p->pages_id and pages_version = $version";  
-        return Query::sTransaction($sql);    
+        $sql[]= "UPDATE pages set pages_is_live = 0 where pages_id = $pages_id";
+        $sql[]= "UPDATE pages set pages_is_live = 1 where pages_id = $pages_id and pages_version = $version";  
+        return Query::sTransaction($sql);       
     }
 
     /**
@@ -119,11 +127,11 @@ class Page
      * @param int $pages_id
      * @param int $version
      */            
-    static public function MakePreview($pages_id, $version)
+    static public function SetPreviewVersion($pages_id, $version)
     {
         $sql = array();
-        $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $p->pages_id";
-        $sql[]= "UPDATE pages set pages_is_preview = 1 where pages_id = $p->pages_id and pages_version = $version";  
+        $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $pages_id";
+        $sql[]= "UPDATE pages set pages_is_preview = 1 where pages_id = $pages_id and pages_version = $version";  
         return Query::sTransaction($sql);    
     }
    
@@ -138,7 +146,7 @@ class Page
         global $CONFIG;
         $site = $sitecode ? $sitecode : $CONFIG->site_code;
         
-        if($allPages == true )
+        if($allPages == true ) // get the latest version
         {
             $sql = "SELECT * FROM pages  
             			JOIN max_page_version ON mpv_pages_id = pages_id  AND  pages_version = mpv_pages_version "; 
@@ -147,7 +155,7 @@ class Page
                 $sql .= " WHERE pages_site_code = '$site' ";
             }
         }
-        else
+        else    // get live / preview versions
         {
             $WHERE_AND = "WHERE";
         
@@ -235,6 +243,45 @@ class Page
     {
         $sql="UPDATE pages SET pages_status='DELETED', pages_is_live = 0, pages_is_preview = 0 WHERE pages_pk = $pk";
         return new Query($sql);
+    }
+    
+    
+    static public function GetVersionHistory($id)
+    {
+        $sql = array();
+                 // get the live and preview versions 
+       $sql[] = "SELECT pages_version as live_version, 0 as preview_version from pages WHERE pages_is_live = 1 AND pages_id = $id 
+                 UNION SELECT 0 as live_version, pages_version as preview_version from pages WHERE pages_is_preview = 1 AND pages_id = $id ";
+        
+        
+        $sql[]="SELECT pages_pk as pk, pages_version as version, pages_version_date as version_date, pages_version_comment as version_comment, users_first_name, users_last_name FROM pages 
+              JOIN users on pages_version_users_fk = users_pk
+        	  WHERE pages_id = $id  ORDER BY pages_version DESC";
+
+        $result = new Query($sql);
+ 
+
+        
+        // we conduct 2 queries, and put information from the first query into the first record of the second 
+        
+        $live_pk = 0;
+        $preview_pk = 0;
+
+        foreach($result as $r)
+        {
+            if($r->live_version > 0)
+               $live_pk = $r->live_version;
+            if($r->preview_version > 0)
+               $preview_pk = $r->preview_version;   
+        }
+ 
+       $result->NextResultSet();
+
+        $result->SetValue('live_version', $live_pk);
+        $result->SetValue('preview_version', $preview_pk);
+      
+        //dump($result);
+        return $result;
     }
     
     

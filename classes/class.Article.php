@@ -2,19 +2,17 @@
 // a model class
 class Article extends Content
 {
-    private static $mFieldDescriptions = array( 'articles_body'    => array('type'=>'varchar')    );
+    private static $mFieldDescriptions = array( 'contents_article_body'    => array('type'=>'varchar')    );
     
     /*
      *  creates a new article from an array or object
      */
     public function __construct($fieldsObjectOrArray)
     {
-        //print_o($fieldsObject); die('here1');
         
         parent::__construct($fieldsObjectOrArray);
         $this->mExtraTable  = 'articles';
-        $this->mContentType = 'ARTICLE';
-         
+        $this->mContentType = 'ARTICLE';        
     }
 
     /**
@@ -22,11 +20,10 @@ class Article extends Content
      * @see Content::Save()
      */
     public function Save()
-    { //die("pk ".$this->mPk);
-        
+    {         
         $newVersion = true;  // always create a new version
         
-        $this->mFields->articles_authors_fk  = $_SESSION['user_pk'];  
+        $this->mFields->contents_author_fk  = $_SESSION['user_pk'];  
         if($this->mPk > 0)
             return $this->SaveExisting($newVersion);
         else 
@@ -34,50 +31,49 @@ class Article extends Content
     }
     
     protected function SaveNew()
-    { 
-       
-        $ebody  = Query::Escape($this->mFields->articles_body);
-        $author = $this->mFields->articles_authors_fk   ;      
-//        $this->mSqlStack[]  = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk) 
-//                 VALUES(LAST_INSERT_ID(),1,'$ebody', $author)";
+    {       
+        $ebody    = Query::Escape($this->mFields->contents_article_body);
+        $ecomment = Query::Escape($this->mFields->contents_version_comment);
+        $author   = $this->mFields->contents_author_fk   ;  
+        $apk      = $_SESSION['user_pk'];  
 
-        $this->mSqlStack[]  = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk) 
-                 VALUES(@pk,1,'$ebody', $author)";
+        $this->mSqlStack[]  = "INSERT INTO articles(contents_fk, contents_version, contents_article_body, contents_version_users_fk, 
+                                                    contents_version_date, contents_version_comment) 
+                 VALUES(@pk,1,'$ebody', $author, NOW(), '$ecomment')";
         
-        $this->mFields->contents_main_authors_fk = $_SESSION['user_pk'];  
+        $this->mFields->contents_main_author_fk = $author;  
          
-
-       //  print_o( $this->mFields); die('here2'); 
         $result = parent::SaveNew();
-        //die("the a pk: ".$result->pk);
         
         return $result;
-        
+   /*     
         if($result != false)
             return $result->pk;
-        return false;    
+        return false;
+   */         
     }
     
-    protected function SaveExisting($newVersion = TRUE)
+    protected function SaveExisting($isNewVersion = TRUE)
     {
-        //print_r($params); die;    
-        $ebody     = Query::Escape($this->mFields->articles_body);
-        $ecomment  = Query::Escape($this->mFields->articles_comment);
-        $author    = $this->mFields->articles_authors_fk   ; 
-        $pk        = $this->mPk;
+// dump($this->mFields);
+        $ebody      = Query::Escape($this->mFields->contents_article_body);
+        $ecomment   = Query::Escape($this->mFields->contents_version_comment);
+        $author     = $this->mFields->contents_author_fk   ; 
+        $pk         = $this->mPk;
+        $version    = intval($this->mFields->contents_version);
+        $newVersion = intval($this->mFields->contents_latest_version) + 1;  
         
-        if($newVersion)
+        if($isNewVersion)
         {
-           $this->mSqlStack[] = "INSERT INTO articles(articles_contents_fk, articles_version, articles_body, articles_authors_fk, articles_update_date, articles_comment)          
-                     VALUES($pk, @v,'$ebody', $author , NOW(), '$ecomment')";
+           $this->mSqlStack[] = "INSERT INTO articles(contents_fk, contents_version, contents_article_body, contents_version_users_fk, contents_version_date, contents_version_comment)          
+                     VALUES($pk, $newVersion,'$ebody', $author , NOW(), '$ecomment')";
         }
         else 
         {
-           $this->mSqlStack[] = "UPDATE articles set articles_body = $ebody, articles_authors_fk = $author,  articles_update_date = NOW()  where articles_pk = $pk";
+           $this->mSqlStack[] = "UPDATE articles set contents_article_body = $ebody, contents_author_fk = $author,  contents_version_date = NOW()  where contents_fk = $pk AND contents_version = $version";
         }
         
-        return parent::SaveExisting($newVersion);
-        
+        return parent::SaveExisting($isNewVersion);    
     }
      
     
@@ -92,7 +88,7 @@ class Article extends Content
         return parent::GetContentByType('ARTICLE', $site, $orderby, $limit, $skip , $status) ; 
     }
     
-    public static function GetArticle($pk, $version = 0)  
+    public static function GetArticle($pk, $version = LIVE_VERSION)  
     {
         return Content::getAllData($pk, "articles", $version);
     }
@@ -109,7 +105,7 @@ class Article extends Content
     
     public static function sYaasSave($params)
     {
-//echo'<pre>'; print_r($params); die;        
+      
         if(! User::Authorize('ADMIN'))
         {
             return('unauthorized');

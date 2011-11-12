@@ -173,13 +173,19 @@ class Query  implements Iterator
     public function NextResultSet()
     {
         if($this->mNumQueries > 1 && self::$mConnection->more_results())
-        {
-            if( $this->mResultSet->free() === false)
+        { 
+            $this->mResultSet->free();
+              
+            if(self::$mConnection->next_result() == false)
               logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
-            if(self::$mConnection->next_result() === false)
-              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
-            if($this->mResultSet = store_result() === false)
-              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+              
+            $this->mResultSet = self::$mConnection->store_result() ;
+            if($this->mResultSet== false)
+                 logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+                 
+            $this->eof = false;
+            $this->mRows = array();
+            $this->mRowIndex = -1; 
             $this->next();
             return true;
         }

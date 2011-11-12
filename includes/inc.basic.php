@@ -7,6 +7,11 @@ $SITENAMES = array( 'GT'=>'Government Technology','GOV'=>'Governing', 'ALL'=> 'A
                     'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education');
 $CONFIG;
 
+define('LATEST_VERSION', -1);
+define('LIVE_VERSION', 0);
+
+
+
 function __new_autoload($class_name)
 {
     if ('parent' == $class_name)
@@ -73,6 +78,9 @@ function getSiteName($code)
 
 function dump($v, $die = true)
 {
+    if(is_object($v) &&  $v instanceof Query)
+        $v = $v->ToArray();
+    
     echo("<pre>");
     //var_dump($v);
     print_r($v);

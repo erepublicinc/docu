@@ -22,7 +22,8 @@ class Content
             'contents_summary'       => array('type'=>'varchar'),
             'contents_status'        => array('type'=>'varchar'),
             'contents_url_name'      => array('type'=>'varchar'),
-            'contents_main_authors_fk'=> array('type'=>'int'),
+            'contents_main_author_fk'=> array('type'=>'int'),   
+            'contents_extra_table'   => array('type'=>'varchar'), 
             'contents_live_version'  => array('type'=>'int')
             );
     
@@ -47,6 +48,7 @@ class Content
         {
             $this->mPk =$params;
         }
+        
     }
     
     public function __get($field)
@@ -72,12 +74,12 @@ class Content
      * Makes a version  live
      * @param int $version
      */
-    public function setLiveVersion( $version)
+    public static function setLiveVersion($pk, $version)
     {
-        if(! $this->mPk)
+        if(!$pk)
             return logerror('called setLiveVersion, pk == 0');
         Query::SetAdminMode();
-        $q = new Query("UPDATE contents SET contents_live_version = $version WHERE contents_pk = $this->mPk");
+        $q = new Query("UPDATE contents SET contents_live_version = $version WHERE contents_pk = $pk");
         return $q->version;
     }
 
@@ -85,12 +87,12 @@ class Content
      * Makes a version  Preview
      * @param int $version
      */
-    public function setPreviewVersion( $version)
+    public static function setPreviewVersion($pk, $version)
     {
-        if(! $this->mPk)
+         if(!$pk)
             return logerror('called setLiveVersion, pk == 0');
         Query::SetAdminMode();
-        $q = new Query("UPDATE contents SET contents_preview_version = $version WHERE contents_pk = $this->mPk");
+        $q = new Query("UPDATE contents SET contents_preview_version = $version WHERE contents_pk = $pk");
         return $q->version;
     }
     
@@ -134,11 +136,11 @@ class Content
                */
             
             // this is the mysql version
-            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_authors_fk  
+            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_author_fk  
                 FROM  (contents  JOIN targets ON targets_contents_fk = contents_pk )
                            JOIN pages   ON pages_id = targets_pages_id           
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status
-               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_authors_fk  
+               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_author_fk  
                $topX ";
         }
         else 
@@ -147,8 +149,7 @@ class Content
            $sql="SELECT  * FROM contents 
                WHERE contents_type = '$contentType'   $status $topX ";
         }
-        
-//die($sql);        
+//dump($sql);   
         return new Query($sql);          
     } 
     
@@ -220,7 +221,7 @@ class Content
             switch($content->contents_type)
             { 
                 case 'ARTICLE':      $contents[] = new Article($content);     break;
-                case 'EVENT':        $contents[] = new Event($content);       break;
+                case 'MODULE':        $contents[]= new Module($content);       break;
                 case 'LIBRARY_ITEM': $contents[] = new LibraryItem($content); break;
                 default:             $contents[] = new Content($content);     break;
             }
@@ -235,11 +236,11 @@ class Content
     public static function GetContentByUrl($urlName)
     {
         $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
-                  FROM contents JOIN users on users_pk = contents_main_authors_fk 
+                  FROM contents JOIN users on users_pk = contents_main_author_fk 
                   WHERE contents_url_name = '$urlName'";
         $r = new Query($sql);        
         
-        $sql = "SELECT * FROM $r->contents_extra_table WHERE {$r->contents_extra_table}_contents_fk = $r->contents_pk AND {$r->contents_extra_table}_version = $r->contents_live_version";
+        $sql = "SELECT * FROM $r->contents_extra_table WHERE contents_fk = $r->contents_pk AND contents_version = $r->contents_live_version";
         $r2 = new Query($sql);
         
         // combine the 2 results into 1 content object  
@@ -263,9 +264,9 @@ class Content
             return false;
         }
 
-        if( !isset($this->mFields->contents_main_authors_fk) )
+        if( !isset($this->mFields->contents_main_author_fk) )
         {
-            $this->mFields->contents_main_authors_fk = $_SESSION['user_pk'];
+            $this->mFields->contents_main_author_fk = $_SESSION['user_pk'];
         }
         
         $status = empty($this->mFields->status) ? 'NEW': $this->mFields->status;
@@ -275,14 +276,18 @@ class Content
         $edisplay_title = Query::Escape($this->mFields->contents_display_title); 
         $esummary       = Query::Escape($this->mFields->contents_summary); 
         $eurl_name      = Query::Escape($this->mFields->contents_url_name);
-        $apk            = $this->mFields->contents_main_authors_fk;
+        $apk            = $this->mFields->contents_main_author_fk;
+        $userpk         = $_SESSION['user_pk'];
+        $extra          = $this->mExtraTable;
         
         
         $sql = 'SELECT @pk:= LAST_INSERT_ID()';
         array_unshift($this->mSqlStack, $sql);
         
-        $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version, contents_url_name, contents_summary,contents_create_date, contents_type, contents_status, contents_main_authors_fk)
-              VALUES('$etitle','$edisplay_title',1,'$eurl_name','$esummary', NOW(),'$this->mContentType','$status',$apk)";
+        $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version, contents_url_name, contents_summary,
+                                   contents_create_date, contents_update_date,contents_type, contents_status, contents_main_author_fk, 
+                                   contents_update_users_fk, contents_extra_table, contents_latest_version)
+              VALUES('$etitle','$edisplay_title',1,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$status',$apk, $userpk,'$extra',1)";
      
         array_unshift($this->mSqlStack, $sql);
 
@@ -302,6 +307,7 @@ class Content
      *    @param bool $newVersion to see if we have to increase the live version 
      *    @return   false (in case of failure,  otherwise the pk of the content item
      */
+/*    
     protected function SaveExisting($newVersion = TRUE)
     { 
  
@@ -316,9 +322,12 @@ class Content
             else  
                $newvalues .= ',contents_live_version = @v -1';  
         }
+        $newvalues .= ', contents_update_date = NOW() ';
+        $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
+        
         // this needs to be first,   get the version number by looking for the highest and adding 1
         $extraTable = $this->mExtraTable;
-        array_unshift($this->mSqlStack, " SELECT @v := max(${extraTable}_version)+1 FROM $this->mExtraTable GROUP BY ${extraTable}_contents_fk HAVING ${extraTable}_contents_fk= $this->mPk");
+        array_unshift($this->mSqlStack, " SELECT @v := max(contents_version)+1 FROM $this->mExtraTable GROUP BY contents_fk HAVING contents_fk= $this->mPk");
         
         $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
 
@@ -327,8 +336,34 @@ class Content
             return $this->mFields->contents_pk;
         return false;  
     }
-      
-  
+*/      
+    protected function SaveExisting($newVersion = TRUE)
+    { 
+ 
+        // the default status is  'IN_PROGRESS'; 
+        $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
+   
+        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
+        
+       
+        if($newVersion)
+        {  
+            $newVersion = $this->mFields->contents_latest_version + 1;
+            $newvalues .= ", contents_latest_version = $newVersion "  ;
+            if($this->mFields->contents_status == 'LIVE')
+               $newvalues .= ",contents_live_version = ' $newVersion "  ;
+        }       
+        $newvalues .= ', contents_update_date = NOW() ';
+        $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
+        
+        
+        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
+//dump($this->mSqlStack);
+        $result = Query::sTransaction($this->mSqlStack);
+        if($result != false)
+            return $this->mFields->contents_pk;
+        return false;  
+    }
     /** 
      * This static class can be called by a yaas function 
      * @param int $pk of the object
@@ -336,31 +371,33 @@ class Content
      * @param int $version  the requested version 0 = the live version
      * @return a Query object with 2 result sets:  1. content item,   2. its targets
      */
-    public static function GetAllData($pk, $extraTable, $version=0)
+    public static function GetAllData($pk, $extraTable, $version = LIVE_VERSION, $includeAuthor = true)
     {  
         global $CONFIG;  
-         $theversion = $version > 0 ? $version : "contents_live_version"; 
+        if($version == LATEST_VERSION)
+        {
+            $version = "(SELECT MAX(contents_version)from $extraTable WHERE contents_fk = $pk)";
+        }
+        elseif($version == LIVE_VERSION)
+            $version = "contents_live_version"; 
          
          $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
-         
-         $sql=array();
-          			        
-         $sql[] = "SELECT * FROM   contents c 
-                 JOIN $extraTable t 
-                 ON contents_pk = t.${extraTable}_contents_fk and t.${extraTable}_version = $theversion     
-                 JOIN users u
-                 ON u.users_pk = c.contents_main_authors_fk              
-                 WHERE c.contents_pk = $pk ";
- 		          
+
+         if($includeAuthor)
+             $sql = "SELECT * FROM   contents c 
+                     JOIN $extraTable t 
+                     ON contents_pk = t.contents_fk and t.contents_version = $version     
+                     JOIN users u
+                     ON u.users_pk = c.contents_main_author_fk              
+                     WHERE c.contents_pk = $pk ";
+ 		  else 
+              $sql = "SELECT * FROM   contents c 
+                     JOIN $extraTable t 
+                     ON contents_pk = t.contents_fk and t.contents_version = $version                 
+                     WHERE c.contents_pk = $pk ";
+		  
 		$result =  new Query($sql);            
-//dump($result->ToArray());		
-		// now copy some fields from the  extra_table into generic fields
-		$fname = $extraTable . '_update_date';	
-		$result->SetValue('update_date',$result->$fname);  
-		
-		$fname = $extraTable . '_comment';
-		$result->SetValue('comment',$result->$fname);   
-		       
+//dump($result->ToArray());				       
         return $result;
     }   
     
@@ -382,9 +419,9 @@ class Content
     
     public static function GetVersionHistory($pk,$extraTable)
     {
-        $sql = "SELECT {$extraTable}_version as version, {$extraTable}_update_date as update_date, {$extraTable}_comment as comment, users_first_name, users_last_name, users_email
-                FROM {$extraTable} JOIN users ON {$extraTable}_authors_fk = users_pk
-                WHERE {$extraTable}_contents_fk = $pk ORDER BY {$extraTable}_version DESC";
+        $sql = "SELECT contents_version  as version, contents_version_date as version_date, contents_version_comment as version_comment, users_first_name, users_last_name, users_email
+                FROM {$extraTable} JOIN users ON contents_version_users_fk = users_pk
+                WHERE contents_fk = $pk ORDER BY contents_version DESC";
 //   dump($sql);     
         return new Query($sql);
     }
@@ -438,16 +475,10 @@ class Content
        
         $sql = "SELECT * from $extraTable t 
         	    WHERE t.contents_fk = $pk     
-                AND ${extraTable}_version = $theversion ";
+                AND contents_version = $theversion ";
         	  			
         return  new Query($sql); 
-    }
-
-    /**
-     * Allows you to add more fields to a content object
-     * @param array $fields (like the result of a query)
-     */
-    
+    } 
     
 } // end of class
 

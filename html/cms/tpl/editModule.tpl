@@ -21,14 +21,14 @@ var ckConfig = {toolbar :
          
     });
 
-function saveArticle()
+function saveContent()
 {
-	$('#id_changed_targets').attr('value', gatherChangedTargets()); 
+//	$('#id_changed_targets').attr('value', gatherChangedTargets()); 
 	$('#id_status').attr('value', $('#id_status_dropdown').attr('value') );
     
     var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
         ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
-                   {text: "Save", click: function() { saveArticlePart2(); }  }
+                   {text: "Save", click: function() { saveContentPart2(); }  }
                   ]
     });
     
@@ -36,7 +36,7 @@ function saveArticle()
 
 }
 
-function saveArticlePart2()
+function saveContentPart2()
 {
     var comment = $('#id_enter_comment').attr('value') 
 	$('#id_comment').attr('value', comment );
@@ -66,48 +66,17 @@ function saveArticlePart2()
     </div>
     <!-- / PAGE TITLE -->  
     
-{*           
-    <div class="ui-widget-content ui-corner-all p-10">
-        <div>
-            <form>
-                <div class="grid_7">
-                    Domains:
-                    <select name="domainID" id="domainID" class="domain-select select-list-medium" style="width:200px">
-                        <option class="" value="8157"> www.centerdigitaled.com </option>
-                        <option class="" value="8167"> www.centerdigitalgov.com </option>
-                        <option class="" value="7319"> www.convergemag.com</option>
-                        <option class="" value="11949"> www.digitalcommunities.com </option>
-                        <option class="" value="8717"> www.emergencymgmt.com</option>
-                        <option class="" value="8117"> www.erepublic.com </option>
-                        <option class="" value="11302"> www.governing.com</option>
-                        <option class="" value="8152"> www.govtech.com </option>
-                    </select> 
-                </div>
-                
-                <div class="grid_7">
-                    Destination:    
-                    <select name="previewDestID" id="previewDestID" class="select-list-medium" style="width:170px">
-                        <option class="" value="563137">&nbsp;&nbsp;clk.navigatored.com</option>
-                    </select>   
-                </div>
-                <a class="ui-state-default ui-corner-all float-r pb-5 pl-10 pr-10 pt-5" href="#">
-                    <span class="ui-icon ui-icon-zoomin float-l mr-5"></span>
-                        Preview</a>
-                <br clear="all">
-            </form>
-        </div>
-    </div>      
-*}
+
 
 
     <div class="ui-widget-content ui-corner-all bk_color3">
-        <div class="grid_6 m-10"> <h3>Article Details</h3>  </div>
+        <div class="grid_6 m-10"> <h3>Module Details</h3>  </div>
                       
-        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/articles">
+        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/modules">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
-        <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveArticle();">
+        <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveContent();">
         <span class="ui-icon ui-icon-disk float-l mr-5"></span>
         SAVE</span></h6>
       
@@ -136,7 +105,7 @@ function saveArticlePart2()
                 </p>                 
             </div>     
             -->      
-            <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />                                              
+            <input type="hidden" id="id_changed_targets" name='changed_targets' value="" />                                              
             <input type="hidden" name='contents_pk' value="{$content->contents_pk}" />
             <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
             <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
@@ -159,8 +128,7 @@ function saveArticlePart2()
                     <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <input type="text" name="contents_display_title" class="required" 
-                    value="{$content->contents_display_title}">
+                    <input type="text" name="contents_display_title" class="required"  value="{$content->contents_display_title}"/>
                 </div>
                                 
                 <div>
@@ -174,30 +142,49 @@ function saveArticlePart2()
                   
                     <input type="text" name="">
                 </div>   
+                                                                                               
+
                 <div>
-                    <label class="grid_12">URL Resource Name: <a href="#">Edit</a><br>
-                    <span>Do not include the '.html' suffix, it will be appended to the URL automatically.
-                    </span></label>
-                    <input type="text" name="contents_url_name" class="restricted" 
-                    value="{$content->contents_url_name}">
-                </div>                                                                                             
-                <div>
-                    <label class="grid_12">Published Date:</label>
-                    <div class="float-r" style="width: 100px;">
-                    <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
-                    <span href="#"class="ui-icon ui-icon-stop float-r"></span>
-                    </div>                            
-                    <input type="text" name="contents_create_date" class="required" 
-                    value="{$content->contents_create_date|date_format:$DATETIME_FORMAT}">                                       
-                </div>
-                <div>
-                    <label class="grid_12">Abstract:</label>
+                    <label class="grid_12">Notes:</label>
                     <div class="float-r" style="width: 100px;">                   
                         <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>
                         <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
                     <textarea type="text" name="contents_summary" >{$content->contents_summary}</textarea>
                 </div> 
+                
+                <div>
+                    <label class="grid_12">php class:</label>
+                    <div class="float-r" style="width: 100px;">
+                    <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
+                    <span href="#"class="ui-icon ui-icon-stop float-r"></span>
+                    </div>                            
+                    <input type="text" name="modules_php_class" class="required"   value="{$content->modules_php_class}"/>
+                </div>              
+                
+                 <div>
+                    <label class="grid_12">json params:</label>
+                    <div class="float-r" style="width: 100px;">
+                    <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
+                    <span href="#"class="ui-icon ui-icon-stop float-r"></span>
+                    </div>                            
+                    <input type="text" name="modules_json_params" class=""  value="{$content->modules_json_params}"/>
+                </div>  
+                
+                <div>
+                    <label class="grid_12">site code: (the site that this module is for)</label>
+                    <select  name="modules_site_code" class="required">
+                                 <option value="COMMON" >COMMON</option>
+                                 <option value="GOV" >GOV</option>
+                                 <option value="GT" >GT</option>
+                                 <option value="EM" >EM</option>
+                                 <option value="CV" >CV</option>
+                                 <option value="CDG" >CDG/CDE</option>
+                                 <option value="ER" >ER</option>                               
+                    </select> 
+                </div>             
+                
+                
                 <div>
                     <label class="grid_12">Body:</label>                   
                     <div class="float-r" style="width: 100px;">
@@ -205,7 +192,7 @@ function saveArticlePart2()
                       <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>     
                      <br clear="all">                        
-                    <textarea id="id_body" type="text" name="contents_article_body" rows="25" class="required">{$content->contents_article_body}</textarea>
+                    <textarea id="id_body" type="text" name="modules_body" rows="25" class="">{$content->modules_body}</textarea>
                 </div>   
                                         
             </fieldset>              
@@ -216,7 +203,7 @@ function saveArticlePart2()
     <!-- Box Style1 -->
      
     
-    {include file="targetsModule.tpl"}
+   
 
 
 
@@ -229,4 +216,5 @@ function saveArticlePart2()
   
   
   
+
 

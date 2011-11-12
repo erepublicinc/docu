@@ -24,8 +24,8 @@ class EditArticle extends WebPage
         $pk      = 0 + $arguments[1];       
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-
-        //die("site: $site  command: $command  pk: $pk"); 
+        $this->mSmarty->assign('record_type', 'article');
+   
         
         if($command == 'articles') // list articles
         {
@@ -54,6 +54,15 @@ class EditArticle extends WebPage
     
     private function _listArticles($site)
     {
+        if($_POST['makelive'])
+        {
+            Content::setLiveVersion(intval($_POST['pk']), intval($_POST['version']));
+        }
+        elseif($_POST['makepreview'])
+        {
+             Content::setPreviewVersion(intval($_POST['pk']), intval($_POST['version']));
+        }
+        
         $arts = Article::GetArticles($site,null,50,0,'ALL');
         //  foreach($arts as $a) echo $a->contents_pk;     die;   
         $this->mSmarty->assign('contents', $arts );
@@ -90,31 +99,31 @@ class EditArticle extends WebPage
     {
         if($command == 'new_article' || $pk == 0)  // new article
         { //die($_SESSION['user_first_name']);
-            $a = new stdClass();
-            $a->contents_main_author_fk = $_SESSION['user_pk'];
-            $a->users_first_name        = $_SESSION['user_first_name'];
-            $a->users_last_name         = $_SESSION['user_last_name'];
-            $a->contents_create_date    = time(); //date();
+            $article = new stdClass();
+            $article->contents_main_author_fk = $_SESSION['user_pk'];
+            $article->users_first_name        = $_SESSION['user_first_name'];
+            $article->users_last_name         = $_SESSION['user_last_name'];
+            $article->contents_create_date    = time(); //date();
+            $history = array();
         } 
         else // edit existing article
         {
-             $a =  Article::GetArticle($pk);             
-             $t =  Article::GetTargets($pk);      
-             $h =  Content::GetVersionHistory($pk, "articles");    
-             $this->mSmarty->assign('targets', $t);
-             $this->mSmarty->assign('history', $h);
-             
-     /*   
-             echo('<pre>');
-             $aar = $a->ToArray();             print_r($aar);
-             $tr = $t->ToArray();             print_r($tr);
-             die;
-*/
+             $article = Article::GetArticle($pk, LATEST_VERSION);             
+             $targets = Article::GetTargets($pk);      
+             $history = Content::GetVersionHistory($pk, "articles");    
+             $this->mSmarty->assign('targets', $targets);
+            
         }
         
-        $this->mSmarty->assign('pages', Page::getPages('ALL'));
+        // for versionHistoryModule
+        $this->mSmarty->assign('history', $history);
+        $this->mSmarty->assign('pk',$pk);  
+        $this->mSmarty->assign('live_version',    $article->contents_live_version);
+        $this->mSmarty->assign('preview_version', $article->contents_preview_version);      
         
-        $this->mSmarty->assign('content',$a);
+        
+        $this->mSmarty->assign('pages', Page::getPages('ALL'));       
+        $this->mSmarty->assign('content',$article);
         
         $this->mSideModules['left'] = array('contentStatusModule.tpl','contentMediaModule.tpl','relatedItemsModule.tpl','versionHistoryModule.tpl');
         $this->mMainTpl = 'editArticle.tpl';  
