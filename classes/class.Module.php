@@ -128,11 +128,12 @@ class Module extends Content
     public static function LinkModules($pages_fk, $module_pks, $placement)
     {
         $sql= array();
-        $sql[] = "DELETE FROM modules__pages WHERE pages_fk = $pages_fk AND placement = $placement ";
+        $sql[] = "DELETE FROM modules__pages WHERE pages_fk = $pages_fk AND placement = '$placement' ";
         $idx = 1 ;
-        foreach($module_pks as $module)
+ //dump($module_pks) ;      
+        foreach($module_pks as $module_pk)
         {
-            $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) values($module,$pages_fk, $placement, $idx)";
+            $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) values($module_pk, $pages_fk, '$placement', $idx)";
         }
         return Query::sTransaction($sql);
     }

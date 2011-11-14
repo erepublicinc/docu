@@ -36,9 +36,24 @@ function sanitize($str)
     return str_replace(';', ' ', $str);
 }
 
-function logerror($txt, $location)
+function logerror($txt)
 {
-    die("<h1>error</h1> $txt <br> $location"  );
+	global $CONFIG;
+	echo("\n<h1>error</h1><b> $txt </b><br>\n");
+	
+	$frames = debug_backtrace();
+	$first = array_shift($frames);
+	$pfile =  $file = array_pop(explode('/',$first['file']));
+	foreach($frames as $f)
+	{   
+	   $file = array_pop(explode('/',$f['file']));
+	   $arguments = implode(' , ',$f['args']);
+	   echo("<b> $file </b>line: <b>". $f['line'] ."</b> calls: <b>{$pfile}:: ". $f['function']."</b> ( $arguments ) <br>\n");
+	   $pfile = $file;   
+	}
+	
+	if( ! $CONFIG->is_test )
+    	die("<br>die");
 }
 
 
@@ -78,13 +93,15 @@ function getSiteName($code)
 
 function dump($v, $die = true)
 {
+	global $CONFIG;
+	
     if(is_object($v) &&  $v instanceof Query)
         $v = $v->ToArray();
     
     echo("<pre>");
     //var_dump($v);
     print_r($v);
-    if($die)
+    if($die )
         die;
 }
 

@@ -10,13 +10,38 @@ $test_user_pk = $_SESSION['user_pk'];
 
 echo('<h1>TEST PAGE</h1><br> <pre>');
 
+// this will tell function log_error NOT to die
+$CONFIG->SetValue('is_test', 1);
+
 // to show all sql statements
 //$CONFIG->SetValue('show_sql',1);
 
 $revert = array();  // array of sql to clean up our test data 
 
-echo" ================================================ create and retrieve a page <br>";
 $randomId = rand(11, 99);
+echo" ================================================ create and retrieve a user <br>";
+$data = array('users_first_name'=> 'First  Name'.$randomId,
+	'users_last_name'=>'Last Name'.$randomId, 
+    'users_password' => '123456789',
+	'users_email' => 'verylongusername@verylongdomain.com',
+	'users_ad_user' => '',
+	'users_active' => 1
+);
+
+$user   = new User($data);
+$userpk = $user->Save();
+assert_gt_zero($userspk, __LINE__); 
+
+if($userpk)
+   $revert[]= "delete from users where users_pk = $userpk";
+   
+assert_gt_zero($userspk, __LINE__);   
+
+User::SetRoles($userpk, array('GT_EDITOR'));
+
+
+echo" ================================================ create and retrieve a page <br>";
+
 $data = array('pages_title'=> 'title'.$randomId,
 	'pages_display_title'=>'pages_display_title', 
     'pages_is_live' => 1,
@@ -42,6 +67,7 @@ compare_data($data, $the_page);
 
 
 echo"<br> =========================================== create and retrieve a module <br>";
+$CONFIG->SetValue('show_sql',0,true);
 $data = array(
     'contents_title' 		=> 'title'.$randomId,
     'contents_display_title'=>'pages_display_title', 
@@ -63,11 +89,29 @@ echo "created module pk : $pk <br>";
 if($pk >0 )
 	$revert[]= "delete from contents where contents_pk = $pk";
 	
-$retrieved = Module::GetDetails($pk);
-compare_data($data, $retrieved);
+$the_module = Module::GetDetails($pk);
+compare_data($data, $the_module);
+
+echo"<br> =========================================== link  module to a page <br>";
+$CONFIG->SetValue('show_sql',1,true);
+
+Module::LinkModules($the_page->pages_pk, array($the_module->contents_pk), "DETAIL_LEFT_COLUMN");
+
+$modules = Module::GetPageModules($the_page->pages_pk);
+$idx=0;
+foreach($modules as $m)
+{
+	
+	$idx++;
+	assert_equal($m->title, $data->title, __LINE__);
+}
+
+assert_equal($idx, '1' ,  __LINE__);
 
 
 echo"<br> ======================================== create and retrieve a article <br>";
+$CONFIG->SetValue('show_sql',0,true);
+
 $data = array(
     'contents_title' 		=> 'title'.$randomId,
     'contents_display_title'=>'pages_display_title', 
@@ -88,9 +132,9 @@ if($pk >0 )
 $the_article = Article::GetDetails($pk);
 compare_data($data, $the_article);
 
-assert_equal($test_user_pk, $retrieved->contents_main_author_fk, __LINE__);
+assert_equal($test_user_pk, $the_article->contents_main_author_fk, __LINE__);
 
-$CONFIG->SetValue('show_sql',1);
+
 echo"<br> ======================================== target an article <br>";
 
 $id= $the_page->pages_id;
@@ -119,6 +163,7 @@ assert_equal($idx, 1, __LINE__);
 
 
 
+//die(" <br><br>================ died before cleaning up test data ======================<br>");
 
 echo("<br><br>========================== deleting test data ===========================<br>");
 
@@ -129,6 +174,12 @@ while($sql = array_pop($revert))
 
 die("<br>================ end of tests ================<br>");
 //=============================================================
+
+function assert_gt_zero($v1, $line)
+{
+	if($v1 != $v2)
+	  terror("assertion error on line $line    $v1 should be greater than 0 ");
+}
 
 function assert_equal($v1, $v2, $line)
 {

@@ -241,6 +241,7 @@ CREATE TABLE targets
         targets_pages_id INT NOT NULL ,
         targets_contents_fk INT NOT NULL ,
         targets_pin_position  INT DEFAULT 0 NOT NULL,           --  normally  0, but if not null is is the pinned position (1 is first )  
+        targets_is_home BIT,									--  this is the home target
         targets_placement VARCHAR(20),                          --  used by modules   to identify the column   
         targets_live_date DATETIME,                                      --  articles will only show between live and dead dates
         targets_archive_date DATETIME DEFAULT '1000-01-01',  
