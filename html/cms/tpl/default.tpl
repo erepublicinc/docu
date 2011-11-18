@@ -217,18 +217,20 @@
   
     <!-- LEFT COLUMN -->
     <div class="grid_6">
-        {foreach $sideModules.left as $module}
-            {include file="$module"}
+        {foreach $sideModules.left as $sideModule}
+            {include file=$sideModule->template params=$sideModule }
         {/foreach}
-
     </div> 
     <!-- END OF  LEFT COLUMN -->
 
   
   <div class="grid_18">     
  
-    {include file="$main_tpl"}  
+     {include file="$main_tpl"}  
 	
+     {foreach $sideModules.center as $sideModule}
+            {include file=$sideModule->template params=$sideModule }
+     {/foreach}
   </div> 
   <div class="clear"></div>
 <br>

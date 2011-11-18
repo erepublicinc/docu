@@ -57,11 +57,14 @@ class Module extends Content
  
     /**
 	 *	returns the modules for a particular page
-	 * @param int $pages_pk
+	 * @param int $pages_pk [default = current page]
 	 * @param bool $includeDetails [default = TRUE]
      */
-    public static function GetPageModules($pages_pk, $includeDetails = true)
+    public static function GetPageModules($pages_pk= 0, $includeDetails = true)
     {
+        global $CONFIG;
+        $pages_pk = $pages_pk > 0 ? $pages_pk : $CONFIG->current_page_pk;
+        
         $liveField = $CONFIG->mode == 'PREVIEW'? 'contents_preview_version' : 'contents_live_version';  
         if($includeDetails)
           $sql="SELECT * FROM (contents JOIN modules m ON m.contents_fk = contents_pk AND m.contents_version = $liveField )              
@@ -84,9 +87,10 @@ class Module extends Content
      */
     public static function GetPageLinks($module_pk)
     {
-        $sql = "SELECT  pages_pk, pages_title, pages_site_code FROM pages JOIN modules__pages ON pages_pk = pages_fk 
-                WHERE contents_fk = $module_pk AND ( pages_is_live =1 OR pages_is_preview = 1)";
-        return new Query($sql);
+        $sql = "SELECT  max(pages_pk) as pages_pk, pages_id, pages_title, pages_site_code FROM pages JOIN modules__pages ON pages_pk = pages_fk 
+                WHERE contents_fk = $module_pk AND ( pages_is_live =1 OR pages_is_preview = 1) group by pages_id";
+        return  new Query($sql);
+      
     }
     
     /**

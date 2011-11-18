@@ -1,34 +1,35 @@
-{include file="header.tpl" }
-<div class="maincontainer_{if $sideModules.right}3{else}2{/if}col">
-    <div class="topshadow"> &nbsp;</div>
+{include file="header.tpl"}
 
-    {*##################### LEFT COLUMN ########################*}
-    <div id="Leftcolumn">
-    {if $sideModules.left}
-        {include file="module_listings.tpl" modules=$sideModules.left website=$webpage->mWebsite }
-    {else}
-        <div> &nbsp;</div>
-    {/if}
-    </div>
+<!-- Left Column-->
+<div id="l-col" class="w-170 f-left">
+    {foreach $sideModules.left as $sideModule}
+        {include file=$sideModule->template params=$sideModule }
+        
+    {/foreach}
+</div>
 
-    {*##################### CENTER COLUMN ########################*}
-    <div id="Centercolumn">
+   
+<!-- CENTER COLUMN -->
+<div id="center-col" class="base w-480 ml-10">
+    
     {if $main_tpl_content}
         {$main_tpl_content}
     {elseif $main_tpl}
         {include file=$main_tpl website=$webpage->mWebsite }
     {/if}
     
-   
-    </div>
-
-    {*#################### RIGHT COLUMN ########################*}
-    {if $sideModules.right}
-    <div id="Rightcolumn">
-        {include file="module_listings.tpl" modules=$sideModules.right }
-    </div>
-    {/if}
+    {foreach $sideModules.center as $sideModule}
+        {include file=$module->template params=$sideModule}
+    {/foreach}
+       
 </div>
 
-{include file="footer.tpl" }
 
+<!--- RIGHT COLUMN --->
+<div id="r-col" class="w-300 ml-10">     
+    {foreach $sideModules.right as $sideModule}
+        {include file=$module->template params=$sideModule}
+    {/foreach}
+</div>
+
+{include file="footer.tpl"}

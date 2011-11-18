@@ -111,7 +111,7 @@ class User
  
         // still not logged in?  Redirect the user to the login page   
         if( empty($_SESSION['user_email'])){        
-            header("LOCATION: /common/login.php");
+            header("LOCATION: /common/login.php?redirect=".$_SERVER['REQUEST_URI']);
             die;
         }
         if($permission == 'LOGGED_IN') // we just want to make sure this person is logged in

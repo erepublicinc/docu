@@ -216,7 +216,7 @@ function saveArticlePart2()
     <!-- Box Style1 -->
      
     
-    {include file="targetsModule.tpl"}
+    {*include file="targetsModule.tpl"*}
 
 
 

@@ -71,7 +71,7 @@ class Query  implements Iterator
         
             $result = self::$mConnection->multi_query($mq);           
             if($result === false)
-                logerror('multi_query error : '. self::$mConnection->error, __FILE__ . __LINE__);
+                logerror('multi_query error : '. self::$mConnection->error);
                 
             $this->mResultSet = self::$mConnection->store_result();    
                  
@@ -85,7 +85,7 @@ class Query  implements Iterator
         if($this->mResultSet === false)
         {   
             if( $this->mNumQueries == 1) echo "$sql <br>\n";   else echo "$mq <br>\n";      
-            logerror("Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error , __FILE__ . __LINE__);
+            logerror("Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error );
         }
         elseif ($this->mResultSet !== TRUE)
             $this->next(); // to load the first row
@@ -118,7 +118,7 @@ class Query  implements Iterator
                 $errorString = self::$mConnection->error;
                 self::$mConnection->rollback();
                 self::$mConnection->autocommit(true);
-                logerror("statement: $sql  $errorString", __FILE__ . __LINE__);
+                logerror("statement: $query <br><br>  $errorString");
                 return false;
             }
         }
@@ -188,11 +188,11 @@ class Query  implements Iterator
             $this->mResultSet->free();
               
             if(self::$mConnection->next_result() == false)
-              logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+              logerror('NextResultSet error : '. self::$mConnection->error);
               
             $this->mResultSet = self::$mConnection->store_result() ;
             if($this->mResultSet== false)
-                 logerror('NextResultSet error : '. self::$mConnection->error, __FILE__ . __LINE__);
+                 logerror('store_result error : '. self::$mConnection->error);
                  
             $this->eof = false;
             $this->mRows = array();

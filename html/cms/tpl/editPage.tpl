@@ -100,7 +100,7 @@ function savePagePart2()
         <input type="hidden" name="pages_id" value="{$p->pages_id}" />
         <input type="hidden" name="pages_version" value="{$p->pages_version}" />
         <input type="hidden" name="pages_site_code" value="{$site_code}" />
-        <input type="hidden" name="version_comment" value=""  id="id_comment"/>
+        <input type="hidden" name="pages_version_comment" value=""  id="id_comment"/>
 
         <h2>{$site_name}</h2>
        

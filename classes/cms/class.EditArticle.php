@@ -66,7 +66,10 @@ class EditArticle extends WebPage
         $arts = Article::GetArticles($site,null,50,0,'ALL');
         //  foreach($arts as $a) echo $a->contents_pk;     die;   
         $this->mSmarty->assign('contents', $arts );
-        $this->mSideModules['left'] = array('searchModule.tpl','selectSiteModule.tpl','contentTypesModule.tpl','recentlyModifiedModule.tpl');
+        $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
+                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'listContent.tpl';
     }
 
@@ -81,15 +84,10 @@ class EditArticle extends WebPage
         {
             $params->targets_contents_fk = $pk;
            //dump($params);     
-            if($params->record_state != 'clean')
+            if($params->record_state != 'CLEAN')
                 Page::sYaasSaveTarget($params);
         }
-/*           
-        $p = new stdClass();
-        $p->targets_pages_fk = 1;
-        $p->targets_contents_fk = 10;           
-        Page::sYaasCreateTarget($p);
-*/         
+        
         header("LOCATION: /cms/gt/articles");
         die; 
     }
@@ -108,25 +106,22 @@ class EditArticle extends WebPage
         } 
         else // edit existing article
         {
-             $article = Article::GetArticle($pk, LATEST_VERSION);             
-             $targets = Article::GetTargets($pk);      
-             $history = Content::GetVersionHistory($pk, "articles");    
-             $this->mSmarty->assign('targets', $targets);
-            
+             $article = Article::GetDetails($pk, LATEST_VERSION);                        
         }
+
+        // create the center module
+        $this->mModules['center'] = array(CMS::CreateTargetsModule($pk));
         
-        // for versionHistoryModule
-        $this->mSmarty->assign('history', $history);
-        $this->mSmarty->assign('pk',$pk);  
-        $this->mSmarty->assign('live_version',    $article->contents_live_version);
-        $this->mSmarty->assign('preview_version', $article->contents_preview_version);      
-        
-        
-        $this->mSmarty->assign('pages', Page::getPages('ALL'));       
-        $this->mSmarty->assign('content',$article);
-        
-        $this->mSideModules['left'] = array('contentStatusModule.tpl','contentMediaModule.tpl','relatedItemsModule.tpl','versionHistoryModule.tpl');
+        // create the left side modules
+        $this->mModules['left'] = array(CMS::CreateDummyModule('contentStatusModule.tpl'), 
+                                        CMS::CreateDummyModule('contentMediaModule.tpl'), 
+                                        CMS::CreateDummyModule('relatedItemsModule.tpl'), 
+                                        CMS::CreateVersionHistoryModule($article, "articles") 
+                                        );
+                                        
         $this->mMainTpl = 'editArticle.tpl';  
+           
+        $this->mSmarty->assign('content',$article);
     }
     
     

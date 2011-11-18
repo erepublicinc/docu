@@ -36,6 +36,17 @@ function sanitize($str)
     return str_replace(';', ' ', $str);
 }
 
+/**
+ * removes everything but:   a-z A-Z 0-9 - _
+ * @param string
+ * @return string
+ */
+function filter_ABC123($str)
+{
+    $pattern = '/[^a-zA-Z0-9_]/i';
+    echo preg_replace($pattern, '', $str);
+}
+
 function logerror($txt)
 {
 	global $CONFIG;
@@ -97,8 +108,12 @@ function dump($v, $die = true)
 	
     if(is_object($v) &&  $v instanceof Query)
         $v = $v->ToArray();
+
+    $frames = debug_backtrace();    
+    $f= $frames[0];    
+    echo ("dump() called from: ".$f['file'].' line: '. $f['line']);
     
-    echo("<pre>");
+    echo("<pre>"); 
     //var_dump($v);
     print_r($v);
     if($die )

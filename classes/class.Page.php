@@ -94,10 +94,12 @@ class Page
                  $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $p->id";
             }
             
+            
+            $sql[]= "SELECT @version := MAX(pages_version) +1 FROM pages WHERE pages_id =  $p->id ";
             // add the new record
             $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,
                       pages_type,pages_no_robots, pages_status, pages_php_class,pages_version_users_fk,pages_body, pages_version_comment, pages_version_date)  
-                  values($p->id,$p->is_live,$p->is_preview,$p->version+1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,
+                  values($p->id,$p->is_live,$p->is_preview,@version,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,
                            '$p->status','$p->phpClass',$p->apk, '$p->body','$p->comment', NOW())";  
             
             // get the new record
@@ -191,7 +193,7 @@ class Page
         
         $liveField = $CONFIG->mode == 'PREVIEW'? 'pages_is_preview' : 'pages_is_live';  
         
-        $sql="SELECT pages_id, pages_pk, pages_php_class
+        $sql="SELECT pages_id, pages_pk, pages_php_class, pages_url
               FROM pages WHERE pages_site_code = '$site' AND  $liveField = 1";
         
         $pages=new Query($sql);
@@ -199,7 +201,8 @@ class Page
         $pageArray = array();
         foreach($pages as $p)
         {
-            $pageArray[$p->pages_url] = array('class'=> $p->pages_php_class,'pages_id'=> $p->pages_id, 'pages_pk'=> $p->pages_pk );        
+            $url = trim($p->pages_url, '/ '); // remove the slashes
+            $pageArray[$url] = array('class'=> $p->pages_php_class,'pages_id'=> $p->pages_id, 'pages_pk'=> $p->pages_pk );        
         }
         return $pageArray;
     }
@@ -210,6 +213,7 @@ class Page
      * @param String $url
      * @param int $version [default = 0   returns the live version for the current environment ] 
      */
+/* not used ?    
     static public function  GetPageDetails($site_code, $pages_url, $version = 0)
     {
         global $CONFIG;
@@ -225,6 +229,8 @@ class Page
         }
         return new Query($sql);       
     }
+*/
+    
     
     /**
      * returns all fields

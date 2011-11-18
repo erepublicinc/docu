@@ -238,13 +238,15 @@ class Content
         $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
                   FROM contents JOIN users on users_pk = contents_main_author_fk 
                   WHERE contents_url_name = '$urlName'";
+        
         $r = new Query($sql);        
         
         $sql = "SELECT * FROM $r->contents_extra_table WHERE contents_fk = $r->contents_pk AND contents_version = $r->contents_live_version";
         $r2 = new Query($sql);
-        
+     
         // combine the 2 results into 1 content object  
         $c = new Content( array_merge($r->ToArray(), $r2->ToArray() ));
+        // dump($c);  
         return $c;
     }
         

@@ -8,9 +8,9 @@ abstract class WebPage
     // @var object Website object that is calling webpage class.
     public $mWebsite;
 
-    // @var array Modules to load in left column.
-    public $mSideModules = array();
-
+    // @var array Modules to load in left, right and center column.
+    public $mModules = array(); 
+    
     // @var int the pk of the page record, need to know this to create targets
     protected $mPagePk;
 
@@ -91,8 +91,47 @@ abstract class WebPage
       //  $this->_InitPageCheck();
     }
 
-    
-    
+    /**
+     * 
+     * gets the modules from the database and creates the objects
+     * @param String $pageType 'DETAIL' or 'LISTING'
+     */
+    protected function LoadModules($pageType = 'DETAIL')
+    {
+                               
+        $lcode = 'DETAIL_LEFT_COLUMN';
+        $ccode = 'DETAIL_CENTER_COLUMN';
+        $rcode = 'DETAIL_RIGHT_COLUMN';
+        
+        if($pageType == 'LISTING')
+        {
+            $lcode = 'LISTING_LEFT_COLUMN';
+            $ccode = 'LISTING_CENTER_COLUMN';
+            $rcode = 'LISTING_RIGHT_COLUMN';
+        }
+        
+        $this->mModules['left']   = array();
+        $this->mModules['right']  = array();
+        $this->mModules['center'] = array(); 
+        
+        $modules = Module::GetPageModules();
+       
+        foreach($modules as $m)
+        {              
+            switch($m->placement)
+            {
+                case $lcode:
+                    $this->mModules['left'][] =  new $m->modules_php_class($m);
+                    break;
+                case $ccode:
+                    $this->mModules['center'][] =  new $m->modules_php_class($m);
+                    break;
+                case $rcode:
+                    $this->mModules['right'][] =  new $m->modules_php_class($m);
+            }
+        }   
+       
+    }
     
     
     public function Display($template = null, $cache_id = null)
@@ -214,7 +253,7 @@ protected function _SmartySetVars()
         $this->mSmarty->assign("themedir",      $this->mThemeDir);
         $this->mSmarty->assign("main_tpl",      $this->mMainTpl);
         $this->mSmarty->assign("page_title",    $this->mPageTitle);
-        $this->mSmarty->assign("sideModules",   $this->mSideModules);
+        $this->mSmarty->assign("sideModules",   $this->mModules); 
       //  $this->mSmarty->assign("sessid",        session_id());
         return true;
     }

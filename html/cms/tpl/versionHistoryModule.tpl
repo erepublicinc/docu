@@ -10,11 +10,11 @@
         <table class="bk_color3 ui-corner-all">
             	<tr>
                 	<td colspan="2" class="align-r ui-corner-tl" width="60%"><h6>Live Version:</h6> </td>    
-                    <td class="ui-corner-tr">{$live_version}</td>            
+                    <td class="ui-corner-tr">{$params->live_version}</td>            
                 </tr>  
             	<tr>
                 	<td colspan="2" class="align-r" width="60%"><h6>Preview Version:</h6> </td>    
-                    <td>{$preview_version}</td>            
+                    <td>{$params->preview_version}</td>            
                 </tr>
             	  
 		</table>         
@@ -29,7 +29,7 @@
         {/if}
                        
 			<table class="condenced">
-              {foreach $history as $h}
+              {foreach $params->history as $h}
             	<tr>
                 	<td><input type="radio" name="version" value="{$h->version}"></td>
                 	<td>{$h->version}</td>

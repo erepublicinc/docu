@@ -24,23 +24,29 @@ class Comment
      */
     public static function addComment($p)
     {
+        Query::SetAdminMode();
+        
         if(is_array($p))
             $p = (object)$p;
-        $fk = intval($p->comments_fk);
-        $title = Query::Escape($p->comments_title);
-        $body = Query::Escape($p->comments_body);
-        $commenter = Query::Escape($p->comments_commenter);
-        $email = Query::Escape($p->comments_email);
-        $ranking = intval($p->comments_ranking);
-        $contents_fk = intval($p->contents_fk);
+          
+        $fk =          intval($p->comments_fk);
+        $title =       Query::Escape($p->comments_title);
+        $body =        Query::Escape($p->comments_body);
+        $commenter =   Query::Escape($p->comments_commenter);
+        $email =       Query::Escape($p->comments_email);
+        $ranking =     intval($p->comments_ranking);
+        $contents_fk = intval($p->comments_contents_fk);
+ //die("email = $email");       
         $sql = array();
         $sql[] = "INSERT INTO comments (comments_fk,comments_title,comments_body,comments_commenter,comments_email,comments_ranking,comments_date, comments_contents_fk) 
-                 VALUES($fk,'$title','$body','$commenter','$email',$ranking,'NOW()', $contents_fk)";
-        if(comments_fk == 0)
+                 VALUES($fk,'$title','$body','$commenter','$email',$ranking, NOW() , $contents_fk)";
+        if($comments_fk == 0)
         {
              $sql[] = "UPDATE comments SET comments_fk = LAST_INSERT_ID() where comments_pk = LAST_INSERT_ID() ";
         }
         $sql[] = "SELECT LAST_INSERT_ID() as pk";
+        
+   //     dump($sql);
         return Query::sTransaction($sql);
     }
     

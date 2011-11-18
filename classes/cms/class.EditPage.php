@@ -85,7 +85,12 @@ class EditPage extends WebPage
       
         $this->mSmarty->assign('linked_modules', $modules);
         $this->mSmarty->assign('p',$page); //NOTE   the Smarty var "page"  is already set as the current page
-        $this->mSideModules['left'] = array('searchModule.tpl','versionHistoryModule.tpl'); //,'contentMediaModule.tpl');
+        
+        // create the left side modules
+        $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
+                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'editPage.tpl';  
     }
     
@@ -104,7 +109,12 @@ class EditPage extends WebPage
           $pages = Page::GetPages($site, TRUE);
           //dump($pages);   
           $this->mSmarty->assign('pages', $pages );
-          $this->mSideModules['left'] = array('searchModule.tpl','selectSiteModule.tpl','contentTypesModule.tpl','recentlyModifiedModule.tpl');
+          
+          // create the left side modules
+          $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
+                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
           $this->mMainTpl = 'listPages.tpl';
     }
     

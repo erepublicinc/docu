@@ -18,7 +18,7 @@ class GTSite extends Website
     {
        
         $this->_mClassMapping = Page::GetClassMapping();
-         
+        //dump( $this->_mClassMapping); 
     }
     
 

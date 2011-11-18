@@ -45,6 +45,7 @@ abstract class Website
     protected $_mClassName;  //name of the page class
     public $mPageId;  
     public $mPagePk;  
+    public $mPagePath;
     
     public $mDefaultModules = array();     //Array of site wide default modules
     
@@ -118,12 +119,10 @@ abstract class Website
         $path           = rtrim($uri['path'], "/");
         $pathSegments   = explode("/", $path);
         
-    
-        if( $pathSegments[0] == 'preview')
+        if( empty($pathSegments[0]))
         {
-             $array_shift($pathSegments);
+             array_shift($pathSegments);
         }     
-    
                         
  
         /**
@@ -144,24 +143,16 @@ abstract class Website
         		$this->_mClassName = $this->_mClassMapping[$tmp_path]['class'];
         		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping[$tmp_path]['pages_pk']);
         		$CONFIG->SetValue('current_page_id', $this->_mClassMapping[$tmp_path]['pages_id']);
+        		$CONFIG->SetValue('current_page_url',$tmp_path);       		
                 break; /* we no longer need to check the rest of the segments since we found our page class */
         	}
-        	/* Check if the key (path) along with a trailing path separator returns a value from the _mClassMapping array */
-        	elseif (empty($this->_mClassMapping["{$tmp_path}/"]['class']) === false)
-        	{
-        		$this->_mClassName = $this->_mClassMapping["{$tmp_path}/"]['class'];
-        		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping["{$tmp_path}/"]['pages_id']);
-        		$CONFIG->SetValue('current_page_id', $this->_mClassMapping["{$tmp_path}/"]['pages_pk']);
-        		break;// we no longer need to check the rest of the segments since we found our page class 
-        	}
-        	// If no page class has found we know its a class arguments 
         	else
         	{
         		/* remove the last segment and add it to the arguments list */
         		array_unshift($this->_mClassArguments, array_pop($pathSegments));
         	}
         }
-
+        
         return true;
     }
 

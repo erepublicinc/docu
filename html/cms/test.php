@@ -20,6 +20,8 @@ $revert = array();  // array of sql to clean up our test data
 
 $randomId = rand(11, 99);
 echo" ================================================ create and retrieve a user <br>";
+$CONFIG->SetValue('show_sql',0,true);
+
 $data = array('users_first_name'=> 'First  Name'.$randomId,
 	'users_last_name'=>'Last Name'.$randomId, 
     'users_password' => '123456789',
@@ -41,7 +43,7 @@ User::SetRoles($userpk, array('GT_EDITOR'));
 
 
 echo" ================================================ create and retrieve a page <br>";
-
+$CONFIG->SetValue('show_sql',0,true);
 $data = array('pages_title'=> 'title'.$randomId,
 	'pages_display_title'=>'pages_display_title', 
     'pages_is_live' => 1,
@@ -68,6 +70,7 @@ compare_data($data, $the_page);
 
 echo"<br> =========================================== create and retrieve a module <br>";
 $CONFIG->SetValue('show_sql',0,true);
+
 $data = array(
     'contents_title' 		=> 'title'.$randomId,
     'contents_display_title'=>'pages_display_title', 
@@ -93,7 +96,7 @@ $the_module = Module::GetDetails($pk);
 compare_data($data, $the_module);
 
 echo"<br> =========================================== link  module to a page <br>";
-$CONFIG->SetValue('show_sql',1,true);
+$CONFIG->SetValue('show_sql',0,true);
 
 Module::LinkModules($the_page->pages_pk, array($the_module->contents_pk), "DETAIL_LEFT_COLUMN");
 
@@ -136,6 +139,7 @@ assert_equal($test_user_pk, $the_article->contents_main_author_fk, __LINE__);
 
 
 echo"<br> ======================================== target an article <br>";
+$CONFIG->SetValue('show_sql',0,true);
 
 $id= $the_page->pages_id;
 $pk = $the_article->contents_pk;

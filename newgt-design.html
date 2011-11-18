@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
+	<META NAME="AUTHOR" CONTENT="Michael Tel">
+	<META NAME="CREATED" CONTENT="20111118;8185000">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
+	<META NAME="CHANGED" CONTENT="20111118;10191600">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-bottom: 0in"> New GT design document</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Quick Overview</P>
+<P STYLE="margin-bottom: 0in">The new incarnation of the GT CMS
+software is built based on the View -Model -Controller pattern and
+includes many features that we liked from previous implementations</P>
+<P STYLE="margin-bottom: 0in">Tools:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Smarty version 3   for the View</P>
+	<LI><P STYLE="margin-bottom: 0in">jQuery as preferred javascript
+	library</P>
+	<LI><P STYLE="margin-bottom: 0in">jQueryUI    as preferred
+	javascript UI</P>
+	<LI><P STYLE="margin-bottom: 0in">?? Memcache  for caching (tbd)</P>
+	<LI><P STYLE="margin-bottom: 0in">Mysql   as a database engine</P>
+	<LI><P STYLE="margin-bottom: 0in">GIT for source control</P>
+	<LI><P STYLE="margin-bottom: 0in">Hosting by Rackspace / Amazon … 
+	(tbd)</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Key concepts</P>
+<P STYLE="margin-bottom: 0in">Model-View-Controller</P>
+<P STYLE="margin-bottom: 0in">using Smarty for views,   the Website
+and Webpage (and derived classes) as controllers and a set of Model
+classes encapsulating the database interface.</P>
+<P STYLE="margin-bottom: 0in">Split Content</P>
+<P STYLE="margin-bottom: 0in">A content object is defined as any
+object that will be associated (targeted) to a particular page or
+channel.  The storage of a particular content item  is split between
+2 tables, the contents table and a 'extra_table' which is specific
+for the content type.  For example:  an article is stored in the
+table 'contents', and the table 'articles' . An event is stored in
+the 'contents' and 'events' table. The 'contents' table contains the
+generic fields that all content items have in common like title,
+create_date, author, status etc.  The 'extra_table'  for each content
+type contains the fields that are specific to that content type. The
+main reasons for this split design are:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">all targeting , and information
+	needed for most listing pages are contained in 2 tables, contents
+	and targets. This results in simple and quick queries for listing
+	pages.</P>
+	<LI><P STYLE="margin-bottom: 0in">Creating a new content type
+	requires minimal changes to the database, just ad an extra_table and
+	a model class (that derives from the content class).  Nothing else
+	needs to be done  and targeting, versioning, and commenting are
+	taken care of by the content model class and contents table 
+	</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Encapsulate DB</P>
+<P STYLE="margin-bottom: 0in">the Query class encapsulate all
+database specific functions .  It is currently written for MySQL, but
+it would be easy to write a MSSQL version of this class. All database
+calls should be made trough this class. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Core Classes</P>
+<P STYLE="margin-bottom: 0in">The concept of core classes means that
+there will be a limited number of classes ,  all in the /classes</P>
+<P STYLE="margin-bottom: 0in">directory that should not be changed
+frequently. Changes to these classes should be well documented, go
+through code review and have integration test cases covering the
+functionality. 
+</P>
+<P STYLE="margin-bottom: 0in">Most of the day to day changes to the
+site would be in the controller classes (page and module classes)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; page-break-before: always"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Model View Controller / the files</P>
+<P STYLE="margin-bottom: 0in">The View part is implemented with
+Smarty templates</P>
+<P STYLE="margin-bottom: 0in">The Model is implemented as a
+collection of classes in the /classes directory</P>
+<P STYLE="margin-bottom: 0in">currently the following classes make up
+the Model layer:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">User 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Article</P>
+	<LI><P STYLE="margin-bottom: 0in">Comment</P>
+	<LI><P STYLE="margin-bottom: 0in">Content</P>
+	<LI><P STYLE="margin-bottom: 0in">Media</P>
+	<LI><P STYLE="margin-bottom: 0in">Module</P>
+	<LI><P STYLE="margin-bottom: 0in">Page</P>
+	<LI><P STYLE="margin-bottom: 0in">Query</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">All these model classes take care of
+all the database interactions. Most of them are centered around a key
+table. Sometimes they will also take care of link tables. For example
+the targets table does not have it own model class , the targeting
+functionality is implemented by the Page and Content models .</P>
+<P STYLE="margin-bottom: 0in">Most important to remember is that
+these model classes contain all SQL code. So the controller classes
+will NOT contain any SQL.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">User</P>
+<P STYLE="margin-bottom: 0in">The User model class takes care of
+creating and updating the users table. But it will also take care of
+the roles table,  the login() and authorize() functionality and 
+starting the session.</P>
+<P STYLE="margin-bottom: 0in">In contrast to the old system,  we have
+only roles,  no permissions. It seems that this is granular enough</P>
+<P STYLE="margin-bottom: 0in">Also, the roles for the current user
+are stored in the session object. This will save us a SQL call.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Content</P>
+<P STYLE="margin-bottom: 0in">This is another special model class. 
+It encapsulates the 'contents' table, but also provides generic
+functionality for 'extra' tables.  
+</P>
+<P STYLE="margin-bottom: 0in">It contains the following functions:</P>
+<P STYLE="margin-bottom: 0in">Save() for creating and updating
+content items</P>
+<P STYLE="margin-bottom: 0in">SetLiveVersion() / SetPreviewVersion() 
+ sets a particular version as 'LIVE'</P>
+<P STYLE="margin-bottom: 0in">GetPageContents()	gets all basic info
+for content items targeted to a particular page</P>
+<P STYLE="margin-bottom: 0in">GetContentByType()  for CMS use  
+</P>
+<P STYLE="margin-bottom: 0in">GetTargets() for CMS use  
+</P>
+<P STYLE="margin-bottom: 0in">GetVersionHistory() for CMS use  
+</P>
+<P STYLE="margin-bottom: 0in">GetExtraData()  gets the extradata
+record with the correct version</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Page</P>
+<P STYLE="margin-bottom: 0in">Another special class. It encapsulates
+the 'pages' table</P>
+<P STYLE="margin-bottom: 0in">implements:</P>
+<P STYLE="margin-bottom: 0in">GetClassMapping()   returns the
+classmapping info for a particular site</P>
+<P STYLE="margin-bottom: 0in">sYaasSaveTarget()     saves a target</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Controller classes</P>
+<P STYLE="margin-bottom: 0in">The main controller classes are Website
+and  Webpage .</P>
+<P STYLE="margin-bottom: 0in">The controller classes derived form
+these base classes can be found in site specific folders like
+/classes/gt.   The page controller classes end in 'Page'. Examples:  
+ ChannelPage, HomePage, StaticPage.  
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Module controller classes can go into
+the classes/common/modules folder or into a site specific module 
+folder like: classes/gt/modules</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Utility Classes /Files</P>
+<P STYLE="margin-bottom: 0in">classes/class.Configuration.php</P>
+<P STYLE="margin-bottom: 0in">inc.basic</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">html/common/yaas2.php</P>
+<P STYLE="margin-bottom: 0in">yaas2   works a little different then
+the old yaas.</P>
+<P STYLE="margin-bottom: 0in">The request format is the same.</P>
+<P STYLE="margin-bottom: 0in">The big difference is that we can call
+a function in ANY class. However,  we prepend sYaas to the function
+name.   So if we specify:  Target.Save  in the yaas (ajax) request,
+the yaas2.php script  will make a call to Target::sYaasSave  
+</P>
+<P STYLE="margin-bottom: 0in">It is up to the sYaas function to
+insure that the caller has the proper rights like:</P>
+<P STYLE="margin-bottom: 0in"><FONT COLOR="#000000"> </FONT><FONT FACE="Monospace"><FONT SIZE=2><FONT COLOR="#7f0055"><B>if</B></FONT><FONT COLOR="#000000">(!
+User::</FONT><FONT COLOR="#000000"><I>Authorize</I></FONT><FONT COLOR="#000000">(</FONT><FONT COLOR="#0000c0">'ADMIN'</FONT><FONT COLOR="#000000">))</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in"><FONT COLOR="#000000">      
+ <FONT FACE="Monospace"><FONT SIZE=2>{ … </FONT></FONT></FONT><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2>fail</FONT></FONT></FONT>
+ 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

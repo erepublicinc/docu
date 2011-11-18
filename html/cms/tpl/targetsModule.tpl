@@ -1,15 +1,16 @@
 
-
+{literal}
     <style>
     .date_time{
         width:70px;
     }
     </style>
+{/literal}
 
 <script>
 
     var targets = [];
-    {foreach $targets as $t}
+    {foreach $params->targets as $t}
       targets.push( {ldelim} record_state:'CLEAN', targets_pages_id:{$t->targets_pages_id}, targets_contents_fk:{$t->targets_contents_fk}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
     {/foreach}      
 
@@ -137,7 +138,7 @@
              <div id="wss_accordion"  class="accordion grid_5 alpha" >
                   
                   {assign "site" "-"}
-                  {foreach $pages as $p}            
+                  {foreach $params->pages as $p}            
                        {if $site != $p->pages_site_code}
                        {if $site != '-'} </div> {/if}
                          <h3><a href="#">{$p->pages_site_code}</a></h3>

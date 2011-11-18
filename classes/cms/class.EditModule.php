@@ -71,27 +71,34 @@ class EditModule extends WebPage
         } 
         else 
         {  
-             $m    = Module::GetModule($pk, LATEST_VERSION);
+             $m    = Module::GetDetails($pk, LATEST_VERSION);
              $history = Content::GetVersionHistory($pk, "modules");    
              
         }
         
 
-        // for versionHistoyModule
+        // for the moduleUsageModule
+        $pagelinks =  Module::GetPageLinks($pk); 
         
+        
+        $this->mSmarty->assign('pageModuleLinks', $pagelinks);
+        
+        // for versionHistoyModule
         $this->mSmarty->assign('pk', $pk);
         $this->mSmarty->assign('live_version',    $history->live_version);
         $this->mSmarty->assign('preview_version', $history->preview_version);      
         $this->mSmarty->assign('history', $history);
         
-        // for the moduleUsageModule
-        $pagelinks =  Module::GetPageLinks($pk) ;
         
-        $this->mSmarty->assign('pageModuleLinks', $pagelinks);
 //dump($pagelinks);
                
         $this->mSmarty->assign('content',$m); //NOTE   the Smarty var "page"  is already set as the current page
-        $this->mSideModules['left'] = array('searchModule.tpl','versionHistoryModule.tpl','moduleUsageModule.tpl'); 
+        
+        // create the left side modules
+        $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
+                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'editModule.tpl';  
     }
     
@@ -110,7 +117,12 @@ class EditModule extends WebPage
         $modules = Module::GetModules($site, TRUE);
         //  foreach($arts as $a) echo $a->contents_pk;     die;   
         $this->mSmarty->assign('contents', $modules );
-        $this->mSideModules['left'] = array('searchModule.tpl','selectSiteModule.tpl','contentTypesModule.tpl','recentlyModifiedModule.tpl');
+        
+        // create the left side modules for this page
+        $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
+                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'listContent.tpl';
     }
     
