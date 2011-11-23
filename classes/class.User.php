@@ -1,4 +1,8 @@
 <?
+
+// this needs to be run before the user class is initiated
+require_once('class.SessionHandler.php');
+
 class User
 {
     private static $mInitialized = false;
@@ -74,6 +78,7 @@ class User
     
     static function Login($email, $pw)
     {
+        
        $sql = "SELECT *
                  FROM users 
                  LEFT JOIN roles ON users_pk = roles_users_fk                 
@@ -121,10 +126,7 @@ class User
             return true;
             
         return false;
-    }
-    
-    
-    
+    }   
     
 }
 

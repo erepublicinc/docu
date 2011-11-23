@@ -58,7 +58,9 @@ class Query  implements Iterator
         
         if(self::$mConnection == null)
              self::OpenDb(); 
-                   
+
+             
+             
         if(is_array($sql))
         {
             $mq = '';
@@ -132,6 +134,16 @@ class Query  implements Iterator
         }
         return true;
     }
+    
+    /*
+     * changes the current database
+     */
+    public static function changeDB($dbName)
+    {
+        //return mysqli::select_db($dbName);
+        return self::$mConnection->select_db($dbName);
+    }
+    
     
     function __destruct()
     {

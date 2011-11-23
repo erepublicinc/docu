@@ -1,4 +1,6 @@
 <?
+//r_reporting(E_ERROR | E_WARNING | E_PARSE);
+
 require_once('Smarty.class.php'); // !!! needs to be loaded before registering our autoload function
 
 // *********** GLOBALS
@@ -117,10 +119,12 @@ function dump($v, $die = true)
     //var_dump($v);
     print_r($v);
     if($die )
-        die;
+    {
+     flush();   die;
+    }
 }
 
-    
+// =================================== PAGE TIMER ====================================================    
 //  this debug class adds timing info to the bottom of the page in a comment
 //  usage:    put this anywhere in the code    PageTimer::timeIt("MY label"); 
 class PageTimer
@@ -143,6 +147,10 @@ class PageTimer
         {
            echo round(self::$labels[$i][1] - self::$labels[0][1],2);    echo "   (". round(self::$labels[$i][1] - self::$labels[$i-1][1],2). ")  " . self::$labels[$i][0] ."\n" ;
         }
+        
+        $sname = getenv('HOSTNAME');
+        echo "server = $sname ". $_SERVER['SERVER_ADDR'];
+        
         echo"  -->";
     }
 }

@@ -19,7 +19,43 @@ $CONFIG->SetValue('is_test', 1);
 $revert = array();  // array of sql to clean up our test data 
 
 $randomId = rand(11, 99);
-echo" ================================================ create and retrieve a user <br>";
+
+
+echo "================== session test  ==== <br>";
+
+print_r($_SESSION);
+
+
+
+//die("===== end of test");
+
+echo " ================= basic Query test <br>";
+$q = new Query('SELECT COUNT(*) as num FROM contents');
+echo " there are " . $q->num . " content items <br>";
+
+echo "<br>here are the first 3 content items";
+foreach( new Query('SELECT * FROM contents limit 3') as $c)
+{
+    echo("<br>title: $c->contents_title");
+}
+
+echo "<br><br>list 3 content items and 3 users";
+$ar = array('SELECT * FROM contents limit 3', 'SELECT * from users limit 3');
+$results = new Query($ar);
+foreach( $results as $c)
+{
+    echo("<br>result 1 title: $c->contents_title");
+}
+$results->NextResultSet();
+foreach( $results as $c)
+{
+    echo("<br>result 2 last name: $c->users_last_name");
+}
+
+
+
+
+echo"<br><br> ================================================ create and retrieve a user <br>";
 $CONFIG->SetValue('show_sql',0,true);
 
 $data = array('users_first_name'=> 'First  Name'.$randomId,

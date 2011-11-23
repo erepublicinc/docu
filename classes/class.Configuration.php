@@ -34,12 +34,16 @@ class Configuration
     
     
     
-    /* allow values to be set only when they are not present, or you have to specify overwrite
-     * using this function instead of __set  eliminates accidental asignments
+    /** 
+     * Allow values to be set only when they are not present, or you have to specify 'FORCE'.
+     * Using this function instead of __set()  eliminates accidental asignments
+     * @param String $key
+     * @param any   $value
+     * @param overwrite default[ null]  should be set to 'FORCE' to overwrite a previous value
      */
-    public function SetValue($k, $v, $overwrite=false)
+    public function SetValue($k, $v, $overwrite=null)
     {   //echo("CONFIG set $k, $v  <br>");
-        if($overwrite || ! isset($this->_mFields[$k]))
+        if($overwrite == 'FORCE' || ! isset($this->_mFields[$k]))
         {
             $this->_mFields[$k] = $v;
             return true;

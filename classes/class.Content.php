@@ -231,14 +231,27 @@ class Content
     
     /**
      * Gets all data in case you only know the urlname   ( like a detail page)
-     * @param String $urlName
+     * @param String $urlName ( also allows for a pk   or   12324.html)
      */
     public static function GetContentByUrl($urlName)
     {
-        $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+        // strip off the .html
+        if(stripos($urlName, '.html') > 0)
+        $urlName = substr($urlName,0,stripos($urlName, '.html'));
+
+        if(is_int($urlName))   
+        {
+           $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+                  FROM contents JOIN users on users_pk = contents_main_author_fk 
+                  WHERE contents_pk = $urlName"; 
+        }
+        else 
+        {
+            $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
                   FROM contents JOIN users on users_pk = contents_main_author_fk 
                   WHERE contents_url_name = '$urlName'";
-        
+        }
+//dump($sql);        
         $r = new Query($sql);        
         
         $sql = "SELECT * FROM $r->contents_extra_table WHERE contents_fk = $r->contents_pk AND contents_version = $r->contents_live_version";
