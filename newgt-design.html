@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
+	<META NAME="AUTHOR" CONTENT="Michael Tel">
+	<META NAME="CREATED" CONTENT="20111118;8185000">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
+	<META NAME="CHANGED" CONTENT="20111122;16104800">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		H1 { margin-bottom: 0.08in }
+		H1.western { font-family: "Arial", sans-serif; font-size: 19pt }
+		H1.cjk { font-family: "DejaVu Sans"; font-size: 16pt }
+		H1.ctl { font-family: "Lohit Hindi"; font-size: 16pt }
+		H2 { margin-bottom: 0.08in }
+		H2.western { font-family: "Arial", sans-serif; font-size: 14pt; font-style: italic }
+		H2.cjk { font-size: 14pt; font-style: italic }
+		H2.ctl { font-family: "Lohit Hindi"; font-size: 14pt; font-style: italic }
+		H3 { margin-bottom: 0.08in }
+		H3.western { font-family: "Arial", sans-serif; font-size: 12pt }
+		H3.ctl { font-family: "Lohit Hindi" }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 CLASS="western">New GT design document</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H1 CLASS="western">Quick Overview</H1>
+<P STYLE="margin-bottom: 0in">The new incarnation of the GT CMS
+software is built based on the View -Model -Controller pattern and
+includes many features that we liked from previous implementations</P>
+<P STYLE="margin-bottom: 0in">Tools:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Smarty version 3 for the View</P>
+	<LI><P STYLE="margin-bottom: 0in">jQuery as preferred javascript
+	library</P>
+	<LI><P STYLE="margin-bottom: 0in">jQueryUI as preferred javascript
+	UI</P>
+	<LI><P STYLE="margin-bottom: 0in">?? Memcache for caching (tbd)</P>
+	<LI><P STYLE="margin-bottom: 0in">Mysql as a database engine</P>
+	<LI><P STYLE="margin-bottom: 0in">GIT for source control:
+	https://github.com/erepublicinc/docu</P>
+	<LI><P STYLE="margin-bottom: 0in">Hosting by Rackspace / Amazon …
+	(tbd)</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">Key concepts</H2>
+<H3 CLASS="western">Model-View-Controller</H3>
+<P STYLE="margin-bottom: 0in">using Smarty for views, the Website and
+Webpage (and derived classes) as controllers and a set of Model
+classes encapsulating the database interface.</P>
+<H3 CLASS="western">Split Content</H3>
+<P STYLE="margin-bottom: 0in">A content object is defined as any
+object that will be associated (targeted) to a particular page or
+channel. The storage of a particular content item is split between 2
+tables, the contents table and a 'extra_table' which is specific for
+the content type. For example: an article is stored in the table
+'contents', and the table 'articles' . An event is stored in the
+'contents' and 'events' table. The 'contents' table contains the
+generic fields that all content items have in common like title,
+create_date, author, status etc. The 'extra_table' for each content
+type contains the fields that are specific to that content type. The
+main reasons for this split design are:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">All targeting , and information
+	needed for most listing pages are contained in 2 tables, contents
+	and targets. This results in simple and quick queries for listing
+	pages.</P>
+	<LI><P STYLE="margin-bottom: 0in">Creating a new content type
+	requires minimal changes to the database, just ad an extra_table and
+	a model class (that derives from the content class). Nothing else
+	needs to be done and targeting, versioning, and commenting are taken
+	care of by the content model class and contents table 
+	</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Encapsulate DB</H3>
+<P STYLE="margin-bottom: 0in">the Query class encapsulate all
+database specific functions . It is currently written for MySQL, but
+it would be easy to write a MSSQL version of this class. All database
+calls should be made trough this class. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Core Classes</H3>
+<P STYLE="margin-bottom: 0in">The concept of core classes means that
+there will be a limited number of classes (all in the /classes</P>
+<P STYLE="margin-bottom: 0in">directory) that should not be changed
+frequently. Changes to these classes should be well documented, go
+through code review and have integration test cases covering the
+functionality. 
+</P>
+<P STYLE="margin-bottom: 0in">Most of the day to day changes to the
+site would be in the controller classes (page and module classes)</P>
+<P STYLE="margin-bottom: 0in">and templates.</P>
+<H3 CLASS="western">Environments</H3>
+<P>We will have 3 environments: dev, proof, live (dev will be on the
+developers machine). Each environment will have its own database.</P>
+<P>Content items and pages have a 'live' bit and a 'preview' bit. The
+url preview.<A HREF="http://www.govtech.com/">www.govtech.com</A>
+will direct you to the live server but will show the pages , modules
+and content items that have the 'preview' bit set.</P>
+<H2 CLASS="western">TODO (a lot)</H2>
+<P>TODO Core</P>
+<UL>
+	<LI><P>Implement Media: the Model , and cms module (for listing and
+	uploading)</P>
+	<LI><P>Implement caching: inside the Query class 
+	</P>
+	<LI><P>Implement caching: at the Smarty level</P>
+</UL>
+<P><BR><BR>
+</P>
+<P>TODO CMS</P>
+<UL>
+	<LI><P>Build out complete CMS</P>
+	<LI><P>Create automatic form generator for the edit templates for
+	all content objects 
+	</P>
+</UL>
+<P><BR><BR>
+</P>
+<P>TODO Infra Structure</P>
+<UL>
+	<LI><P>find and sign up for hosting company</P>
+	<LI><P>Create Git scripts for push stuff to stage and live</P>
+	<LI><P>Create Git manual for how we use Git 
+	</P>
+	<LI><P>Create DB back scripts</P>
+</UL>
+<H1 CLASS="western" STYLE="page-break-before: always">Model 
+</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The Model is implemented as a
+collection of classes in the /classes directory</P>
+<P STYLE="margin-bottom: 0in">currently the following classes make up
+the Model layer:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">User 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Article</P>
+	<LI><P STYLE="margin-bottom: 0in">Comment</P>
+	<LI><P STYLE="margin-bottom: 0in">Content</P>
+	<LI><P STYLE="margin-bottom: 0in">Media</P>
+	<LI><P STYLE="margin-bottom: 0in">Module</P>
+	<LI><P STYLE="margin-bottom: 0in">Page</P>
+	<LI><P STYLE="margin-bottom: 0in">Query</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These model classes take care of all
+the database interactions. Most of them are centered around a key
+table. Sometimes they will also take care of link tables. For example
+the targets table does not have it own model class, the targeting
+functionality is implemented by the Page and Content models .</P>
+<P STYLE="margin-bottom: 0in">Most important to remember is that
+these model classes contain all SQL code. So the controller classes
+will NOT contain any SQL.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">User</H2>
+<P STYLE="margin-bottom: 0in">The User model class takes care of
+creating and updating the users table. But it will also take care of
+the roles table, the login() and authorize() functionality and
+starting the session.</P>
+<P STYLE="margin-bottom: 0in">In contrast to the old system, we have
+only roles, no permissions. It seems that this is granular enough</P>
+<P STYLE="margin-bottom: 0in">Also, the roles for the current user
+are stored in the session object. This will save us a SQL call.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">Content</H2>
+<P STYLE="margin-bottom: 0in">This is another special model class. It
+encapsulates the 'contents' table, but also provides generic
+functionality for 'extra' tables. 
+</P>
+<P STYLE="margin-bottom: 0in">It contains (among others) the
+following functions:</P>
+<P STYLE="margin-bottom: 0in">Save() for creating and updating
+content items</P>
+<P STYLE="margin-bottom: 0in">SetLiveVersion() / SetPreviewVersion()
+sets a particular version as 'live/ preview'</P>
+<P STYLE="margin-bottom: 0in">GetPageContents() gets all basic info
+for content items targeted to a particular page</P>
+<P STYLE="margin-bottom: 0in">GetContentByType() for CMS use 
+</P>
+<P STYLE="margin-bottom: 0in">GetTargets() for CMS use 
+</P>
+<P STYLE="margin-bottom: 0in">GetVersionHistory() for CMS use 
+</P>
+<P STYLE="margin-bottom: 0in">GetExtraData() gets the extradata
+record with the correct version</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">Page</H2>
+<P STYLE="margin-bottom: 0in">Another special class. It encapsulates
+the 'pages' table</P>
+<P STYLE="margin-bottom: 0in">implements:</P>
+<P STYLE="margin-bottom: 0in">GetClassMapping() returns the
+classmapping info for a particular site</P>
+<P STYLE="margin-bottom: 0in">sYaasSaveTarget() saves a target</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H1 CLASS="western" STYLE="page-break-before: always">Controller 
+</H1>
+<P STYLE="margin-bottom: 0in">The main controller classes are Website
+and Webpage .</P>
+<P STYLE="margin-bottom: 0in">The controller classes derived form
+these base classes can be found in site specific folders like
+/classes/gt. The page controller classes end in 'Page'. Examples:
+ChannelPage, HomePage, StaticPage. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Module controller classes can go into
+the classes/common/modules folder or into a site specific module
+folder like: classes/gt/modules</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H1 CLASS="western">Other Core Classes /Files</H1>
+<H3 CLASS="western">classes class.Query.php</H3>
+<P STYLE="margin-bottom: 0in">A core class that encapsulates all
+database functions.   To change to another database, only this file
+would have to be changed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">There are 2 ways to use this class : 
+</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in">Instantiate it with a sql string
+	or an array of sql strings.  The object returned will be the first
+	result row. You can also iterate through the result rows with a
+	foreach loop</P>
+</OL>
+<P STYLE="margin-bottom: 0in">	example:<BR>		<FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">$q
+= </FONT></FONT></FONT><FONT COLOR="#7f0055"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><B>new
+</B></FONT></FONT></FONT><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">Query(</FONT></FONT></FONT><FONT COLOR="#0000c0"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">'SELECT
+COUNT(*) as num FROM contents'</FONT></FONT></FONT><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">);</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>echo
+</B></FONT><FONT COLOR="#0000c0">&quot; there are &quot; </FONT><FONT COLOR="#000000">.
+$q-&gt;num . </FONT><FONT COLOR="#0000c0">&quot; content items &lt;br&gt;&quot;</FONT><FONT COLOR="#000000">;</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>foreach</B></FONT><FONT COLOR="#000000">(
+</FONT><FONT COLOR="#7f0055"><B>new </B></FONT><FONT COLOR="#000000">Query(</FONT><FONT COLOR="#0000c0">'SELECT
+* FROM contents limit 3'</FONT><FONT COLOR="#000000">) </FONT><FONT COLOR="#7f0055"><B>as
+</B></FONT><FONT COLOR="#000000">$c)</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">{</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT COLOR="#000000">
+   </FONT><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>echo</B></FONT><FONT COLOR="#000000">(</FONT><FONT COLOR="#0000c0">&quot;&lt;br&gt;
+title: </FONT><FONT COLOR="#000000">$c-&gt;contents_title</FONT><FONT COLOR="#0000c0">&quot;</FONT><FONT COLOR="#000000">);</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#000000"><FONT FACE="Monospace">}</FONT></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">            In case you have an array
+of queries, use NextResultSet()   to switch to the next result set.  
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<OL START=2>
+	<LI><P STYLE="margin-bottom: 0in">Call Query::sTransaction() with an
+	array of sql strings.  
+	</P>
+	<P STYLE="margin-bottom: 0in">You can add at the end a sql query
+	that returns something: 
+	</P>
+	<P STYLE="margin-bottom: 0in">example:<BR>$sql = array(“INSERT
+	INTO users (…) values(...)”, “SELECT LAST_INSERT_ID as pk” 
+	);</P>
+	<P STYLE="margin-bottom: 0in">$q = Query::sTransaction($sql);</P>
+	<P STYLE="margin-bottom: 0in">echo “inserted pk =  $q-&gt;pk”;</P>
+</OL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">classes/class.Configuration.php</H3>
+<P STYLE="margin-bottom: 0in">Implements the Configuration class
+which is a singleton. inc.basic initializes this class and sets the
+global $CONFIG. 
+</P>
+<P STYLE="margin-bottom: 0in">The initial settings come from the
+/var/www/html/web_db_config.ini file, but additional settings are
+added by the website and webpage classes with the
+$CONFIG-&gt;SetValue($key, $value) call. Reading values is easy,
+like: 
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">$CONFIG-&gt;db_name</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in">Its implemented this way to make sure
+you cannot accidentally overwrite settings. Also when a value has
+been set , you can only overwrite it by adding a third parameter
+'OVERWRITE' to the SetValue() call like:</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">$config-&gt;SetValue('db_name',
+'test_db', 'OVERWRITE');</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">inc.basic</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">html/common/yaas2.php</H3>
+<P STYLE="margin-bottom: 0in">yaas2 works a little different then the
+old yaas.</P>
+<P STYLE="margin-bottom: 0in">The request format is the same.</P>
+<P STYLE="margin-bottom: 0in">The big difference is that we can call
+a function in ANY class. However, we prepend sYaas to the function
+name. So if we specify: Target.Save in the yaas (ajax) request, the
+yaas2.php script will make a call to Target::sYaasSave 
+</P>
+<P STYLE="margin-bottom: 0in">It is up to the sYaas function to
+insure that the caller has the proper rights like:</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>if</B></FONT><FONT COLOR="#000000">(!
+User::</FONT><FONT COLOR="#000000"><I>Authorize</I></FONT><FONT COLOR="#000000">(</FONT><FONT COLOR="#0000c0">'ADMIN'</FONT><FONT COLOR="#000000">))</FONT></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">{
+… fail</FONT> </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">classes/class.Adsystem.php</H3>
+<P STYLE="margin-bottom: 0in">A simple singleton around the ad
+settings,    it has a private constructor,  so to get the object you
+call: AdSystem::getSpecs()</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>
