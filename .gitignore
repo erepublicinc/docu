@@ -1,3 +1,6 @@
 /html/*/tpl/cache/*
 /html/*/tpl/templates_c/*
+/.settings
+/.buildpath
+/.project
 
