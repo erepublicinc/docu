@@ -111,7 +111,7 @@
                     <th class="align-c">Pinned</th>                    
                 </tr>
                 
-                {foreach $targets as $t}
+                {foreach  $params->targets as $t}
                 <tr >
                     <td onclick="editTarget({$t@index})">{$t->pages_site_code} {$t->pages_title}</td>                    
                     <td>{$t->targets_live_date|date_format:$DATETIME_FORMAT}</td>  

@@ -7,7 +7,8 @@
 	<META NAME="AUTHOR" CONTENT="Michael Tel">
 	<META NAME="CREATED" CONTENT="20111118;8185000">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
-	<META NAME="CHANGED" CONTENT="20111122;16104800">
+	<META NAME="CHANGED" CONTENT="20111123;13022500">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<STYLE TYPE="text/css">
 	<!--
@@ -113,6 +114,13 @@ developers machine). Each environment will have its own database.</P>
 url preview.<A HREF="http://www.govtech.com/">www.govtech.com</A>
 will direct you to the live server but will show the pages , modules
 and content items that have the 'preview' bit set.</P>
+<P><BR><BR>
+</P>
+<H3 CLASS="western">Versioning</H3>
+<P>Versioning happens in two areas:  contents and pages.</P>
+<P>Versioning of contents means that we keep a history of the changes
+to a content item. It also means that a specific version can be made
+live.</P>
 <H2 CLASS="western">TODO (a lot)</H2>
 <P>TODO Core</P>
 <UL>
@@ -240,7 +248,7 @@ folder like: classes/gt/modules</P>
 <H1 CLASS="western">Other Core Classes /Files</H1>
 <H3 CLASS="western">classes class.Query.php</H3>
 <P STYLE="margin-bottom: 0in">A core class that encapsulates all
-database functions.   To change to another database, only this file
+database functions. To change to another database, only this file
 would have to be changed.</P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
@@ -248,11 +256,11 @@ would have to be changed.</P>
 </P>
 <OL>
 	<LI><P STYLE="margin-bottom: 0in">Instantiate it with a sql string
-	or an array of sql strings.  The object returned will be the first
+	or an array of sql strings. The object returned will be the first
 	result row. You can also iterate through the result rows with a
 	foreach loop</P>
 </OL>
-<P STYLE="margin-bottom: 0in">	example:<BR>		<FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">$q
+<P STYLE="margin-bottom: 0in">example:<BR><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">$q
 = </FONT></FONT></FONT><FONT COLOR="#7f0055"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><B>new
 </B></FONT></FONT></FONT><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">Query(</FONT></FONT></FONT><FONT COLOR="#0000c0"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">'SELECT
 COUNT(*) as num FROM contents'</FONT></FONT></FONT><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">);</FONT></FONT></FONT></P>
@@ -266,29 +274,28 @@ $q-&gt;num . </FONT><FONT COLOR="#0000c0">&quot; content items &lt;br&gt;&quot;<
 * FROM contents limit 3'</FONT><FONT COLOR="#000000">) </FONT><FONT COLOR="#7f0055"><B>as
 </B></FONT><FONT COLOR="#000000">$c)</FONT></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">{</FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT COLOR="#000000">
-   </FONT><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>echo</B></FONT><FONT COLOR="#000000">(</FONT><FONT COLOR="#0000c0">&quot;&lt;br&gt;
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#7f0055"><B>echo</B></FONT><FONT COLOR="#000000">(</FONT><FONT COLOR="#0000c0">&quot;&lt;br&gt;
 title: </FONT><FONT COLOR="#000000">$c-&gt;contents_title</FONT><FONT COLOR="#0000c0">&quot;</FONT><FONT COLOR="#000000">);</FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT SIZE=2 STYLE="font-size: 9pt"><FONT COLOR="#000000"><FONT FACE="Monospace">}</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.98in; margin-bottom: 0in"><FONT COLOR="#000000"><FONT FACE="Monospace"><FONT SIZE=2 STYLE="font-size: 9pt">}</FONT></FONT></FONT></P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
-<P STYLE="margin-bottom: 0in">            In case you have an array
-of queries, use NextResultSet()   to switch to the next result set.  
+<P STYLE="margin-bottom: 0in">In case you have an array of queries,
+use NextResultSet() to switch to the next result set. 
 </P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <OL START=2>
 	<LI><P STYLE="margin-bottom: 0in">Call Query::sTransaction() with an
-	array of sql strings.  
+	array of sql strings. 
 	</P>
 	<P STYLE="margin-bottom: 0in">You can add at the end a sql query
 	that returns something: 
 	</P>
 	<P STYLE="margin-bottom: 0in">example:<BR>$sql = array(“INSERT
-	INTO users (…) values(...)”, “SELECT LAST_INSERT_ID as pk” 
+	INTO users (…) values(...)”, “SELECT LAST_INSERT_ID as pk”
 	);</P>
 	<P STYLE="margin-bottom: 0in">$q = Query::sTransaction($sql);</P>
-	<P STYLE="margin-bottom: 0in">echo “inserted pk =  $q-&gt;pk”;</P>
+	<P STYLE="margin-bottom: 0in">echo “inserted pk = $q-&gt;pk”;</P>
 </OL>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
@@ -337,7 +344,7 @@ User::</FONT><FONT COLOR="#000000"><I>Authorize</I></FONT><FONT COLOR="#000000">
 </P>
 <H3 CLASS="western">classes/class.Adsystem.php</H3>
 <P STYLE="margin-bottom: 0in">A simple singleton around the ad
-settings,    it has a private constructor,  so to get the object you
+settings, it has a private constructor, so to get the object you
 call: AdSystem::getSpecs()</P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>

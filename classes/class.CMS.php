@@ -48,11 +48,10 @@ class CMS
         
         $m->template = 'targetsModule.tpl';
         $m->pages    = Page::getPages('ALL'); 
-        
-        if($c->contents_pk) 
-            $m->targets  = Article::GetTargets($pk);      
-           
        
+        if($pk > 0) 
+            $m->targets  = Article::GetTargets($pk);
+                         
         return $m;         
     }
     

@@ -366,7 +366,7 @@ class Content
             $newVersion = $this->mFields->contents_latest_version + 1;
             $newvalues .= ", contents_latest_version = $newVersion "  ;
             if($this->mFields->contents_status == 'LIVE')
-               $newvalues .= ",contents_live_version = ' $newVersion "  ;
+               $newvalues .= ",contents_live_version =  $newVersion "  ;
         }       
         $newvalues .= ', contents_update_date = NOW() ';
         $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
@@ -472,7 +472,7 @@ class Content
         }
         // remove last comma    
         $newvalues = substr($newvalues, 0, strlen($newvalues)-1); 
-        
+// dump($newvalues);       
         return  $newvalues;   
     }
    

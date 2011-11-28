@@ -13,26 +13,18 @@
  */
 
 class Query  implements Iterator
-{   
-    // these constants are used as parameters in the Constructor
-    const NONE        = 0;
-    const TRANSACTION = 1;
-     
+{    
     private static $mConnection = null;
 
     private static $mAdminMode = false;
-    
-    
-    private $mRows = array();
-    private $mRowIndex = -1;
-    private $eof = false;       // end of input has been reached
-    // members    
-//    private $mRow;             // holds the current row
-    private $mResultSet;       // returned by the query
+       
+    private $mRows = array();   // a copy of the data rows of the current query
+    private $mRowIndex = -1;    // index into array above
+    private $eof = false;       // all rows of the resutset have been read into  $mRows
+
+    private $mResultSet;       // current resultset returned by the query
     private $mNumQueries;      // number of queries  default =1
-    
-    
-    
+       
     public static function Escape($str)
     {
         $str = str_replace('\n','',$str);
@@ -92,6 +84,7 @@ class Query  implements Iterator
         elseif ($this->mResultSet !== TRUE)
             $this->next(); // to load the first row
     }
+
     
     /**
      * does a transction on the array of sql queries
@@ -110,8 +103,7 @@ class Query  implements Iterator
              self::OpenDb(); 
                          
         self::$mConnection->autocommit(false);
-
-//dump($sql);   
+ 
         foreach($sql as $query)
         {
             $result = self::$mConnection->query($query);
