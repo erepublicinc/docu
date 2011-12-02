@@ -87,7 +87,7 @@ $data = array('pages_title'=> 'title'.$randomId,
     'pages_site_code' => 'GT',
     'pages_url' => 'testurl',
     'pages_no_robots' => 0,
-    'pages_status' =>'LIVE',
+    'pages_status' =>'READY',
  	'pages_php_class' =>'phpclass',
  	'pages_body' =>'this is the body',
     'pages_version_comment'=> ' this is a test'
@@ -110,7 +110,7 @@ $CONFIG->SetValue('show_sql',0,true);
 $data = array(
     'contents_title' 		=> 'title'.$randomId,
     'contents_display_title'=>'pages_display_title', 
-    'contents_status' 		=>'LIVE',
+    'contents_status' 		=>'READY',
     'pages_is_live'   		=> 1,
 	'pages_is_preview' 		=> 0,
 

@@ -11,7 +11,7 @@
 
   <div class="ui-widget-content ui-corner-all bk_color2 p-10">          
             <h6>
-          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">New</a>
+          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="new_{$record_type}">New</a>
           <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Filter</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Copy</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Quick Edit</a>
@@ -42,9 +42,8 @@
                 <td><input name="" type="checkbox" value=""></td>
                 <td><a href="/cms/gt/{$record_type}/{$c->contents_pk}">{$c->contents_title}</a></td>
                 <td>{$c->contents_updated_date|date_format:$DATETIME_FORMAT}</td>
-                <td><span {if $c->contents_status == 'LIVE'}  class="ui-icon ui-icon-circle-check float-l mr-5" 
-                          {elseif $c->contents_status == 'PREVIEW'}  class="ui-icon ui-icon-circle-check float-l mr-5" 
-                          {else} class="ui-icon-tan ui-icon-alert float-l mr-10"
+                <td><span {if $c->contents_live_version > 0}  class="ui-icon ui-icon-circle-check " 
+                          {else} class="ui-icon-tan ui-icon-alert "
                           {/if}
                    </span></td>
                 <td>eRepublic - Editors</td>

@@ -71,7 +71,8 @@ class Page
     
     
     protected function SaveExisting($p)
-    {               
+    {  
+               
         $sql = array();
      
         if($p->new_version == 0) //  means: keep the same version
@@ -81,6 +82,7 @@ class Page
                     pages_no_robots = $p->robots, pages_password = '$p->password', pages_status = '$p->status', pages_php_class = '$p->phpClass', 
                     pages_version_users_fk = $p->apk, pages_body = '$p->body'             
         		where pages_pk = $p->pk";
+             $sql[] = "SELECT  $p->pk as new_pk";
         }
         else  // create a new version
         {
@@ -103,16 +105,21 @@ class Page
                            '$p->status','$p->phpClass',$p->apk, '$p->body','$p->comment', NOW())";  
             
             // get the new record
-            $sql[] = 'SELECT @new_pk:= LAST_INSERT_ID()';
-            
+            $sql[] = 'SELECT LAST_INSERT_ID() as new_pk';
+
+            /* done by module::LinkModules
             // now we have to copy all module links from the previous version to this version
             $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) 
                       SELECT contents_fk, @new_pk, placement, link_order 
                       FROM modules__pages WHERE pages_fk = $p->pk";
+            */
         } 
+        
+        
+        
  // dump($sql);           
         $ret =  Query::sTransaction($sql);
-        return $p->pk;       
+        return $ret->new_pk;              
     }
     
     
@@ -235,14 +242,23 @@ class Page
     /**
      * returns all fields
      * @param int $pk [default = 0 returns the current page]
+     * @param int $id [default = 0] if set returns live or preview version of this page
      */
-    static public function  GetDetails($pk = 0)
+    static public function  GetDetails($pk = 0, $id = 0)
     {
         global $CONFIG;
-        if($pk == 0) 
-            $pk = intval($CONFIG->current_page_pk);
-        $r =  new Query("SELECT * FROM pages WHERE pages_pk = $pk");
-        //dump($r); 
+        
+        if($id > 0)
+        {
+            $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';  
+            $r =  new Query("SELECT * FROM pages WHERE pages_id = $id  AND $liveField = 1");
+        }
+        else
+        { 
+            if($pk == 0) 
+                $pk = intval($CONFIG->current_page_pk);
+            $r =  new Query("SELECT * FROM pages WHERE pages_pk = $pk");
+        }
         return $r;     
     }
 
@@ -256,9 +272,15 @@ class Page
         return new Query($sql);
     }
     
-    
+    /**
+     * Gets the version history for a particular page
+     * @param int $id pages_id
+     */
     static public function GetVersionHistory($id)
     {
+        if(empty($id))
+          return ;
+        
         $sql = array();
                  // get the live and preview versions 
        $sql[] = "SELECT pages_version as live_version, 0 as preview_version from pages WHERE pages_is_live = 1 AND pages_id = $id 

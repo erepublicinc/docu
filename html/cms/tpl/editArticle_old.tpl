@@ -145,8 +145,8 @@ function saveArticle()
                 <div>
                     <label>Status:</label>
                     <select name="contents_status" class="select-list-medium" style="width:200px">
-                            <option  value="LIVE" {if $article->contents_status == 'LIVE'}selected='selected'{/if}>&nbsp;&nbsp;Live</option>
-                            <option  value="IN_PROGRESS" {if $article->contents_status == 'IN_PROGRESS'}selected='selected'{/if}>&nbsp;&nbsp;In Progress</option>
+                            <option  value="READY" {if $article->contents_status == 'READY'}selected='selected'{/if}>&nbsp;&nbsp;Live</option>
+                            <option  value="DRAFT" {if $article->contents_status == 'DRAFT'}selected='selected'{/if}>&nbsp;&nbsp;In Progress</option>
                     </select>
                 </div>               
                 

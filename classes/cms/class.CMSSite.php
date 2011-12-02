@@ -44,25 +44,32 @@ class CMSSite extends Website
         if($pathSegments[0] == 'cms')
             array_shift($pathSegments);
         
-        if(in_array($pathSegments[0], array('gt','gov','em','cv','all')))
+        if(in_array($pathSegments[0], array('gt','gov','em','cv','all','er','cdg','cde','dc')))
         {
             $site = strtoupper($pathSegments[0]);
             $CONFIG->SetValue('cms_site_code',$site);
             array_shift($pathSegments);
         }
 
+        // the default map
+        $map = array( 'articles'    => 'EditArticle', 
+                      'article'     => 'EditArticle',
+                      'new_article' => 'EditArticle',
+                      'modules'     => 'EditModule', 
+                      'module'      => 'EditModule',
+                      'new_module'  => 'EditModule',
+                      'pages'       => 'EditPage', 
+                      'page'        => 'EditPage',
+                      'new_page'    => 'EditPage',
+                      'placement'	=> 'EditPlacement'
+        ) ;
         
-        // allow mappings of classes  according to the website
+        // allow overwrite of the default map according to the website
         switch($site)
         {          
             case 'EM' :
-                        $map = array('articles' => 'EditArticle') ;
-            break;
-            
-            default: 
-                        $map = array('articles' => 'EditArticle', 'article' => 'EditArticle','new_article' => 'EditArticle',
-                                      'modules' => 'EditModule', 'module' => 'EditModule','new_module' => 'EditModule',
-                                      'pages' => 'EditPage', 'page' => 'EditPage','new_page' => 'EditPage') ;
+                $map['articles'] = 'EditArticle' ;
+            break;       
         }
             
         if(count($pathSegments) > 0 && $map && isset($map[$pathSegments[0]]))

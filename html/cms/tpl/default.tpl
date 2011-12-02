@@ -14,14 +14,11 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
 <!-- <link  href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/> 
-
-
-<script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
-<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
  -->
  
  <script type="text/javascript" src="/common/ckeditor/ckeditor.js"></script>
  
+{literal} 
 <script type="text/javascript">
 	$(function(){
 
@@ -72,6 +69,11 @@
 			function() { $(this).addClass('ui-state-hover'); }, 
 			function() { $(this).removeClass('ui-state-hover'); }
 		);
+
+
+        $("#id_chooseSite").change(function(){
+            document.location =  "/cms/"+$(this).val();
+        });
 		
 	});
 
@@ -155,13 +157,10 @@
                 dstr = d.getMonth()+1 +'/'+d.getDate() +'/'+ d.getFullYear();
         }
         return dstr;
-    }
-
-
-
-
-    
+    }   
 </script>
+{/literal}
+
 </head>
 <body>
 
@@ -191,7 +190,7 @@
 				<li><a href="#tabs-3">Media</a></li>
 				<li><a href="#tabs-3">admin</a></li>                
 			</ul>
-		</div>
+		</div>       
 	</div>
     <!-- / Main Tabs --> 
     
@@ -199,7 +198,21 @@
     <!-- Page title --->
     <div class="grid_24">
     	<div class="ui-widget-content ui-corner-bottom ui-corner-tl bk_color3 p-10" style="margin-top: -11px; border-color:#c4b6a5">
-    		<h1>{$page_title}</h1>
+    		       
+            <select name="id_chooseSite" id="id_chooseSite" class="select-list-medium" style="width:170px; float:right;" >
+                <option class="" value="ALL">All sites</option>
+                <option class="" value="ER" {if $site_code == 'ER'} selected="selected" {/if} >eRepublic</option>
+                <option class="" value="EM" {if $site_code == 'EM'} selected="selected" {/if} >emergencymgmnt</option>
+                <option class="" value="GT" {if $site_code == 'GT'} selected="selected" {/if} >govtech</option>
+                <option class="" value="GOV" {if $site_code == 'GOV'} selected="selected" {/if} >governing</option>
+                <option class="" value="DC" {if $site_code == 'DC'} selected="selected" {/if} >digitalcommunities</option>
+                <option class="" value="CV" {if $site_code == 'CV'} selected="selected" {/if} >converge</option>
+                <option class="" value="CDG" {if $site_code == 'CDG'} selected="selected" {/if} >centerdigitalgov</option>
+                <option class="" value="CDE" {if $site_code == 'CDE'} selected="selected" {/if} >centerdigitaled</option>
+            </select>   
+       
+            <h2>{$page_title}</h2>
+            
 		</div>        
     </div>
     <!-- / Page Title -->
@@ -217,9 +230,11 @@
   
     <!-- LEFT COLUMN -->
     <div class="grid_6">
+    {if $sideModules } 
         {foreach $sideModules.left as $sideModule}
             {include file=$sideModule->template params=$sideModule }
         {/foreach}
+    {/if}    
     </div> 
     <!-- END OF  LEFT COLUMN -->
 

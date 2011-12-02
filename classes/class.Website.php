@@ -65,6 +65,8 @@ abstract class Website
         $mode = $pathSegments[0] == 'preview' ? 'PREVIEW': 'LIVE';
         $CONFIG->SetValue('mode', $mode);
         $CONFIG->SetValue('site_name', getSiteName($CONFIG->site_code));
+        $CONFIG->SetValue('page_size', 10);
+        
         
         $this->_InitClassMapping();
 

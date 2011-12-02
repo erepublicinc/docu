@@ -51,6 +51,7 @@ class EditPage extends WebPage
     {
         $p = new Page($_POST);
         $pk = $p->Save();
+        Module::LinkModules($pk, json_decode($_POST['json_module_data']));
        
         header("LOCATION: /cms/$site/pages");
         die;             
@@ -63,6 +64,8 @@ class EditPage extends WebPage
         
         if($command == 'new_page' || $pk == 0)
         { //die($_SESSION['user_first_name']);
+              $this->mPageTitle = getSiteName($site) . " - New Page";
+            
             $page = new stdClass();
             $page->pages_authors_fk     = $_SESSION['user_pk'];
             $page->users_first_name     = $_SESSION['user_first_name'];
@@ -71,26 +74,22 @@ class EditPage extends WebPage
         } 
         else 
         {  
-             $page    = Page::GetDetails($pk);
-             $history = Page::GetVersionHistory($page->pages_id);  
-             $modules = Module::GetPageModules($pk, FALSE);          
+             $this->mPageTitle = getSiteName($site) . " - Edit Page";
+             $page    = Page::GetDetails($pk);       
         }
         
+        $this->mSmarty->assign('p',$page);     //NOTE: the Smarty var "page"  is already set as the current page
 
-        // for versionHistoyModule
-        $this->mSmarty->assign('pk', $pk);
-        $this->mSmarty->assign('live_version',    $history->live_version);
-        $this->mSmarty->assign('preview_version', $history->preview_version);      
-        $this->mSmarty->assign('history', $history);
-      
-        $this->mSmarty->assign('linked_modules', $modules);
-        $this->mSmarty->assign('p',$page); //NOTE   the Smarty var "page"  is already set as the current page
+       // create the center module
+        $this->mModules['center'] = array(CMS::CreateModule2PageModule($pk));
         
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
-                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
-                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
-                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
+                                       // CMS::CreateDummyModule('selectSiteModule.tpl'), 
+                                       // CMS::CreateDummyModule('contentTypesModule.tpl'),                                        
+                                         CMS::CreatePageHistoryModule($page->pages_id),
+                                         CMS::CreateDummyModule('recentlyModifiedModule.tpl'));
+        
         $this->mMainTpl = 'editPage.tpl';  
     }
     
@@ -98,6 +97,7 @@ class EditPage extends WebPage
     private function _ListPages($site)
     { 
   //dump($_POST);
+        $this->mPageTitle = getSiteName($site) . " - List Pages";
         if($_POST['makelive'])
         {
             Page::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
@@ -111,10 +111,9 @@ class EditPage extends WebPage
           $this->mSmarty->assign('pages', $pages );
           
           // create the left side modules
-          $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
-                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
-                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
-                                        CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
+          $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'),                                        
+                                          CMS::CreateContentTypesModule(), 
+                                          CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
           $this->mMainTpl = 'listPages.tpl';
     }
     

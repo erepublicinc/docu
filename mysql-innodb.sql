@@ -92,6 +92,7 @@ CREATE TABLE articles
         contents_version_users_fk INT,                -- author of latest change
         contents_version_date DATETIME NOT NULL,
         contents_version_comment   VARCHAR(255) ,   --  commit comment
+        contents_version_status   VARCHAR(20) ,   
                   
         contents_article_type  VARCHAR(20),
         contents_article_body   TEXT , 
@@ -110,6 +111,7 @@ CREATE TABLE modules
         contents_version_users_fk INT,                -- author of latest change
         contents_version_date DATETIME NOT NULL,
         contents_version_comment   VARCHAR(255) ,   --  commit comment
+        contents_version_status   VARCHAR(20) ,   
                                     
         modules_php_class VARCHAR(40),
         modules_json_params  VARCHAR(255),
@@ -132,6 +134,7 @@ CREATE TABLE specs
         contents_fk INT NOT NULL ,
         contents_version INT  NOT NULL,
         contents_users_fk INT,                -- author of latest change
+        contents_version_status   VARCHAR(20) ,   
         
         contents_indexing VARCHAR(30),
         contents_specs_type  VARCHAR(20),
@@ -292,7 +295,7 @@ CREATE TABLE modules__pages
         pages_fk INT NOT NULL ,
         placement VARCHAR(30),
         link_order INT,
-        PRIMARY KEY (contents_fk, pages_fk),
+        PRIMARY KEY (pages_fk, placement, link_order),
         FOREIGN KEY (contents_fk) REFERENCES contents (contents_pk)   ON DELETE CASCADE ,
         FOREIGN KEY (pages_fk) REFERENCES pages (pages_pk)   ON DELETE CASCADE 
     )  engine InnoDB ; 

@@ -138,10 +138,10 @@ abstract class WebPage
     { 
         PageTimer::timeIt("start of Display($this->mMainTpl, $template)");
         // dumpcache on all server in the live environment
- //die($this->mMainTpl);
+ //die('template'. $this->mMainTpl);
         
         $this->mSmarty->assign('main_tpl' ,$this->mMainTpl);
-        
+        //$this->mSmarty->assign('main_tpl' ,'testTemplate.tpl');
         
         $template = $template ? $template : $this->mDefaultTpl;
         $cache_id = $cache_id ? $cache_id : $this->_mSmartyCacheId;
@@ -149,9 +149,9 @@ abstract class WebPage
         
         $this->_SmartySetVars();  // not sure when this should be called
         
- 
+        //die("defaulTpl: $template   , mainTpl: $this->mMainTpl");
+        //$this->mSmarty->display('testTemplate.tpl');
         $this->mSmarty->display($template); //, $cache_id, $cache_id);
-
         return true;
     }
 

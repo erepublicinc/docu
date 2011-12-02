@@ -28,26 +28,20 @@ class EditArticle extends WebPage
    
         
         if($command == 'articles') // list articles
-        {
+        { 
             $this->_listArticles($site);  
-            $this->mPageTitle = getSiteName($site) . " List Articles";
             return;     
         }
         
         
-        
         if(!empty($_POST['contents_title']))   // save article
         {
-            $this->_saveArticle($pk);  
+            $this->_saveArticle($pk, $site);  
             return;         
         }
         
-        if($command == 'new_article')
-            $this->mPageTitle = getSiteName($site) . " - New - Article";
-        else    
-            $this->mPageTitle = getSiteName($site) . " - Edit - Article";
         
-            $this->_editArticle($pk, $command);  // edit new or existing article
+        $this->_editArticle($pk, $command);  // edit new or existing article        
         return;      
     }
 
@@ -67,14 +61,15 @@ class EditArticle extends WebPage
         //  foreach($arts as $a) echo $a->contents_pk;     die;   
         $this->mSmarty->assign('contents', $arts );
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
-                                        CMS::CreateDummyModule('selectSiteModule.tpl'), 
-                                        CMS::CreateDummyModule('contentTypesModule.tpl'), 
+                                        CMS::CreateContentTypesModule(),  
                                         CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
+                                        
         $this->mMainTpl = 'listContent.tpl';
+        $this->mPageTitle = getSiteName($site) . " - List Articles";
     }
 
     
-    private function _saveArticle($pk)
+    private function _saveArticle($pk, $site)
     {
 //dump($_POST);        
         $pk = Article::sYaasSave($_POST);                   
@@ -88,7 +83,7 @@ class EditArticle extends WebPage
                 Page::sYaasSaveTarget($params);
         }
         
-        header("LOCATION: /cms/gt/articles");
+        header("LOCATION: /cms/{$site}/articles");
         die; 
     }
     
@@ -97,16 +92,19 @@ class EditArticle extends WebPage
     {
         if($command == 'new_article' || $pk == 0)  // new article
         { //die($_SESSION['user_first_name']);
+            $this->mPageTitle = getSiteName($site) . " - New Article";
+            
             $article = new stdClass();
             $article->contents_main_author_fk = $_SESSION['user_pk'];
             $article->users_first_name        = $_SESSION['user_first_name'];
             $article->users_last_name         = $_SESSION['user_last_name'];
             $article->contents_create_date    = time(); //date();
-            $history = array();
+           // $history = array();
         } 
         else // edit existing article
         {
-             $article = Article::GetDetails($pk, LATEST_VERSION);                        
+            $this->mPageTitle = getSiteName($site) . " - Edit Article";
+            $article = Article::GetDetails($pk, LATEST_VERSION);                        
         }
 
         // create the center module

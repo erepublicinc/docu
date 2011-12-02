@@ -6,7 +6,8 @@ require_once('Smarty.class.php'); // !!! needs to be loaded before registering o
 // *********** GLOBALS
 $SITENAMES = array( 'GT'=>'Government Technology','GOV'=>'Governing', 'ALL'=> 'All eRepublic sites', 
                     'EM'=>'Emergency Management Magazine', 'CV'=>'Converge Magazine', 'ER'=>'eRepublic',
-                    'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education');
+                    'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education',
+                    'DC'=>'Digital Communities');
 $CONFIG;
 
 define('LATEST_VERSION', -1);

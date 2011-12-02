@@ -79,16 +79,17 @@ function saveContentPart2()
         <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveContent();">
         <span class="ui-icon ui-icon-disk float-l mr-5"></span>
         SAVE</span></h6>
-      
+/*      
         <div class="m-5 ml-20 float-r">
             Save to: 
             <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-                <option {if $content->contents_status == 'LIVE'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_status == 'LIVE'} selected='selected'{/if}> PREVIEW  </option>
-                <option {if $content->contents_status == 'LIVE'} selected='selected'{/if}> LIVE </option>
+                <option {if $content->contents_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
+                <option {if $content->contents_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
+                <option {if $content->contents_status == 'READY'} selected='selected'{/if}> READY </option>
             </select> 
         </div>
         <br clear="all">
+*/        
     </div>
           
      
@@ -109,7 +110,7 @@ function saveContentPart2()
             <input type="hidden" name='contents_pk' value="{$content->contents_pk}" />
             <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
             <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
-            <input type="hidden" name='contents_status' value="{$content->contents_status}" />        
+            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />        
             <fieldset>                      
 
                 <div>

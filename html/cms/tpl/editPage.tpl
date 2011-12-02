@@ -26,6 +26,8 @@ function savePage()
    
  //   $('#id_status').attr('value', $('#id_status_dropdown').attr('value') );
     
+   
+    
     var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
         ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
                    {text: "Save", click: function() { savePagePart2(); }  }
@@ -38,6 +40,9 @@ function savePage()
 
 function savePagePart2()
 {
+	var moduleData = collectModuleInfo();         
+	$('#id_module_data').attr('value', moduleData );
+    
     var comment = $('#id_enter_comment').attr('value') 
     $('#id_comment').attr('value', comment );
 
@@ -79,9 +84,9 @@ function savePagePart2()
     <div class="m-5 ml-20 float-r">
         Save to: 
         <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-            <option {if $content->pages_status == 'LIVE'} selected='selected'{/if}> DRAFT </option>
-            <option {if $content->pages_status == 'LIVE'} selected='selected'{/if}> PREVIEW  </option>
-            <option {if $content->pages_status == 'LIVE'} selected='selected'{/if}> LIVE </option>
+            <option {if $content->pages_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
+            <option {if $content->pages_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
+            <option {if $content->pages_status == 'READY'} selected='selected'{/if}> READY </option>
         </select> 
     </div>
 *}    
@@ -101,7 +106,7 @@ function savePagePart2()
         <input type="hidden" name="pages_version" value="{$p->pages_version}" />
         <input type="hidden" name="pages_site_code" value="{$site_code}" />
         <input type="hidden" name="pages_version_comment" value=""  id="id_comment"/>
-
+        <input type="hidden" name="json_module_data" value=""  id="id_module_data" />
         <h2>{$site_name}</h2>
        
         <div>

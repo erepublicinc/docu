@@ -32,6 +32,7 @@ class Article extends Content
     
     protected function SaveNew()
     {       
+        $estatus  = $this->mFields->contents_version_status == 'READY' |  $this->mFields->contents_version_status == 'REVIEW' ? $this->mFields->contents_version_status : 'DRAFT';    
         $ebody    = Query::Escape($this->mFields->contents_article_body);
         $etype    = Query::Escape($this->mFields->contents_article_type);
         $ecomment = Query::Escape($this->mFields->contents_version_comment);
@@ -39,8 +40,8 @@ class Article extends Content
         $apk      = $_SESSION['user_pk'];  
 
         $this->mSqlStack[]  = "INSERT INTO articles(contents_fk, contents_version, contents_article_body,  contents_article_type,contents_version_users_fk, 
-                                                    contents_version_date, contents_version_comment) 
-                 VALUES(@pk,1,'$ebody','$etype', $author, NOW(), '$ecomment')";
+                                                    contents_version_date, contents_version_comment, contents_version_status) 
+                 VALUES(@pk,1,'$ebody','$etype', $author, NOW(), '$ecomment', '$estatus')";
         
         $this->mFields->contents_main_author_fk = $author;  
          
@@ -57,6 +58,7 @@ class Article extends Content
     protected function SaveExisting($isNewVersion = TRUE)
     {
 // dump($this->mFields);
+        $estatus  = $this->mFields->contents_version_status == 'READY' |  $this->mFields->contents_version_status == 'REVIEW' ? $this->mFields->contents_version_status : 'DRAFT';    
         $ebody      = Query::Escape($this->mFields->contents_article_body);
         $ecomment   = Query::Escape($this->mFields->contents_version_comment);
         $author     = $this->mFields->contents_author_fk   ; 
@@ -66,12 +68,14 @@ class Article extends Content
         
         if($isNewVersion)
         {
-           $this->mSqlStack[] = "INSERT INTO articles(contents_fk, contents_version, contents_article_body, contents_version_users_fk, contents_version_date, contents_version_comment)          
-                     VALUES($pk, $newVersion,'$ebody', $author , NOW(), '$ecomment')";
+           $this->mSqlStack[] = "INSERT INTO articles(contents_fk, contents_version, contents_article_body, contents_version_users_fk, 
+                                 contents_version_date, contents_version_comment, contents_version_status)          
+                     VALUES($pk, $newVersion,'$ebody', $author , NOW(), '$ecomment','$estatus')";
         }
         else 
         {
-           $this->mSqlStack[] = "UPDATE articles set contents_article_body = $ebody, contents_author_fk = $author,  contents_version_date = NOW()  where contents_fk = $pk AND contents_version = $version";
+           $this->mSqlStack[] = "UPDATE articles set contents_article_body = $ebody, contents_author_fk = $author,  contents_version_date = NOW(), contents_version_status  = $estatus  
+                                where contents_fk = $pk AND contents_version = $version";
         }
         
         return parent::SaveExisting($isNewVersion);    
@@ -84,7 +88,7 @@ class Article extends Content
     }
     
     
-    public static function GetArticles( $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')  
+    public static function GetArticles( $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'READY')  
     {
         return parent::GetContentByType('ARTICLE', $site, $orderby, $limit, $skip , $status) ; 
     }

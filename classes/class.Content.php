@@ -20,11 +20,12 @@ class Content
             'contents_title'         => array('type'=>'varchar', 'required'=>true),
             'contents_display_title' => array('type'=>'varchar'),
             'contents_summary'       => array('type'=>'varchar'),
-            'contents_status'        => array('type'=>'varchar'),
+//            'contents_status'        => array('type'=>'varchar'),
             'contents_url_name'      => array('type'=>'varchar'),
             'contents_main_author_fk'=> array('type'=>'int'),   
             'contents_extra_table'   => array('type'=>'varchar'), 
-            'contents_live_version'  => array('type'=>'int')
+            'contents_live_version'  => array('type'=>'int'),
+            'contents_preview_version'  => array('type'=>'int')
             );
     
     
@@ -105,7 +106,7 @@ class Content
      * @param string status 
      * @return array of contentItems
      */  
-    public static function GetContentByType($contentType , $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'LIVE')    
+    public static function GetContentByType($contentType , $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'READY')    
     {   
        global $CONFIG;
         
@@ -113,11 +114,14 @@ class Content
         $topX     = "LIMIT $skip, $limit ";
         $types    = '';  
         $status   = '';     
-                
+
+/*        
         if($status != 'ALL')
         {
             $sql .= " AND contents_status = '$status' ";
         }
+*/
+                
 /*        
         if($orderby)
         {
@@ -163,9 +167,18 @@ class Content
      * @param String status
      * @return array of contentItems
      */
-    public static function GetPageContents($contentType = 'ALL', $url = null, $limit = 10, $skip = 0, $status = 'LIVE')
+    public static function GetPageContents($contentType = 'ALL', $pages_id=0, $url = null, $limit = 0, $skip = 0, $status = 'READY')
     {
         global $CONFIG;
+        
+        
+        if($limit == 0) 
+        {   // default paging
+            $limit  = $CONFIG->page_size;
+            $paging = intval($_GET[pg]);
+            $skip   = $paging * $limit;  
+        }
+        
         
         $contents  =  array();       
         $topX      = "LIMIT $skip, $limit ";
@@ -176,13 +189,13 @@ class Content
         {  
             $types = " AND contents_type = '$contentType' ";
         }
-        
+/*        
         if($status != 'ALL')
         {
             $statusStr = " AND contents_status = '$status' ";
         }
-        
-        if($url)
+*/        
+        if(!empty($url))
         {
             // need an extra join to figure out which page we are looking for
             // the mssql version
@@ -203,16 +216,17 @@ class Content
         }
         else 
         {
-            // use the current page
+            // use the current page if the page_id is not specified
+            $pages_id = $pages_id > 0 ? $pages_id :  $CONFIG->current_page_id;
+            
             $sql="SELECT  * FROM contents 
-               JOIN targets 
-               ON targets_contents_fk = contents_pk 
-               WHERE targets_pages_id = ". $CONFIG->current_page_id ." 
-               AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
-                $types $statusStr   $orderStr $topX ";
+                  JOIN targets  ON targets_contents_fk = contents_pk 
+                  WHERE targets_pages_id = ". $pages_id ." 
+                  AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
+                  $types $statusStr   $orderStr $topX ";
         }
       
-//die($sql);      
+//dump($sql);      
         
         $result = new Query($sql);
   //return $result;      
@@ -283,9 +297,10 @@ class Content
         {
             $this->mFields->contents_main_author_fk = $_SESSION['user_pk'];
         }
-        
-        $status = empty($this->mFields->contents_status) ? 'NEW': $this->mFields->contents_status;
-        
+       
+        // the default status is  'DRAFT'; 
+ //       $this->mFields->contents_status  = $this->mFields->contents_status == 'READY' |  $this->mFields->contents_status == 'REVIEW' ? $this->mFields->contents_status : 'DRAFT';
+                
         // escape text fields
         $etitle         = Query::Escape($this->mFields->contents_title);
         $edisplay_title = Query::Escape($this->mFields->contents_display_title); 
@@ -294,15 +309,17 @@ class Content
         $apk            = $this->mFields->contents_main_author_fk;
         $userpk         = $_SESSION['user_pk'];
         $extra          = $this->mExtraTable;
+        $live           = $this->mFields->make_live == 1 ? 1: 0;
+        $preview        = $this->mFields->make_preview == 1 ? 1: 0;
         
         
         $sql = 'SELECT @pk:= LAST_INSERT_ID()';
         array_unshift($this->mSqlStack, $sql);
         
-        $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version, contents_url_name, contents_summary,
+        $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version,contents_preview_version, contents_url_name, contents_summary,
                                    contents_create_date, contents_update_date,contents_type, contents_status, contents_main_author_fk, 
                                    contents_update_users_fk, contents_extra_table, contents_latest_version)
-              VALUES('$etitle','$edisplay_title',1,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$status',$apk, $userpk,'$extra',1)";
+              VALUES('$etitle','$edisplay_title',$live, $preview,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$status',$apk, $userpk,'$extra',1)";
      
         array_unshift($this->mSqlStack, $sql);
 
@@ -330,7 +347,7 @@ class Content
         $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
    
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
-        if($this->mFields->contents_status == 'LIVE')
+        if($this->mFields->contents_status == 'READY')
         {
             if($newVersion)  
                $newvalues .= ',contents_live_version = @v ';
@@ -354,20 +371,26 @@ class Content
 */      
     protected function SaveExisting($newVersion = TRUE)
     { 
- 
-        // the default status is  'IN_PROGRESS'; 
-        $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
+
+        // the default status is  'DRAFT'; 
+ //       $this->mFields->contents_status  = $this->mFields->contents_status == 'READY' |  $this->mFields->contents_status == 'REVIEW' ? $this->mFields->contents_status : 'DRAFT';
    
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
         
-       
+        $thisVersion = 'contents_latest_version';
         if($newVersion)
         {  
             $newVersion = $this->mFields->contents_latest_version + 1;
             $newvalues .= ", contents_latest_version = $newVersion "  ;
-            if($this->mFields->contents_status == 'LIVE')
-               $newvalues .= ",contents_live_version =  $newVersion "  ;
-        }       
+            $thisVersion =  $newVersion; 
+        }  
+               
+        if($this->mFields->make_live == 1)
+           $newvalues .= ",contents_live_version =  $thisVersion "  ;
+        if($this->mFields->make_preview == 1)
+           $newvalues .= ",contents_preview_version =  $thisVersion "  ; 
+           
+        
         $newvalues .= ', contents_update_date = NOW() ';
         $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
         

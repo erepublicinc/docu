@@ -58,7 +58,7 @@ class Module extends Content
     /**
 	 *	returns the modules for a particular page
 	 * @param int $pages_pk [default = current page]
-	 * @param bool $includeDetails [default = TRUE]
+	 * @param bool $includeDetails options: [TRUE default], false (pk, title, placement, link_order)  
      */
     public static function GetPageModules($pages_pk= 0, $includeDetails = true)
     {
@@ -71,10 +71,11 @@ class Module extends Content
                 JOIN modules__pages l ON l.contents_fk = contents_pk 
                 WHERE pages_fk = $pages_pk ORDER BY placement, link_order";
         
-        else 
-          $sql="SELECT contents_pk, contents_title, link_order  FROM contents  
-                JOIN modules__pages ON contents_fk = contents_pk
-                WHERE pages_fk = $pages_pk ORDER BY placement, link_order" ;
+        else
+          $sql="SELECT contents_pk, contents_title, placement, link_order FROM (contents JOIN modules m ON m.contents_fk = contents_pk AND m.contents_version = $liveField )              
+                JOIN modules__pages l ON l.contents_fk = contents_pk 
+                WHERE pages_fk = $pages_pk ORDER BY placement, link_order";
+        
             
         $r = new Query($sql);
         return $r;          
@@ -88,7 +89,7 @@ class Module extends Content
     public static function GetPageLinks($module_pk)
     {
         $sql = "SELECT  max(pages_pk) as pages_pk, pages_id, pages_title, pages_site_code FROM pages JOIN modules__pages ON pages_pk = pages_fk 
-                WHERE contents_fk = $module_pk AND ( pages_is_live =1 OR pages_is_preview = 1) group by pages_id";
+                WHERE contents_fk = $module_pk  group by pages_id";
         return  new Query($sql);
       
     }
@@ -126,18 +127,17 @@ class Module extends Content
     /**
      * links a array of module pk's to a page
      * @param int page pk
-     * @param array module pks
-     * @param String placement ('DETAIL_LEFT', DETAIL_RIGHT, 'LISTING_LEFT' )   etc
+     * @param array of objects with the following fields:contents_fk,  placement, link_order
      */
-    public static function LinkModules($pages_fk, $module_pks, $placement)
+    public static function LinkModules($page_pk, $moduleArray)
     {
         $sql= array();
-        $sql[] = "DELETE FROM modules__pages WHERE pages_fk = $pages_fk AND placement = '$placement' ";
-        $idx = 1 ;
- //dump($module_pks) ;      
-        foreach($module_pks as $module_pk)
+        $sql[] = "DELETE FROM modules__pages WHERE pages_fk = $page_pk  ";
+        
+ //dump($moduleArray) ;      
+        foreach($moduleArray as $mod)
         {
-            $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) values($module_pk, $pages_fk, '$placement', $idx)";
+            $sql[] = "INSERT INTO modules__pages (contents_fk, pages_fk, placement, link_order) values($mod->contents_fk, $page_pk, '$mod->placement', $mod->link_order)";
         }
         return Query::sTransaction($sql);
     }
