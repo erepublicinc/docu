@@ -2,7 +2,7 @@
 // a model class
 class Article extends Content
 {
-    private static $mFieldDescriptions = array( 'contents_article_body'    => array('type'=>'varchar')    );
+    
     
     /*
      *  creates a new article from an array or object
@@ -12,7 +12,11 @@ class Article extends Content
         
         parent::__construct($fieldsObjectOrArray);
         $this->mExtraTable  = 'articles';
-        $this->mContentType = 'ARTICLE';        
+        $this->mContentType = 'ARTICLE';
+        $this->mExtraFieldDescriptions = array( 
+        	'contents_article_body'    => array('type'=>'varchar') ,  
+            'contents_article_type'    => array('type'=>'varchar')  
+        );        
     }
 
     /**
@@ -22,17 +26,21 @@ class Article extends Content
     public function Save()
     {         
         $newVersion = true;  // always create a new version
-        
+        return $result = parent::EasySave($newVersion);
+      /*  
         $this->mFields->contents_author_fk  = $_SESSION['user_pk'];  
         if($this->mPk > 0)
             return $this->SaveExisting($newVersion);
         else 
-            return $this->SaveNew();    
+            return $this->SaveNew();
+       */         
     }
     
     protected function SaveNew()
     {       
         $estatus  = $this->mFields->contents_version_status == 'READY' |  $this->mFields->contents_version_status == 'REVIEW' ? $this->mFields->contents_version_status : 'DRAFT';    
+        $this->mFields->contents_status = $estatus;
+        
         $ebody    = Query::Escape($this->mFields->contents_article_body);
         $etype    = Query::Escape($this->mFields->contents_article_type);
         $ecomment = Query::Escape($this->mFields->contents_version_comment);
@@ -59,6 +67,8 @@ class Article extends Content
     {
 // dump($this->mFields);
         $estatus  = $this->mFields->contents_version_status == 'READY' |  $this->mFields->contents_version_status == 'REVIEW' ? $this->mFields->contents_version_status : 'DRAFT';    
+        $this->mFields->contents_status = $estatus;
+        
         $ebody      = Query::Escape($this->mFields->contents_article_body);
         $ecomment   = Query::Escape($this->mFields->contents_version_comment);
         $author     = $this->mFields->contents_author_fk   ; 

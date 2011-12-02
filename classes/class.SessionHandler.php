@@ -10,13 +10,13 @@ class SessionHandler
         $db = self::$mSessionDB;
         $r = new Query("SELECT * FROM {$db}.sessions WHERE sessions_id = '$key' AND sessions_expires > CURRENT_TIMESTAMP");  
         Query::changeDB(self::$mDefaultDB);  // change it back                      
-        return json_decode($r->sessions_data);
+        return unserialize($r->sessions_data);
     }
     public static function sWrite($key, $data)
     {
         $db = self::$mSessionDB;
         $maxlifetime = 1800;  // 30 minutes  
-        $data = json_encode($data);
+        $data = serialize($data);
         $data = Query::Escape($data);
         $r = new Query("INSERT INTO {$db}.sessions (sessions_id, sessions_data, sessions_expires) 
                         VALUES('$key', '$data', DATE_ADD(CURRENT_TIMESTAMP, INTERVAL $maxlifetime SECOND))

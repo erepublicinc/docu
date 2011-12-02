@@ -20,10 +20,10 @@ class Content
             'contents_title'         => array('type'=>'varchar', 'required'=>true),
             'contents_display_title' => array('type'=>'varchar'),
             'contents_summary'       => array('type'=>'varchar'),
-//            'contents_status'        => array('type'=>'varchar'),
+            'contents_status'        => array('type'=>'varchar'),
             'contents_url_name'      => array('type'=>'varchar'),
             'contents_main_author_fk'=> array('type'=>'int'),   
-            'contents_extra_table'   => array('type'=>'varchar'), 
+//            'contents_extra_table'   => array('type'=>'varchar'), 
             'contents_live_version'  => array('type'=>'int'),
             'contents_preview_version'  => array('type'=>'int')
             );
@@ -276,13 +276,25 @@ class Content
         // dump($c);  
         return $c;
     }
-        
+
+      
+    protected function EasySave($newVersion)
+    {
+        if($this->contents_pk >0)
+            $newContent = true;
+            
+        //     
+    }
+    
+    
+    
     /**
      * 
      * Creates a new content item
      * @param stdClass object with the field values
      * the following fields are mandatory:  title, contents_type, author_pk 
      * @param array of strings $extra_sql     if supplied, this sql will run in the same call as a transaction
+     * @return the pk of the new item, or false
      */
     protected function SaveNew()
     {
@@ -297,11 +309,9 @@ class Content
         {
             $this->mFields->contents_main_author_fk = $_SESSION['user_pk'];
         }
-       
-        // the default status is  'DRAFT'; 
- //       $this->mFields->contents_status  = $this->mFields->contents_status == 'READY' |  $this->mFields->contents_status == 'REVIEW' ? $this->mFields->contents_status : 'DRAFT';
-                
+        
         // escape text fields
+        $estatus        = empty($this->mFields->contents_status) ? 'DRAFT' : Query::Escape($this->mFields->contents_status);       
         $etitle         = Query::Escape($this->mFields->contents_title);
         $edisplay_title = Query::Escape($this->mFields->contents_display_title); 
         $esummary       = Query::Escape($this->mFields->contents_summary); 
@@ -313,19 +323,20 @@ class Content
         $preview        = $this->mFields->make_preview == 1 ? 1: 0;
         
         
-        $sql = 'SELECT @pk:= LAST_INSERT_ID()';
-        array_unshift($this->mSqlStack, $sql);
-        
         $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version,contents_preview_version, contents_url_name, contents_summary,
                                    contents_create_date, contents_update_date,contents_type, contents_status, contents_main_author_fk, 
                                    contents_update_users_fk, contents_extra_table, contents_latest_version)
-              VALUES('$etitle','$edisplay_title',$live, $preview,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$status',$apk, $userpk,'$extra',1)";
+              VALUES('$etitle','$edisplay_title',$live, $preview,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$estatus',$apk, $userpk,'$extra',1)";
      
+        array_unshift($this->mSqlStack, 'SELECT @pk:= LAST_INSERT_ID()');
         array_unshift($this->mSqlStack, $sql);
-
-        // to return the pk
-        $sql = 'SELECT @pk as pk';
-        array_push($this->mSqlStack, $sql);
+        array_push($this->mSqlStack, 'SELECT @pk as pk');
+        /* now the sqlStack has 4 items in the following order:
+            0. create the content record
+            1. 'SELECT @pk:= LAST_INSERT_ID()'
+            2. create the extra table record , which is using @pk
+            3. 'SELECT @pk as pk' , so we can return this
+        */
         
         $result =  Query::sTransaction($this->mSqlStack);
         if($result != false)
@@ -339,41 +350,11 @@ class Content
      *    @param bool $newVersion to see if we have to increase the live version 
      *    @return   false (in case of failure,  otherwise the pk of the content item
      */
-/*    
+     
     protected function SaveExisting($newVersion = TRUE)
     { 
- 
-        // the default status is  'IN_PROGRESS'; 
-        $this->mFields->contents_status  = isset($this->mFields->contents_status) ? $this->mFields->contents_status: 'IN_PROGRESS';
-   
-        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
-        if($this->mFields->contents_status == 'READY')
-        {
-            if($newVersion)  
-               $newvalues .= ',contents_live_version = @v ';
-            else  
-               $newvalues .= ',contents_live_version = @v -1';  
-        }
-        $newvalues .= ', contents_update_date = NOW() ';
-        $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
-        
-        // this needs to be first,   get the version number by looking for the highest and adding 1
-        $extraTable = $this->mExtraTable;
-        array_unshift($this->mSqlStack, " SELECT @v := max(contents_version)+1 FROM $this->mExtraTable GROUP BY contents_fk HAVING contents_fk= $this->mPk");
-        
-        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
-
-        $result = Query::sTransaction($this->mSqlStack);
-        if($result != false)
-            return $this->mFields->contents_pk;
-        return false;  
-    }
-*/      
-    protected function SaveExisting($newVersion = TRUE)
-    { 
-
         // the default status is  'DRAFT'; 
- //       $this->mFields->contents_status  = $this->mFields->contents_status == 'READY' |  $this->mFields->contents_status == 'REVIEW' ? $this->mFields->contents_status : 'DRAFT';
+        $this->mFields->contents_status  = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
    
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions); 
         
@@ -390,7 +371,7 @@ class Content
         if($this->mFields->make_preview == 1)
            $newvalues .= ",contents_preview_version =  $thisVersion "  ; 
            
-        
+        // who changed it last and when
         $newvalues .= ', contents_update_date = NOW() ';
         $newvalues .= ', contents_update_users_fk = '.$_SESSION['user_pk'];
         
@@ -465,7 +446,8 @@ class Content
     }
         
     /**
-     * creates a string used for updating a record like: "body='hello', version=12"
+     * creates a string used for updating a record like:  "body='hello', version=12"
+     * creates a string used for inserting a record like: "(body,version) VALUES('hello', 12) "
      * typical use:    
      * $str = FormatUpdateString(GetFieldTypes(false), $params);
      * $sql = "UPDATE events SET $str WHERE pk = $pk";
@@ -473,28 +455,61 @@ class Content
      * @param array of field types
      * @param stdClass of parameters
      */
-    protected  function FormatUpdateString($Fieldsarray)
+    protected  function FormatUpdateString($Fieldsarray, $insert = false)
     {
-        $newvalues = ''; 
+        $insertStr = '(';          // (body,version)
+        $newvalues = '';          //  VALUES('hello', 12)  or body='hello', version=12"
+           
         $keys = get_object_vars($this->mFields);
               
         foreach($keys as $field =>$value)
         {
             if(isset($Fieldsarray[$field])) 
-            {  
+            { 
+               if($insert == false && $Fieldsarray[$field]['insertOnly'] )
+                   continue;
+                               
                 if($Fieldsarray[$field]['type'] == 'varchar' )
                 {
                     $evalue = Query::Escape($value);
-                    $newvalues .= "$field = '$evalue',";
+                    
+                    if($insert)
+                    {
+                        $insertStr .= "$field,";
+                        $newvalues .= "'$value',";
+                    }
+                    else 
+                    {
+                        $newvalues .= "$field = '$evalue',";
+                    }
                 }
                 else //if($Fieldsarray[$field]['type'] == 'int' )
                 {
-                    $newvalues .= "$field = $value,";
+                    if($insert)
+                    {
+                        $insertStr .= "$field,";
+                        $newvalues .= "$value,";
+                    }
+                    else 
+                    {
+                        $newvalues .= "$field = $value,";
+                    }
                 }
             }
         }
-        // remove last comma    
-        $newvalues = substr($newvalues, 0, strlen($newvalues)-1); 
+        
+        if($insert)
+        {               
+            $insertStr  = substr($newvalues, 0, strlen($newvalues)-1); // remove last comma  
+            $newvalues .=  $insertStr . ') VALUES(' . $newvalues;             // combine the strings
+             
+            $newvalues  = substr($newvalues, 0, strlen($newvalues)-1); // remove last comma  
+            $newvalues .= ')';
+        }
+        else 
+        {   
+            $newvalues = substr($newvalues, 0, strlen($newvalues)-1); // remove last comma  
+        } 
 // dump($newvalues);       
         return  $newvalues;   
     }
