@@ -52,7 +52,9 @@ class CMSSite extends Website
         }
 
         // the default map
-        $map = array( 'articles'    => 'EditArticle', 
+        $map = array( 'users'       => 'EditUser',
+        			  'new_users'    => 'EditUser',
+        			  'articles'    => 'EditArticle', 
                       'article'     => 'EditArticle',
                       'new_article' => 'EditArticle',
                       'modules'     => 'EditModule', 

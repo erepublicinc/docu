@@ -26,13 +26,18 @@ class User
     }
     
     public function Save()
-    {
+    { //dump($this->mFields);
     	$email = Query::Escape($this->mFields->users_email);
-    	$pw    = Query::Escape($this->mFields->users_password);
-    	$lname = Query::Escape($this->mFields->users_first_name);
-    	$fname = Query::Escape($this->mFields->users_last_name);
+    	
+    	if(!empty($this->mFields->users_password))
+    	{
+    	    $pw    = " users_password = '". Query::Escape($this->mFields->users_password)."', ";
+    	}
+    	
+    	$fname = Query::Escape($this->mFields->users_first_name);
+    	$lname = Query::Escape($this->mFields->users_last_name);
     	$ad    = Query::Escape($this->mFields->users_ad_user);
-    	$active = intval($this->mFields->users_active);
+    	$active = empty($this->mFields->users_active)? 0: 1;
     	$pk    = intval($this->mFields->users_pk);
     	
     	$sql = array();
@@ -44,7 +49,7 @@ class User
     	}
         else 
         {
-        	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname' users_password = '$pw',
+        	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname', $pw
         			users_ad_user = '$ad', users_active = $active WHERE users_pk = $pk";
         	$sql[] = "SELECT $pk as pk";
         }
@@ -54,6 +59,21 @@ class User
         	return $r->pk ;   // success                  
         return false;
     }
+    
+    public static function GetDetails($pk)
+    {
+        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email,  users_active, roles_code
+                FROM users LEFT JOIN roles ON users_pk = roles_users_fk WHERE users_pk = $pk";
+        return new Query($sql);
+    }
+    
+    public static function GetUsers()
+    {
+        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email, users_active
+                FROM users ";
+        return new Query($sql);
+    }
+    
     /**
      * sets the users roles to the set of roles being supplied, any others are removed
      * @param int pk
