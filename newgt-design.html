@@ -7,17 +7,18 @@
 	<META NAME="AUTHOR" CONTENT="Michael Tel">
 	<META NAME="CREATED" CONTENT="20111118;8185000">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
-	<META NAME="CHANGED" CONTENT="20111123;13022500">
+	<META NAME="CHANGED" CONTENT="20111205;14534200">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { margin: 0.79in }
-		P { margin-bottom: 0.08in }
 		H1 { margin-bottom: 0.08in }
 		H1.western { font-family: "Arial", sans-serif; font-size: 19pt }
 		H1.cjk { font-family: "DejaVu Sans"; font-size: 16pt }
 		H1.ctl { font-family: "Lohit Hindi"; font-size: 16pt }
+		P { margin-bottom: 0.08in }
 		H2 { margin-bottom: 0.08in }
 		H2.western { font-family: "Arial", sans-serif; font-size: 14pt; font-style: italic }
 		H2.cjk { font-size: 14pt; font-style: italic }
@@ -117,7 +118,7 @@ and content items that have the 'preview' bit set.</P>
 <P><BR><BR>
 </P>
 <H3 CLASS="western">Versioning</H3>
-<P>Versioning happens in two areas:  contents and pages.</P>
+<P>Versioning happens in two areas: contents and pages.</P>
 <P>Versioning of contents means that we keep a history of the changes
 to a content item. It also means that a specific version can be made
 live.</P>
@@ -189,6 +190,13 @@ starting the session.</P>
 only roles, no permissions. It seems that this is granular enough</P>
 <P STYLE="margin-bottom: 0in">Also, the roles for the current user
 are stored in the session object. This will save us a SQL call.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Author ( is not a model)</B></P>
+<P STYLE="margin-bottom: 0in">Author is the public profile used for
+the by lines.  A user can have multiple profiles ( for pen-names etc)
+  and we  have “system”  authors   like :  “editorial staff” 
+etc</P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <H2 CLASS="western">Content</H2>

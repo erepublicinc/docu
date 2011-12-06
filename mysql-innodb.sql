@@ -37,10 +37,29 @@ CREATE TABLE users
         users_password VARCHAR(40) ,
         users_email VARCHAR(70)   NOT NULL,
         users_ad_user VARCHAR(20) ,
+        users_notes VARCHAR(255) ,
         users_active BIT DEFAULT 0 NOT NULL,
         PRIMARY KEY (users_pk),
         CONSTRAINT users_email_unique UNIQUE (users_email)
     ) engine InnoDB ; 
+
+    
+CREATE TABLE authors
+    (
+        authors_pk INT NOT NULL AUTO_INCREMENT,
+        authors_users_fk INT NOT NULL,            -- points to the user record
+        authors_name VARCHAR(20) ,
+        authors_bio TEXT,
+        authors_public_email VARCHAR(60) ,
+        authors_active BIT DEFAULT 0 NOT NULL,
+        CONSTRAINT  FOREIGN KEY (authors_users_fk) REFERENCES users (users_pk),
+        PRIMARY KEY (authors_pk)
+    ) engine InnoDB ; 
+    
+
+    
+
+
 
 CREATE TABLE roles   
     (
@@ -73,11 +92,11 @@ CREATE TABLE
         contents_type VARCHAR(20) NOT NULL,
         contents_extra_table VARCHAR(30) NOT NULL,
         contents_status VARCHAR(20) NOT NULL,
-        contents_main_author_fk INT NOT NULL,
+        contents_author_fk INT,
         
   
         PRIMARY KEY (contents_pk),
-        FOREIGN KEY (contents_main_author_fk) REFERENCES users(users_pk),      
+        FOREIGN KEY (contents_author_fk) REFERENCES authors(authors_pk),      
         FOREIGN KEY (contents_update_users_fk) REFERENCES users(users_pk)      
     )engine InnoDB;
 

@@ -110,7 +110,7 @@ abstract class Smarty_Internal_TemplateBase extends Smarty_Internal_Data {
         // disable caching for evaluated code
         if ($_template->source->recompiled) {
             $_template->caching = false;
-        }
+        }     //dump($_template);
         // checks if template exists
         if (!$_template->source->exists) {
             throw new SmartyException("Unable to load template {$_template->source->type} '{$_template->source->name}'");
