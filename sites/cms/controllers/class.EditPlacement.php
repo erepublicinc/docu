@@ -1,6 +1,6 @@
 <?php
 
-class EditPlacement extends WebPage
+class EditPlacement extends Controller
 {  
     /**
      * @param website object

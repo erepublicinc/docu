@@ -11,7 +11,7 @@
 
   <div class="ui-widget-content ui-corner-all bk_color2 p-10">          
             <h6>
-          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="new_{$record_type}">New</a>
+          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="{$record_type}/new">New</a>
           <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Filter</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Copy</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Quick Edit</a>
@@ -40,7 +40,7 @@
             {foreach $users as $u}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/gt/{$record_type}/{$u->users_pk}">{$u->users_first_name} {$u->users_last_name}</a></td>
+                <td><a href="/cms/all/{$record_type}/{$u->users_pk}">{$u->users_first_name} {$u->users_last_name}</a></td>
                 <td>{$u->users_email}</td>
                 <td><span {if $u->users_active > 0}  class="ui-icon ui-icon-circle-check " 
                           {else} class=" "

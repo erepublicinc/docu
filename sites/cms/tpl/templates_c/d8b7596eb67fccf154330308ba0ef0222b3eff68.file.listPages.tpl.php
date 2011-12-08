@@ -1,37 +1,39 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:42:59
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 09:40:11
          compiled from "/var/www/newgt/sites/cms/tpl/listPages.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:6075181924edd65139064b0-73930228%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:6306445584edfe54949f6e1-94403657%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
     'd8b7596eb67fccf154330308ba0ef0222b3eff68' => 
     array (
       0 => '/var/www/newgt/sites/cms/tpl/listPages.tpl',
-      1 => 1322763024,
+      1 => 1323365901,
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '6075181924edd65139064b0-73930228',
+  'nocache_hash' => '6306445584edfe54949f6e1-94403657',
   'function' => 
   array (
   ),
+  'version' => 'Smarty 3.1.0',
+  'unifunc' => 'content_4edfe549527a6',
   'variables' => 
   array (
+    'record_type' => 0,
     'pages' => 0,
     'site_code' => 0,
     'p' => 0,
     'DATETIME_FORMAT' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd651397e33',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd651397e33')) {function content_4edd651397e33($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
+<?php if ($_valid && !is_callable('content_4edfe549527a6')) {function content_4edfe549527a6($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
 ?>
 <!-- listPages.tpl -->
  <div class="ui-widget-content ui-corner-all bk_color2 p-10">          
             <h6>
-          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="new_page">New</a>
+          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="<?php echo $_smarty_tpl->tpl_vars['record_type']->value;?>
+/new">New</a>
           <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Filter</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Copy</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Quick Edit</a>

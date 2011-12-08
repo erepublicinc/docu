@@ -1,9 +1,7 @@
 <?php
 
-class EditPage extends WebPage
+class EditPage extends Controller
 {
-    
-   
     
     /**
      * @param website object
@@ -17,52 +15,50 @@ class EditPage extends WebPage
         global $CONFIG;    
         parent::__construct($websiteObject, $arguments); 
         
-        $site    = $CONFIG->cms_site_code;
-        $command = $arguments[0];
-        $pk      = 0 + $arguments[1]; 
-        
-//die("site: $site  command: $command  pk: $pk");  
-//dump($_POST);
-   
+        $site        = $CONFIG->cms_site_code;
+        $record_type = $arguments[0];
+        $pk          = 0 + intval($arguments[1]);       
+        $isNew       = $arguments[1] == 'new' ? true :false;
+                 
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type','page');
-           
-        if($command == 'pages')
-        {
-           $this->_ListPages($site);
-            return; //================================>
-        }
-        
+        $this->mSmarty->assign('record_type', $record_type);
+                  
        
         if(!empty($_POST['pages_title']))
         {
-             $this->_SavePage($site);
+             $this->_SavePage($site, $record_type);
              return; //================================>
         }
         
-        $this->_EditPage($pk, $command);
+        if($isNew || $pk >0)
+        {
+            $this->_EditPage($pk, $command);
+            return; //================================>
+        }
+        
+        $this->_ListPages($site); // list pages by default
         return;      
     }
    
     
     
-    private function _SavePage($site)
+    private function _SavePage($site,$record_type)
     {
         $p = new Page($_POST);
         $pk = $p->Save();
         Module::LinkModules($pk, json_decode($_POST['json_module_data']));
        
-        header("LOCATION: /cms/$site/pages");
+        header("LOCATION: /cms/$site/$record_type");
         die;             
     }
 
     
-    private function _EditPage($pk, $command)
+    private function _EditPage($pk)
     {
         
         
-        if($command == 'new_page' || $pk == 0)
+        if( $pk == 0)
         { //die($_SESSION['user_first_name']);
               $this->mPageTitle = getSiteName($site) . " - New Page";
             

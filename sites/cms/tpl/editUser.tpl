@@ -21,26 +21,21 @@ var ckConfig = {toolbar :
          
     });
 
+
+
 function saveContent()
 {
-//	$('#id_changed_targets').attr('value', gatherChangedTargets()); 
-	$('#id_status').attr('value', $('#id_status_dropdown').attr('value') );
-    
-    var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
-        ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
-                   {text: "Save", click: function() { saveContentPart2(); }  }
-                  ]
-    });
-    
-	
-
-}
-
-function saveContentPart2()
-{
+ /*
     var comment = $('#id_enter_comment').attr('value') 
 	$('#id_comment').attr('value', comment );
 
+    var roles_str = '';
+    $('.role_checkbox').each(function(){
+        if( $(this).checked())
+            roles_str .= $(this).attr('name')
+    });
+*/
+    
     //alert('saving: '+comment);
 	$('#id_details_form').submit();
 }
@@ -71,24 +66,14 @@ function saveContentPart2()
     <div class="ui-widget-content ui-corner-all bk_color3">
         <div class="grid_6 m-10"> <h3>User Details</h3>  </div>
                       
-        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/modules">
+        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$record_type}">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
         <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveContent();">
         <span class="ui-icon ui-icon-disk float-l mr-5"></span>
         SAVE</span></h6>
-{* <!--       
-        <div class="m-5 ml-20 float-r">
-            Save to: 
-            <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-                <option {if $content->contents_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
-                <option {if $content->contents_status == 'READY'} selected='selected'{/if}> READY </option>
-            </select> 
-        </div>
-       
- --> *}        
+ 
  
   <br clear="all">
     </div>
@@ -163,15 +148,21 @@ function saveContentPart2()
                     <textarea type="text" name="users_notes" >{$user->users_notes}</textarea>
                 </div> 
   
-  
+               
   
                 <div >
                     <table class="grid_6">
-                        {foreach $roles as $role}
-                           <tr><td>  {$role}: </td><td><input type="checkbox" name="users_role" class=""/>  </td></tr>
+                        {foreach $roles as $role => $checked}
+                           <tr><td>  {$role}: </td><td><input type="checkbox" name="user_role_{$role}" 
+                                {if $checked == 1} checked="checked"{/if} />  
+                           </td></tr>
                         {/foreach}
                     </table>
                 </div>
+                 
+                 
+               <br clear="all">  
+               
                  
                                          
             </fieldset>              

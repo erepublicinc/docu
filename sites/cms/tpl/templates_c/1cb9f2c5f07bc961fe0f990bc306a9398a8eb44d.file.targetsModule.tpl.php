@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:43:09
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 09:25:37
          compiled from "/var/www/newgt/sites/cms/tpl/targetsModule.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:10028754844edd651d265cf9-13362768%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:6352722114ee0f311782172-30878379%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,7 +11,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '10028754844edd651d265cf9-13362768',
+  'nocache_hash' => '6352722114ee0f311782172-30878379',
   'function' => 
   array (
   ),
@@ -25,9 +25,9 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   ),
   'has_nocache_code' => false,
   'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd651d4120c',
+  'unifunc' => 'content_4ee0f3119a2c4',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd651d4120c')) {function content_4edd651d4120c($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
+<?php if ($_valid && !is_callable('content_4ee0f3119a2c4')) {function content_4ee0f3119a2c4($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
 ?>
 
     <style>

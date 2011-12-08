@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:42:59
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-07 14:14:33
          compiled from "/var/www/newgt/sites/cms/tpl/contentTypesModule.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:13293028364edd65138a1194-76113545%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:2136731484edfe5494187c0-04455319%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,7 +11,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '13293028364edd65138a1194-76113545',
+  'nocache_hash' => '2136731484edfe5494187c0-04455319',
   'function' => 
   array (
   ),
@@ -23,9 +23,9 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   ),
   'has_nocache_code' => false,
   'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd65138f522',
+  'unifunc' => 'content_4edfe54951a23',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd65138f522')) {function content_4edd65138f522($_smarty_tpl) {?><!-- contentTypesModule.tpl -->
+<?php if ($_valid && !is_callable('content_4edfe54951a23')) {function content_4edfe54951a23($_smarty_tpl) {?><!-- contentTypesModule.tpl -->
 		<!-- Accordion -->
 		<div id="accordion_content_types" class="accordion">
 			<div>

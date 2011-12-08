@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:42:59
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-07 14:14:33
          compiled from "/var/www/newgt/sites/cms/tpl/recentlyModifiedModule.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:2439123784edd65138f8a45-36107557%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:19964145364edfe549475d91-41239361%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,15 +11,15 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '2439123784edd65138f8a45-36107557',
+  'nocache_hash' => '19964145364edfe549475d91-41239361',
   'function' => 
   array (
   ),
   'has_nocache_code' => false,
   'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd6513903c6',
+  'unifunc' => 'content_4edfe54949b79',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd6513903c6')) {function content_4edd6513903c6($_smarty_tpl) {?><!-- recentlyModifiedModule.tpl -->
+<?php if ($_valid && !is_callable('content_4edfe54949b79')) {function content_4edfe54949b79($_smarty_tpl) {?><!-- recentlyModifiedModule.tpl -->
         <div class="ui-widget-content ui-corner-all p-10">
             <h3>Recently Modified</h3>
             <br clear="all">

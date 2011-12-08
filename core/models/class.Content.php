@@ -22,7 +22,7 @@ class Content
             'contents_summary'       => array('type'=>'varchar'),
             'contents_status'        => array('type'=>'varchar'),
             'contents_url_name'      => array('type'=>'varchar'),
-            'contents_main_author_fk'=> array('type'=>'int'),   
+            'contents_author_fk'     => array('type'=>'int'),   
 //            'contents_extra_table'   => array('type'=>'varchar'), 
             'contents_live_version'  => array('type'=>'int'),
             'contents_preview_version'  => array('type'=>'int')
@@ -140,11 +140,11 @@ class Content
                */
             
             // this is the mysql version
-            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_author_fk  
+            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_author_fk  
                 FROM  (contents  JOIN targets ON targets_contents_fk = contents_pk )
                            JOIN pages   ON pages_id = targets_pages_id           
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status
-               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_main_author_fk  
+               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_author_fk  
                $topX ";
         }
         else 
@@ -256,13 +256,13 @@ class Content
         if(is_int($urlName))   
         {
            $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
-                  FROM contents JOIN users on users_pk = contents_main_author_fk 
+                  FROM contents JOIN users on users_pk = contents_author_fk 
                   WHERE contents_pk = $urlName"; 
         }
         else 
         {
             $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
-                  FROM contents JOIN users on users_pk = contents_main_author_fk 
+                  FROM contents JOIN users on users_pk = contents_author_fk 
                   WHERE contents_url_name = '$urlName'";
         }
 //dump($sql);        
@@ -304,11 +304,6 @@ class Content
             logerror('create content required parameter(s) missing', __FILE__.' '.__LINE__);
             return false;
         }
-
-        if( !isset($this->mFields->contents_main_author_fk) )
-        {
-            $this->mFields->contents_main_author_fk = $_SESSION['user_pk'];
-        }
         
         // escape text fields
         $estatus        = empty($this->mFields->contents_status) ? 'DRAFT' : Query::Escape($this->mFields->contents_status);       
@@ -316,7 +311,7 @@ class Content
         $edisplay_title = Query::Escape($this->mFields->contents_display_title); 
         $esummary       = Query::Escape($this->mFields->contents_summary); 
         $eurl_name      = Query::Escape($this->mFields->contents_url_name);
-        $apk            = $this->mFields->contents_main_author_fk;
+        $apk            = $this->mFields->contents_author_fk;
         $userpk         = $_SESSION['user_pk'];
         $extra          = $this->mExtraTable;
         $live           = $this->mFields->make_live == 1 ? 1: 0;
@@ -324,7 +319,7 @@ class Content
         
         
         $sql="INSERT INTO contents (contents_title, contents_display_title, contents_live_version,contents_preview_version, contents_url_name, contents_summary,
-                                   contents_create_date, contents_update_date,contents_type, contents_status, contents_main_author_fk, 
+                                   contents_create_date, contents_update_date,contents_type, contents_status, contents_author_fk, 
                                    contents_update_users_fk, contents_extra_table, contents_latest_version)
               VALUES('$etitle','$edisplay_title',$live, $preview,'$eurl_name','$esummary', NOW(),NOW(),'$this->mContentType','$estatus',$apk, $userpk,'$extra',1)";
      
@@ -406,8 +401,8 @@ class Content
              $sql = "SELECT * FROM   contents c 
                      JOIN $extraTable t 
                      ON contents_pk = t.contents_fk and t.contents_version = $version     
-                     JOIN users u
-                     ON u.users_pk = c.contents_main_author_fk              
+                     JOIN authors au
+                     ON au.authors_pk = c.contents_author_fk              
                      WHERE c.contents_pk = $pk ";
  		  else 
               $sql = "SELECT * FROM   contents c 

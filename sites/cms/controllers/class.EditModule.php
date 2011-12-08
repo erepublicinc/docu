@@ -1,6 +1,6 @@
 <?php
 
-class EditModule extends WebPage
+class EditModule extends Controller
 {
     
       
@@ -11,61 +11,58 @@ class EditModule extends WebPage
      *          1:   'pages' 'new_page' 'page' ( the first one produces a list the other fo editing
      *          2:   [optional] pk of the page 
      */
-    public function __construct($websiteObject, $arguments)
+    public function __construct($routerObject, $arguments)
     {   
         global $CONFIG;    
-        parent::__construct($websiteObject, $arguments); 
-        
-        $site    = $CONFIG->cms_site_code;
-        $command = $arguments[0];
-        $pk      = 0 + $arguments[1]; 
-//die("site: $site  command: $command  pk: $pk");  
-   
+        parent::__construct($routerObject, $arguments); 
+
+        $site        = $CONFIG->cms_site_code;        
+        $record_type = $arguments[0];
+        $pk          = 0 + intval($arguments[1]);       
+        $isNew       = $arguments[1] == 'new' ? true :false;
+                     
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type','module');
-          
-        if($command == 'modules')
-        {
-           $this->_ListModules($site);
-            return; //================================>
-        }
-               
-       
+        $this->mSmarty->assign('record_type', $record_type);
+                  
+                      
         if(!empty($_POST['contents_title']))
         {
-             $this->_SaveModule();
+             $this->_SaveModule($site,$record_type);
              return; //================================>
         }
         
-        $this->_EditModule($pk, $command);
+        if($isNew || $pk >0)
+        {
+            $this->_EditModule($pk);
+            return;
+        }
+        
+        $this->_ListModules($site);
         return;
       
     }
    
     
     
-    private function _SaveModule()
+    private function _SaveModule($site,$record_type)
     {
         //dump($_POST);
         $m = new Module($_POST);
         $pk = $m->Save();
        
-        header("LOCATION: /cms/$site/modules");
+        header("LOCATION: /cms/$site/$record_type");
         die;             
     }
 
     
-    private function _EditModule($pk, $command)
+    private function _EditModule($pk)
     {
         
         
-        if($command == 'new_module' || $pk == 0)
+        if($pk == 0)
         { //die($_SESSION['user_first_name']);
             $m = new stdClass();
-            $m->contents_main_author_fk = $_SESSION['user_pk'];
-            $m->users_first_name        = $_SESSION['user_first_name'];
-            $m->users_last_name         = $_SESSION['user_last_name'];
             $m->contents_create_date    = time(); //date();
            
             $this->mPageTitle = getSiteName($site) . " - New Module";

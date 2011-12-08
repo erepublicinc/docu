@@ -1,5 +1,32 @@
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 10:06:14
+         compiled from "/var/www/newgt/sites/cms/tpl/editModule.tpl" */ ?>
+<?php /*%%SmartyHeaderCode:3002133404ee0f7b6110071-14931316%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+$_valid = $_smarty_tpl->decodeProperties(array (
+  'file_dependency' => 
+  array (
+    '95e10d22d6507cc31b76ebf0ea637abb8d25af62' => 
+    array (
+      0 => '/var/www/newgt/sites/cms/tpl/editModule.tpl',
+      1 => 1323367534,
+      2 => 'file',
+    ),
+  ),
+  'nocache_hash' => '3002133404ee0f7b6110071-14931316',
+  'function' => 
+  array (
+  ),
+  'version' => 'Smarty 3.1.0',
+  'unifunc' => 'content_4ee0f7b627529',
+  'variables' => 
+  array (
+    'content' => 0,
+    'site_code' => 0,
+    'record_type' => 0,
+  ),
+  'has_nocache_code' => false,
+),false); /*/%%SmartyHeaderCode%%*/?>
+<?php if ($_valid && !is_callable('content_4ee0f7b627529')) {function content_4ee0f7b627529($_smarty_tpl) {?>
 
-{literal}
 <script type="text/javascript">
 
 var ckConfig = {toolbar :
@@ -47,7 +74,7 @@ function saveContentPart2()
     
 </script>
 
-{/literal}
+
 
 <div id='save_dialog' class="ui-dialog ui-widget ui-widget-content ui-corner-all"  style="display:none; background-color:white">
     <textarea id="id_enter_comment">Please enter a comment</textarea>
@@ -60,8 +87,10 @@ function saveContentPart2()
   <!-- PAGE TITLE -->
     <div class="ui-widget-content ui-corner-all">
         <div class="m-10">  
-        <h2>{$content->contents_title}</h2>
-        <h6>{$content->contents_type}</h6>          
+        <h2><?php echo $_smarty_tpl->tpl_vars['content']->value->contents_title;?>
+</h2>
+        <h6><?php echo $_smarty_tpl->tpl_vars['content']->value->contents_type;?>
+</h6>          
         </div>
     </div>
     <!-- / PAGE TITLE -->  
@@ -72,24 +101,15 @@ function saveContentPart2()
     <div class="ui-widget-content ui-corner-all bk_color3">
         <div class="grid_6 m-10"> <h3>Module Details</h3>  </div>
                       
-        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$record_type}">
+        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/<?php echo $_smarty_tpl->tpl_vars['site_code']->value;?>
+/<?php echo $_smarty_tpl->tpl_vars['record_type']->value;?>
+">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
         <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveContent();">
         <span class="ui-icon ui-icon-disk float-l mr-5"></span>
-        SAVE</span></h6>
-{*      
-        <div class="m-5 ml-20 float-r">
-            Save to: 
-            <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-                <option {if $content->contents_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
-                <option {if $content->contents_status == 'READY'} selected='selected'{/if}> READY </option>
-            </select> 
-        </div>
-        <br clear="all">
-*}        
+        SAVE</span></h6>        
     </div>
           
      
@@ -107,10 +127,14 @@ function saveContentPart2()
             </div>     
             -->      
             <input type="hidden" id="id_changed_targets" name='changed_targets' value="" />                                              
-            <input type="hidden" name='contents_pk' value="{$content->contents_pk}" />
-            <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
-            <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
-            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />        
+            <input type="hidden" name='contents_pk' value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_pk;?>
+" />
+            <input type="hidden" name='contents_latest_version' value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_latest_version;?>
+" />
+            <input type="hidden" id="id_comment" name='contents_version_comment' value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_version_comment;?>
+" />
+            <input type="hidden" id="id_status" name='contents_version_status' value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_version_status;?>
+" />        
             <fieldset>                      
 
                 <div>
@@ -120,7 +144,8 @@ function saveContentPart2()
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>
                     <input type="text" name="contents_title" class="required" 
-                     value="{$content->contents_title}">
+                     value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_title;?>
+">
                 </div>
 
                 <div>
@@ -129,13 +154,17 @@ function saveContentPart2()
                     <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <input type="text" name="contents_display_title" class="required"  value="{$content->contents_display_title}"/>
+                    <input type="text" name="contents_display_title" class="required"  value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_display_title;?>
+"/>
                 </div>
                                 
                 <div>
                     <label class="grid_12">Author:</label>
                     <select  name="contents_main_authors_fk" class="required">
-                                 <option value="{$content->contents_main_authors_fk}" >{$content->users_first_name} {$content->users_last_name}</option>
+                                 <option value="<?php echo $_smarty_tpl->tpl_vars['content']->value->contents_main_authors_fk;?>
+" ><?php echo $_smarty_tpl->tpl_vars['content']->value->users_first_name;?>
+ <?php echo $_smarty_tpl->tpl_vars['content']->value->users_last_name;?>
+</option>
                     </select> 
                 </div>
                 <div>
@@ -151,7 +180,8 @@ function saveContentPart2()
                         <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>
                         <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <textarea type="text" name="contents_summary" >{$content->contents_summary}</textarea>
+                    <textarea type="text" name="contents_summary" ><?php echo $_smarty_tpl->tpl_vars['content']->value->contents_summary;?>
+</textarea>
                 </div> 
                 
                 <div>
@@ -160,7 +190,8 @@ function saveContentPart2()
                     <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <input type="text" name="modules_php_class" class="required"   value="{$content->modules_php_class}"/>
+                    <input type="text" name="modules_php_class" class="required"   value="<?php echo $_smarty_tpl->tpl_vars['content']->value->modules_php_class;?>
+"/>
                 </div>              
                 
                  <div>
@@ -169,7 +200,8 @@ function saveContentPart2()
                     <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <input type="text" name="modules_json_params" class=""  value="{$content->modules_json_params}"/>
+                    <input type="text" name="modules_json_params" class=""  value="<?php echo $_smarty_tpl->tpl_vars['content']->value->modules_json_params;?>
+"/>
                 </div>  
                 
                 <div>
@@ -193,7 +225,8 @@ function saveContentPart2()
                       <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>     
                      <br clear="all">                        
-                    <textarea id="id_body" type="text" name="modules_body" rows="25" class="">{$content->modules_body}</textarea>
+                    <textarea id="id_body" type="text" name="modules_body" rows="25" class=""><?php echo $_smarty_tpl->tpl_vars['content']->value->modules_body;?>
+</textarea>
                 </div>   
                                         
             </fieldset>              
@@ -219,3 +252,4 @@ function saveContentPart2()
   
 
 
+<?php }} ?>

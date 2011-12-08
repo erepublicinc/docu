@@ -1,31 +1,32 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:43:09
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 10:06:05
          compiled from "/var/www/newgt/sites/cms/tpl/editArticle.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:16069037394edd651d0d9eb3-00017176%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:12444452644ee0f3115b7546-48018358%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
     '12d84e7fce80f1801c80d35c1f087dd359f4d56b' => 
     array (
       0 => '/var/www/newgt/sites/cms/tpl/editArticle.tpl',
-      1 => 1322788400,
+      1 => 1323367541,
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '16069037394edd651d0d9eb3-00017176',
+  'nocache_hash' => '12444452644ee0f3115b7546-48018358',
   'function' => 
   array (
   ),
+  'version' => 'Smarty 3.1.0',
+  'unifunc' => 'content_4ee0f31170313',
   'variables' => 
   array (
     'content' => 0,
     'site_code' => 0,
+    'record_type' => 0,
     'DATETIME_FORMAT' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd651d20993',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd651d20993')) {function content_4edd651d20993($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
+<?php if ($_valid && !is_callable('content_4ee0f31170313')) {function content_4ee0f31170313($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
 ?><!-- ===================== editArticle.tpl ===============     -->
 
 <?php echo $_smarty_tpl->getSubTemplate ("saveContentDialog.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
@@ -79,7 +80,8 @@ var ckConfig = {toolbar :
         <div class="grid_6 m-10"> <h3>Article Details</h3>  </div>
                       
         <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/<?php echo $_smarty_tpl->tpl_vars['site_code']->value;?>
-/articles">
+/<?php echo $_smarty_tpl->tpl_vars['record_type']->value;?>
+">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 

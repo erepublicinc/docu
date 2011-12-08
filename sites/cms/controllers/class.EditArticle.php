@@ -1,6 +1,6 @@
 <?php
 
-class EditArticle extends WebPage
+class EditArticle extends Controller
 {
     
    
@@ -19,29 +19,30 @@ class EditArticle extends WebPage
         global $CONFIG;     
         parent::__construct($websiteObject, $arguments); 
         
-        $site    = $CONFIG->cms_site_code;
-        $command = $arguments[0];
-        $pk      = 0 + $arguments[1];       
+        $site        = $CONFIG->cms_site_code;
+        $record_type = $arguments[0];
+        $pk          = 0 + intval($arguments[1]);       
+        $isNew       = $arguments[1] == 'new' ? true :false;
+                     
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type', 'article');
+        $this->mSmarty->assign('record_type', $record_type);
    
-        
-        if($command == 'articles') // list articles
-        { 
-            $this->_listArticles($site);  
-            return;     
-        }
-        
         
         if(!empty($_POST['contents_title']))   // save article
         {
-            $this->_saveArticle($pk, $site);  
+            $this->_saveArticle($pk, $site, $record_type);  
             return;         
         }
         
-        
-        $this->_editArticle($pk, $command);  // edit new or existing article        
+        if($isNew || $pk > 0 )
+        {
+            $this->_editArticle($pk);  // edit new or existing article
+            return; 
+        }
+                
+        $this->_listArticles($site);  // list articles b
+               
         return;      
     }
 
@@ -69,7 +70,7 @@ class EditArticle extends WebPage
     }
 
     
-    private function _saveArticle($pk, $site)
+    private function _saveArticle($pk, $site,$record_type)
     {
 //dump($_POST);        
         $pk = Article::sYaasSave($_POST);                   
@@ -83,21 +84,18 @@ class EditArticle extends WebPage
                 Page::sYaasSaveTarget($params);
         }
         
-        header("LOCATION: /cms/{$site}/articles");
+        header("LOCATION: /cms/{$site}/$record_type");
         die; 
     }
     
     
-    private function _editArticle($pk, $command)
+    private function _editArticle($pk)
     {
-        if($command == 'new_article' || $pk == 0)  // new article
+        if($pk == 0)  // new article
         { //die($_SESSION['user_first_name']);
             $this->mPageTitle = getSiteName($site) . " - New Article";
             
             $article = new stdClass();
-            $article->contents_main_author_fk = $_SESSION['user_pk'];
-            $article->users_first_name        = $_SESSION['user_first_name'];
-            $article->users_last_name         = $_SESSION['user_last_name'];
             $article->contents_create_date    = time(); //date();
            // $history = array();
         } 
@@ -117,9 +115,10 @@ class EditArticle extends WebPage
                                         CMS::CreateVersionHistoryModule($article, "articles") 
                                         );
                                         
+                                        
         $this->mMainTpl = 'editArticle.tpl';  
-           
         $this->mSmarty->assign('content',$article);
+        $this->mSmarty->assign('authors', Author::getAuthors());
     }
     
     

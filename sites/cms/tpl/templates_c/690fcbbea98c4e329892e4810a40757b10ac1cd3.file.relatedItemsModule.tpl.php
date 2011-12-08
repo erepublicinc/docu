@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-05 16:43:08
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 09:25:37
          compiled from "/var/www/newgt/sites/cms/tpl/relatedItemsModule.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:21463269504edd651cf12393-58074308%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:14917406754ee0f31145d369-49772883%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,15 +11,15 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '21463269504edd651cf12393-58074308',
+  'nocache_hash' => '14917406754ee0f31145d369-49772883',
   'function' => 
   array (
   ),
   'has_nocache_code' => false,
   'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edd651cf2f19',
+  'unifunc' => 'content_4ee0f3114aa94',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edd651cf2f19')) {function content_4edd651cf2f19($_smarty_tpl) {?><!-- relatedItemsModule.tpl -->
+<?php if ($_valid && !is_callable('content_4ee0f3114aa94')) {function content_4ee0f3114aa94($_smarty_tpl) {?><!-- relatedItemsModule.tpl -->
 	<div class="ui-widget-content ui-corner-all p-10 bk_color2">
 	    <h3>Related Items</h3>
         <div class="align-r headlink">

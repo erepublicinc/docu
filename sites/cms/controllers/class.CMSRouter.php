@@ -1,5 +1,5 @@
 <?php
-class CMSSite extends Website
+class CMSRouter extends Router
 {    
     function __construct()
     { 

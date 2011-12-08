@@ -49,9 +49,7 @@ class Article extends Content
 
         $this->mSqlStack[]  = "INSERT INTO articles(contents_fk, contents_version, contents_article_body,  contents_article_type,contents_version_users_fk, 
                                                     contents_version_date, contents_version_comment, contents_version_status) 
-                 VALUES(@pk,1,'$ebody','$etype', $author, NOW(), '$ecomment', '$estatus')";
-        
-        $this->mFields->contents_main_author_fk = $author;  
+                 VALUES(@pk,1,'$ebody','$etype', $apk, NOW(), '$ecomment', '$estatus')";
          
         $result = parent::SaveNew();
         

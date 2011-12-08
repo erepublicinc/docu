@@ -5,6 +5,7 @@ require_once('class.SessionHandler.php');
 
 class User
 {
+    public static $errorMessage;  // holds the error massage
     private static $mInitialized = false;
     protected $mFields; // the object with all the fields
     
@@ -37,34 +38,55 @@ class User
     	$fname = Query::Escape($this->mFields->users_first_name);
     	$lname = Query::Escape($this->mFields->users_last_name);
     	$ad    = Query::Escape($this->mFields->users_ad_user);
+    	$notes    = Query::Escape($this->mFields->users_notes);
+    	
     	$active = empty($this->mFields->users_active)? 0: 1;
     	$pk    = intval($this->mFields->users_pk);
     	
     	$sql = array();
     	if($pk == 0)
     	{
-        	$sql[] = "insert into users (users_email, users_password, users_first_name, users_last_name, users_active, users_ad_user) 
-                 values('$email', '$pw','$fname', '$lname', $active, '$ad')";
+        	$sql[] = "insert into users (users_email, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
+                 values('$email', '$pw','$fname', '$lname', $active, '$ad', '$notes')";
         	$sql[] = "SELECT LAST_INSERT_ID() as pk";
     	}
         else 
         {
-        	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname', $pw
+        	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname', users_notes = '$notes', $pw
         			users_ad_user = '$ad', users_active = $active WHERE users_pk = $pk";
         	$sql[] = "SELECT $pk as pk";
         }
         
         $r = Query::sTransaction($sql);
+       
         if($r)
-        	return $r->pk ;   // success                  
+        {
+            if($this->mFields->roles)
+            {
+                self::SetRoles($r->pk, $this->mFields->roles);
+            }
+        	return $r->pk ;   // success
+        }                  
         return false;
     }
     
     public static function GetDetails($pk)
     {
-        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email,  users_active, roles_code
+        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email,  users_active, roles_code, users_notes
                 FROM users LEFT JOIN roles ON users_pk = roles_users_fk WHERE users_pk = $pk";
-        return new Query($sql);
+        $result = new Query($sql);
+        
+        $roles = '';
+        foreach($result as $r)
+        {
+            $roles .= "$r->roles_code,";
+        }
+        $roles = rtrim($roles,',');
+        
+        $result->rewind();   // set the value on the first record
+        $result->SetValue('users_roles',  $roles);
+        
+        return $result;
     }
     
     public static function GetUsers()
@@ -88,12 +110,13 @@ class User
     	    return logerror("User:SetRoles() invalid roles array");
 
     	$sql = array();
-    	$sql[] = "DELETE from roles where roles_user_fk = $pk";
+    	$sql[] = "DELETE from roles where roles_users_fk = $pk";
     	foreach($roles as $role)
     	{
     		$erole = Query::Escape($role);
     		$sql[] = "INSERT INTO roles (roles_users_fk,roles_code) VALUES($pk, '$erole')";
     	}    
+    	$return = Query::sTransaction($sql);
     }
     
     static function Login($email, $pw)
@@ -102,10 +125,17 @@ class User
        $sql = "SELECT *
                  FROM users 
                  LEFT JOIN roles ON users_pk = roles_users_fk                 
-                 WHERE users_email = '$email' "; 
+                 WHERE users_email = '$email'"; 
        
        $userdata = new Query($sql);
-//die('asa'.$userdata->password);       
+//die('asa'.$userdata->password);   
+
+       if($userdata && $userdata->users_active == 0)
+       {
+           self::$errorMessage = "user: $email  account is inactive";
+            return false; 
+       }
+       
        if($userdata && $userdata->users_password == $pw)
        {         
                 
@@ -123,7 +153,8 @@ class User
            $_SESSION['user_permissions'] = $permissions;       
            return true;
        }
-
+       
+       self::$errorMessage = "email / password combination not valid"; 
        return false;
     }
     

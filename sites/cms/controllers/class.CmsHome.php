@@ -1,5 +1,5 @@
 <?php 
-class CmsHome extends WebPage
+class CmsHome extends Controller
 {       
     public function __construct($websiteObject, $arguments)
     {        

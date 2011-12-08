@@ -1,31 +1,33 @@
-<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 10:00:27
-         compiled from "/var/www/newgt/sites/cms/tpl/listUsers.tpl" */ ?>
-<?php /*%%SmartyHeaderCode:8973705554edfe54951f084-96225408%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /* Smarty version Smarty 3.1.0, created on 2011-12-08 09:45:31
+         compiled from "/var/www/newgt/sites/cms/tpl/listContent.tpl" */ ?>
+<?php /*%%SmartyHeaderCode:13867218084ee0f3056832a6-60745037%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
-    '8cb2ad3bad9599b5ca7fea843a125f1f2e056ce5' => 
+    'acb4bb65436a16f6c8e1c7f5b7c11a79949e62c1' => 
     array (
-      0 => '/var/www/newgt/sites/cms/tpl/listUsers.tpl',
-      1 => 1323367213,
+      0 => '/var/www/newgt/sites/cms/tpl/listContent.tpl',
+      1 => 1323365337,
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '8973705554edfe54951f084-96225408',
+  'nocache_hash' => '13867218084ee0f3056832a6-60745037',
   'function' => 
   array (
   ),
   'version' => 'Smarty 3.1.0',
-  'unifunc' => 'content_4edfe54959dd3',
+  'unifunc' => 'content_4ee0f3057a22c',
   'variables' => 
   array (
     'record_type' => 0,
-    'users' => 0,
-    'u' => 0,
+    'contents' => 0,
+    'c' => 0,
+    'DATETIME_FORMAT' => 0,
   ),
   'has_nocache_code' => false,
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_4edfe54959dd3')) {function content_4edfe54959dd3($_smarty_tpl) {?><!-- listContent.tpl -->
+<?php if ($_valid && !is_callable('content_4ee0f3057a22c')) {function content_4ee0f3057a22c($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include '/var/www/newgt/includes/plugins/modifier.date_format.php';
+?><!-- listContent.tpl -->
 
 <!--  
     <div class="ui-widget-content ui-corner-all">
@@ -59,33 +61,31 @@ $_valid = $_smarty_tpl->decodeProperties(array (
         <table class="datatable">
             <tr>
                 <th>&nbsp;</th>
-                <th>Name</th>
-                <th>Email</th>
-               
-                <th>Active</th>
+                <th>Title</th>
+                <th>Last Modified</th>
+                <th>Status</th>
+                <th>Assigned To</th>
             </tr>
             
-            <?php  $_smarty_tpl->tpl_vars['u'] = new Smarty_Variable;
- $_from = $_smarty_tpl->tpl_vars['users']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
+            <?php  $_smarty_tpl->tpl_vars['c'] = new Smarty_Variable;
+ $_from = $_smarty_tpl->tpl_vars['contents']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 $_loop = false;
-foreach ($_from as $_smarty_tpl->tpl_vars['u']->key => $_smarty_tpl->tpl_vars['u']->value){
+foreach ($_from as $_smarty_tpl->tpl_vars['c']->key => $_smarty_tpl->tpl_vars['c']->value){
 $_loop = true;
 ?>
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/all/<?php echo $_smarty_tpl->tpl_vars['record_type']->value;?>
-/<?php echo $_smarty_tpl->tpl_vars['u']->value->users_pk;?>
-"><?php echo $_smarty_tpl->tpl_vars['u']->value->users_first_name;?>
- <?php echo $_smarty_tpl->tpl_vars['u']->value->users_last_name;?>
+                <td><a href="/cms/gt/<?php echo $_smarty_tpl->tpl_vars['record_type']->value;?>
+/<?php echo $_smarty_tpl->tpl_vars['c']->value->contents_pk;?>
+"><?php echo $_smarty_tpl->tpl_vars['c']->value->contents_title;?>
 </a></td>
-                <td><?php echo $_smarty_tpl->tpl_vars['u']->value->users_email;?>
+                <td><?php echo smarty_modifier_date_format($_smarty_tpl->tpl_vars['c']->value->contents_updated_date,$_smarty_tpl->tpl_vars['DATETIME_FORMAT']->value);?>
 </td>
-                <td><span <?php if ($_smarty_tpl->tpl_vars['u']->value->users_active>0){?>  class="ui-icon ui-icon-circle-check " 
-                          <?php }else{ ?> class=" "
+                <td><span <?php if ($_smarty_tpl->tpl_vars['c']->value->contents_live_version>0){?>  class="ui-icon ui-icon-circle-check " 
+                          <?php }else{ ?> class="ui-icon-tan ui-icon-alert "
                           <?php }?>
-                    </span>
-                </td>
-                
+                   </span></td>
+                <td>eRepublic - Editors</td>
             </tr>  
             <?php } ?>
          </table>

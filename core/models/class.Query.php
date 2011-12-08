@@ -24,7 +24,9 @@ class Query  implements Iterator
 
     private $mResultSet;       // current resultset returned by the query
     private $mNumQueries;      // number of queries  default =1
-       
+
+    public $mAliasArray;  // array of alternative fieldnames
+    
     public static function Escape($str)
     {
         $str = str_replace('\n','',$str);
@@ -45,6 +47,8 @@ class Query  implements Iterator
         {
         	show_sql($sql);
         }
+        
+        $this->mAliasArray = array();
         
         $this->mNumQueries = 1;
         
@@ -137,21 +141,20 @@ class Query  implements Iterator
     }
     
     
-    function __destruct()
+    public function __destruct()
     {
         if($this->mResultSet && is_object($this->mResultSet))
            $this->mResultSet->free();
     }
     
-    function __get($var)
-    {
-        /*
-        if(! $this->mRow)
-           return null;   
-            return $this->mRow->$var;
-        */      
+    public function __get($var)
+    { 
         if($this->mRowIndex < 0)
-           return null;     
+           return null;    
+
+        if($this->mAliasArray[$var])    // we used an alias for the fieldname  
+            $var = $this->mAliasArray[$var];
+       
         return $this->mRows[$this->mRowIndex]->$var;   
     }
     
@@ -180,6 +183,16 @@ class Query  implements Iterator
        return (array) $this->mRows[$this->mRowIndex] ;   
     }
     
+    /**
+     * Create shortcut fieldnames ex: 'pk' instead of 'contents_pk'
+     * Great for use with generic templates
+     * @param array $alias_array  array( 'pk'=>'contents_pk', 'body'=>'articles_body');
+     */
+    public function SetAlias($alias_array)
+    {
+        $this->mAliasArray = $alias_array;
+       
+    }
     
     /**
      * for multi queries to move to the next result set
@@ -268,8 +281,14 @@ class Query  implements Iterator
     }
 
     public function current() {
+               
         if($this->mRowIndex > -1 && $this->mRowIndex < count($this->mRows))
+        {
+            foreach($this->mAliasArray as $alias => $original) 
+                $this->mRows[$this->mRowIndex]->$alias =  $this->mRows[$this->mRowIndex]->$original;
+            
             return $this->mRows[$this->mRowIndex];
+        }
         return null;    
     }
 

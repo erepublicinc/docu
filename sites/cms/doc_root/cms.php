@@ -5,5 +5,5 @@ if(! User::Authorize('EDITOR'))
  
 Query::SetAdminMode();
 
-$site = new CMSSite(); 
+$site = new CMSRouter(); 
 $site->Render();

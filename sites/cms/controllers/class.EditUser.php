@@ -1,53 +1,46 @@
 <?php
 
-class EditUser extends WebPage
+class EditUser extends Controller
 {
     
    
     
     /**
-     * @param website object
+     * @param Controller object
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'articles' 'new_article' 'article' ( the first one produces a list the other fo editing
      *          2:   [optional] pk of the article 
-     */
-    
-   
-    
-    
-    public function __construct($websiteObject, $arguments)
+     */    
+    public function __construct($RouterObject, $arguments)
     {
-        //dump($_POST);      
-     
+        //dump($_POST);         
         global $CONFIG;     
-        parent::__construct($websiteObject, $arguments); 
+        parent::__construct($RouterObject, $arguments); 
         
-        $site    = $CONFIG->cms_site_code;
-        $command = $arguments[0];
-        $pk      = 0 + $arguments[1];       
+        $site        = $CONFIG->cms_site_code;
+        $record_type = $arguments[0];
+        $pk          = 0 + intval($arguments[1]);       
+        $isNew       = $arguments[1] == 'new' ? true :false;
+                 
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type', 'users');
-//dump(" site: $site  command: $command  pk:$pk") ;  
+        $this->mSmarty->assign('record_type', $record_type);
+        
         
         if(!empty($_POST['users_email']))   // save user
         {
             $this->_saveUser($pk, $site);  
             return;         
+        }     
+        
+        if($isNew || $pk > 0)
+        {
+             $this->_editUser($pk);
+             return; 
         }
         
-        if($command == 'users') // list users
-        { 
-            if($pk > 0)
-                $this->_editUser($pk, $command);  // edit new or existing article   
-            else    
-                $this->_listUsers($site);  
-            return;     
-        }
-        elseif($command == 'new_users')
-             $this->_editUser($pk, $command); 
-        
+        $this->_listUsers($site);       
         return;      
     }
 
@@ -68,8 +61,6 @@ class EditUser extends WebPage
     
     private function _saveUser($pk, $site)
     {
-//dump($_POST);
-
         
         if($_POST['users_password'])
         {
@@ -78,6 +69,18 @@ class EditUser extends WebPage
            $_POST['users_password'] =  md5($_POST['users_password']) ;
         }
         
+        // create an array of roles
+        $roles = array();        
+        foreach($_POST as $key => $value)
+        {
+            $pos = stripos($key, "user_role_");
+            if($pos === 0)
+            {
+                $roles[] = substr($key, $pos+10);   
+            }
+        }               
+        $_POST['roles'] = $roles;
+//dump($_POST);       
         $u  = new User($_POST) ;        
         $pk = $u->Save();                   
 
@@ -86,9 +89,9 @@ class EditUser extends WebPage
     }
     
     
-    private function _editUser($pk, $command)
+    private function _editUser($pk)
     {
-        if($command == 'new_users' || $pk == 0)  // new article
+        if($pk == 0)  // new user
         { //die($_SESSION['user_first_name']);
             $this->mPageTitle = getSiteName($site) . " - New User";
             $user = new stdClass();
@@ -99,17 +102,34 @@ class EditUser extends WebPage
             $this->mPageTitle = getSiteName($site) . " - Edit User";
             $user = User::GetDetails($pk);                        
         }
-//dump($pk);
+//dump($user);
         
         // create the left side modules
         $this->mModules['left'] = array(
-                                        CMS::CreateDummyModule('contentMediaModule.tpl'), 
+                                        CMS::CreateDummyModule('contentMediaModule.tpl'),
+                                        CMS::CreateListauthorsModule($pk)
                                         );
                                         
         $this->mMainTpl = 'editUser.tpl';  
-           
+
+        
+        
+        $roles = array(
+            "SUPER_ADMIN" => 0,
+            "GT_EDITOR" => 0,
+            "GOV_EDITOR" => 0,
+            "WRITER" => 0,
+            "BLOGGER" => 0
+        );
+      
+        foreach($roles as $key=>$value)
+        {
+            if( stripos($user->users_roles, $key ) !== false)
+                $roles[$key] = 1;
+        }
+        
         $this->mSmarty->assign('user',$user);
-        $this->mSmarty->assign('roles', array("SUPER_ADMIN", "GT_EDITOR", "GOV_EDITOR", "WRITER", "BLOGGER") );
+        $this->mSmarty->assign('roles', $roles );
     }
     
     

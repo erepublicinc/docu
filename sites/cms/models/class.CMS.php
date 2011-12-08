@@ -124,6 +124,35 @@ class CMS
         return $m;         
     }    
      
+    
+   /**
+     * returns a module object  for all pages that use this module
+     * @param int $pk of module object
+     * @return object  module object
+     */
+    static function CreateListAuthorsModule($pk)
+    {  
+        global $CONFIG; 
+        $m = new stdClass();
+        $m->template = 'listModule.tpl';
+      
+        if($pk)    
+        {      
+            $m->items      = Author::GetAuthors4User($pk); 
+            
+            // the listModule.tpl uses the fields: pk and title   , so we have to crete aliases for these
+            $m->items->SetAlias(array('pk'=>'authors_pk', 'title'=>'authors_display_name'));
+            $m->title      = "Author Profiles for this User";
+            $m->path       = "/cms/authors/";
+            // add a button to the module
+            $m->buttons    = array(array('url'=>'/cms/authors/new', 'text'=>'new Profile'));
+        }         
+        // dump( $m); 
+        return $m;         
+    }    
+    
+    
+    
     /**
      * returns a module object
      * @return object  module object

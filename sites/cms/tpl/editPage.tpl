@@ -71,7 +71,7 @@ function savePagePart2()
     <div class="grid_6 m-10"> <h3>Page Details</h3>  </div>
     <div class="grid_6 m-10">   <h4>    pk: {$p->pages_pk} &nbsp; id: {$p->pages_id}  &nbsp; version: {$p->pages_version}</h4></div>
              
-    <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/pages">
+    <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$record_type}">
     <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
     CANCEL</a></h6>
 

@@ -7,6 +7,9 @@ drop table media__contents;
 drop table targets;
 drop table modules__pages;
 
+drop table tags__contents;
+drop table tags;
+
 drop table comments;
 drop table textfields;
 drop table media;
@@ -14,6 +17,7 @@ drop table articles;
 drop table pages;
 drop table specs;
 drop table contents;
+drop table authors;
 drop table roles;
 drop table users;
 drop table modules;
@@ -48,7 +52,8 @@ CREATE TABLE authors
     (
         authors_pk INT NOT NULL AUTO_INCREMENT,
         authors_users_fk INT NOT NULL,            -- points to the user record
-        authors_name VARCHAR(20) ,
+        authors_name VARCHAR(30)  NOT NULL,
+        authors_display_name VARCHAR(30)  NOT NULL,
         authors_bio TEXT,
         authors_public_email VARCHAR(60) ,
         authors_active BIT DEFAULT 0 NOT NULL,
@@ -69,6 +74,11 @@ CREATE TABLE roles
         PRIMARY KEY (roles_users_fk, roles_code)
     ) engine InnoDB;  
     
+
+    
+        
+
+ 
         
 
         
@@ -93,8 +103,7 @@ CREATE TABLE
         contents_extra_table VARCHAR(30) NOT NULL,
         contents_status VARCHAR(20) NOT NULL,
         contents_author_fk INT,
-        
-  
+         
         PRIMARY KEY (contents_pk),
         FOREIGN KEY (contents_author_fk) REFERENCES authors(authors_pk),      
         FOREIGN KEY (contents_update_users_fk) REFERENCES users(users_pk)      
@@ -285,28 +294,32 @@ CREATE TABLE targets
     )engine InnoDB;   
 
     
-CREATE TABLE modules old   
+    
+    
+
+CREATE TABLE tags   
     (
-        modules_pk INT NOT NULL AUTO_INCREMENT,
-        modules_id INT NOT NULL,
-                       --  this id does not change with a new version,          
-        modules_version INT NOT NULL ,    
-        modules_version_users_fk INT NOT NULL,   --  the last person to edit this page 
-        modules_version_date DATETIME,
-        modules_version_comment VARCHAR(255),
+        tags_code VARCHAR(30) NOT NULL ,
+        tags_group_code VARCHAR(30) NOT NULL ,
+        tags_site VARCHAR(10) NOT NULL,           --  sitecode or 'ALL'  
+        tags_description VARCHAR(80) NOT NULL ,  
+        tags_help_text VARCHAR(255)  ,           -- explains where this tag is used
+       
+        PRIMARY KEY (tags_code)
+    ) engine InnoDB;  
+
+            
+CREATE TABLE tags__contents    --  a link table   
+    (
+        tags_code VARCHAR(30) NOT NULL ,
+        tags_contents_fk INT NOT NULL,
+        PRIMARY KEY (tags_code, tags_contents_fk),
+        FOREIGN KEY (tags_code) REFERENCES tags (tags_code)  ON DELETE CASCADE,  
+        FOREIGN KEY (tags_contents_fk) REFERENCES contents (contents_pk)  ON DELETE CASCADE 
+    ) engine InnoDB;  
         
-        modules_is_preview BIT,
-        modules_is_live BIT,     
-        modules_site_code VARCHAR(20),         -- GOV, GT, EM, CV, DC, PCIO       
-        modules_title VARCHAR(150),             --  for internal use
-        modules_display_title VARCHAR(150),    
-        modules_php_class VARCHAR(150),  
-        modules_body TEXT, 
-        
-        modules_json_parameters VARCHAR(250),
-        PRIMARY KEY ( modules_pk),
-        FOREIGN KEY (modules_version_users_fk) REFERENCES users(users_pk)
-    )  engine InnoDB ;
+      
+       
 
 CREATE TABLE modules__pages 
     (
@@ -331,7 +344,7 @@ create view current_pages as
     
 
 
--- creteing the first user
+-- createing the first user
 insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
 insert into roles(roles_users_fk,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 

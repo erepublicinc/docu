@@ -11,7 +11,7 @@
 
   <div class="ui-widget-content ui-corner-all bk_color2 p-10">          
             <h6>
-          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="new_{$record_type}">New</a>
+          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="{$record_type}/new">New</a>
           <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Filter</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Copy</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Quick Edit</a>
