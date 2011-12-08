@@ -1,2 +1,0 @@
-<?
-header("LOCATION: /cms.php");
