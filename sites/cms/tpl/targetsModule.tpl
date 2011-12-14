@@ -14,6 +14,7 @@
       targets.push( {ldelim} record_state:'CLEAN', targets_pages_id:{$t->targets_pages_id}, targets_contents_fk:{$t->targets_contents_fk}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
     {/foreach}      
 
+    var maxTargetId = targets.length;
 {literal}   
 
     var curTargetID = -1;  // edit or new  , so saveTarget knows what to do
@@ -32,8 +33,8 @@
         return JSON.stringify(dirtyTargets);
     }
     
-    function editTarget(t)
-    {
+    function editTarget(t)  // clicked on a target copy from the target list to the edit dialog 
+    {   
         //alert(t);
         curTargetID = t;
         //$("#id_target_site").text(targets[t].title);
@@ -41,11 +42,15 @@
         $("#id_target_pid").text(targets[t].targets_pages_id);      
         $("#id_target_live").attr('value', prettyDate(targets[t].targets_live_date));
         $("#id_target_live_time").attr('value', prettyTime(targets[t].targets_live_date));       
+        $("#id_target_archive").attr('value', prettyDate(targets[t].targets_archive_date));
+        $("#id_target_archive_time").attr('value', prettyTime(targets[t].targets_archive_date));       
+        $("#id_target_dead").attr('value', prettyDate(targets[t].targets_dead_date));
+        $("#id_target_dead_time").attr('value', prettyTime(targets[t].targets_dead_date));       
         //alert(curTargetID);
     }
     
-    function addTargetInfo(sitecode, title, pid)
-    {
+    function addTargetInfo(sitecode, title, pid) // clicked on the website section list to create a new target
+    {   
         curTargetID = -1;  // means new
         $("#id_target_site").text(sitecode);
         $("#id_target_title").text(title);
@@ -54,26 +59,56 @@
         $("#id_target_live").attr('value',prettyDate());
        // alert(d.getFullYear());
     }
-    function saveTarget()
+    
+    function saveTarget() // clicked on save target
     { //alert(curTargetID);
+       var liveDate =  $("#id_target_live").attr('value');
+       var liveTime =  $("#id_target_live_time").attr('value');
+       var archiveDate =  $("#id_target_archive").attr('value');
+       var archiveTime =  $("#id_target_archive_time").attr('value');
+       var deadDate =  $("#id_target_dead").attr('value');
+       var deadTime =  $("#id_target_dead_time").attr('value');
+       
+        
         if(curTargetID == -1)
         {
-            targets.push({ record_state:'NEW',
-                           targets_pages_id:$("#id_target_pid").text(),
-                           targets_contents_fk:0, 
-                           title:$("#id_target_site").text(),
-                           targets_live_date:formatTheDate($("#id_target_live").attr('value'), $("#id_target_live_time").attr('value')) ,
-                           targets_archive_date:formatTheDate($("#id_target_archive").attr('value'), $("#id_target_archive_time").attr('value')), 
-                           targets_dead_date:formatTheDate($("#id_target_dead").attr('value'), $("#id_target_dead_time").attr('value'))  
+            targets.push({ record_state:        'NEW',
+                           targets_pages_id:    $("#id_target_pid").text(),
+                           targets_contents_fk: 0, 
+                           title:               $("#id_target_site").text(),
+                           targets_live_date:   formatTheDate(liveDate, liveTime) ,
+                           targets_archive_date:formatTheDate(archiveDate, archiveTime),
+                           targets_dead_date:   formatTheDate(deadDate, deadTime)
                          });
-            
+
+             //update the grid
+            var newId = maxTargetId++;
+      
+             var newRow = '<tr>  <td id="id_target_title_'+ newId + '"onclick="editTarget('+ newId +')">'+  $("#id_target_site").text() +' '+  $("#id_target_title").text()+ '</td>' ;
+             newRow += ' <td id="id_target_live_'+ newId +'">'+ liveDate +' '+ liveTime +' </td> ';
+             newRow += ' <td id="id_target_archive_'+ newId +'">'+ archiveDate +' '+ archiveTime +' </td> ';
+             newRow += ' <td id="id_dead_archive_'+ newId +'">'+ deadDate +' '+ deadTime +' </td> ';
+             newRow += ' <td> - </td></tr>';
+             $(newRow).appendTo('#id_target_table');
         }    
         else
         {
             targets[curTargetID].record_state = 'DIRTY';
-            targets[curTargetID].targets_live_date =    formatTheDate($("#id_target_live").attr('value'), $("#id_target_live_time").attr('value'));
-            targets[curTargetID].targets_archive_date = formatTheDate($("#id_target_archive").attr('value'), $("#id_target_archive_time").attr('value'));
-            targets[curTargetID].targets_dead_date =    formatTheDate($("#id_target_dead").attr('value'), $("#id_target_dead_time").attr('value'));
+            targets[curTargetID].targets_live_date =    formatTheDate(liveDate, liveTime);
+            targets[curTargetID].targets_archive_date = formatTheDate(archiveDate, archiveTime);
+            targets[curTargetID].targets_dead_date =    formatTheDate(deadDate, deadTime);
+
+            // update the grid
+            var id =  '#id_target_live_'+curTargetID;
+            $(id).text( $("#id_target_live").attr('value')+' '+ $("#id_target_live_time").attr('value'));
+
+            var id =  '#id_target_archive_'+curTargetID;
+            $(id).text( $("#id_target_archive").attr('value')+' '+ $("#id_target_archive_time").attr('value'));
+
+            var id =  '#id_target_dead_'+curTargetID;
+            $(id).text( $("#id_target_dead").attr('value')+' '+ $("#id_target_dead_time").attr('value'));
+
+            
         }
 
         curTargetID = -1;  // means new
@@ -102,7 +137,7 @@
             </div>
             <br clear="all">
             <br clear="all">
-            <table>
+            <table id="id_target_table">
                 <tr>
                     <th>Destination</th>                    
                     <th>Live Date</th>
@@ -113,11 +148,11 @@
                 
                 {foreach  $params->targets as $t}
                 <tr >
-                    <td onclick="editTarget({$t@index})">{$t->pages_site_code} {$t->pages_title}</td>                    
-                    <td>{$t->targets_live_date|date_format:$DATETIME_FORMAT}</td>  
-                    <td>{$t->targets_archive_date|date_format:$DATETIME_FORMAT}</td>                
-                    <td>{$t->targets_dead_date|date_format:$DATETIME_FORMAT}</td>
-                    <td class="align-c">{$t->targets_pin_position}</td>                    
+                    <td id="id_target_title_{$t@index}"onclick="editTarget({$t@index})">{$t->pages_site_code} {$t->pages_title}</td>                    
+                    <td id="id_target_live_{$t@index}">{$t->targets_live_date|date_format:$DATETIME_FORMAT}</td>  
+                    <td id="id_target_archive_{$t@index}">{$t->targets_archive_date|date_format:$DATETIME_FORMAT}</td>                
+                    <td id="id_target_dead_{$t@index}">{$t->targets_dead_date|date_format:$DATETIME_FORMAT}</td>
+                    <td id="id_target_pin_{$t@index}"class="align-c">{$t->targets_pin_position}</td>                    
                 </tr>                            
                 {/foreach }                                                    
             

@@ -17,7 +17,7 @@ if($_REQUEST['password'])
     }  
     else 
     {
-        $msg =  "Login failed, please try again";   
+        $msg =  User::$errorMessage;   
     }  
 }
 

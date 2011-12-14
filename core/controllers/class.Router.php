@@ -114,18 +114,16 @@ abstract class Router
      */
     protected function _GetPageClassName()
     {
-        global $CONFIG; 
-        
         $uri            = strtolower( $_SERVER['REQUEST_URI']);
         $uri            = parse_url($uri);
-        $path           = rtrim($uri['path'], "/");
+        $path           = trim($uri['path'], "/");
         $pathSegments   = explode("/", $path);
-        
+
         if( empty($pathSegments[0]))
         {
              array_shift($pathSegments);
         }     
-                        
+                   
  
         /**
          * We need to create key for the _mClassMapping array that maps to a page class name.
@@ -136,28 +134,38 @@ abstract class Router
         $numOfSegments  = count($pathSegments);
         for ($i = 0; $i < $numOfSegments; $i++)
         {
-        	/* Creating the key (aka the path) */
+        	// Creating the key (aka the path) 
         	$tmp_path = implode("/", $pathSegments);
 
-        	/* Check if the key (path) returns a value from the _mClassMapping array */
+        	// Check if the key (path) returns a value from the _mClassMapping array 
         	if (empty($this->_mClassMapping[$tmp_path]) === false)
         	{
-        		$this->_mClassName = $this->_mClassMapping[$tmp_path]['class'];
-        		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping[$tmp_path]['pages_pk']);
-        		$CONFIG->SetValue('current_page_id', $this->_mClassMapping[$tmp_path]['pages_id']);
-        		$CONFIG->SetValue('current_page_url',$tmp_path);       		
-                break; /* we no longer need to check the rest of the segments since we found our page class */
+                $this->_SetClassName($tmp_path);
+                break; // we no longer need to check the rest of the segments since we found our page class 
         	}
         	else
         	{
-        		/* remove the last segment and add it to the arguments list */
+        		// remove the last segment and add it to the arguments list 
         		array_unshift($this->_mClassArguments, array_pop($pathSegments));
         	}
         }
-        
+        if(empty($this->_mClassName))  // homepage is default
+            $this->_SetClassName('');
+//dump($this->_mClassName);     
         return true;
     }
 
+    
+    private function _SetClassName($tmp_path)
+    {
+        global $CONFIG;
+        $this->_mClassName = $this->_mClassMapping[$tmp_path]['class'];
+		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping[$tmp_path]['pages_pk']);
+		$CONFIG->SetValue('current_page_id', $this->_mClassMapping[$tmp_path]['pages_id']);
+		$CONFIG->SetValue('current_page_url',$tmp_path);       		
+    }
+    
+    
     /**
      *  Instantiates class specified by className then
      *  calls the display method of generated class.

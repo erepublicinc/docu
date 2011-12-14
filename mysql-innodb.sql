@@ -318,7 +318,22 @@ CREATE TABLE tags__contents    --  a link table
         FOREIGN KEY (tags_contents_fk) REFERENCES contents (contents_pk)  ON DELETE CASCADE 
     ) engine InnoDB;  
         
-      
+        
+
+CREATE TABLE contents__contents 
+    (
+        contents_fk1 INT NOT NULL ,
+        contents_fk2 INT NOT NULL ,
+        contents_type1 VARCHAR(20),   --  always in alphabetical order
+        contents_type2 VARCHAR(20),
+        link_order INT,
+        link_type VARCHAR(20),
+        PRIMARY KEY (contents_fk1, contents_fk2),
+        FOREIGN KEY (contents_fk1) REFERENCES contents (contents_pk)   ON DELETE CASCADE ,
+        FOREIGN KEY (contents_fk2) REFERENCES contents (contents_pk)   ON DELETE CASCADE 
+
+    )  engine InnoDB ; 
+         
        
 
 CREATE TABLE modules__pages 
@@ -344,10 +359,11 @@ create view current_pages as
     
 
 
--- createing the first user
+-- creating the first user
 insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
 insert into roles(roles_users_fk,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 
+-- creating a few pages
 insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
                    pages_body,pages_status,pages_php_class,pages_version_users_fk,pages_version_comment,pages_version_date) 
     values(1,1,1,1,'GT','homepage','Government Technology','/','HOMEPAGE',' homepage ' ,'LIVE','HomePage',1, 'this is the first version', NOW());
@@ -363,46 +379,3 @@ insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_s
     values(1,1,1,1,'GT','technology','Emerging and Sustainable Technology','/technology','CHANNEL','  ' ,'LIVE','ChannelPage',1, 'this is the first version',now());
 -- ----------------------------------------------------------------------------------------
 
--- get documentation 
-select from contents c
-join docu_items di
-on c.pk = di.contents_fk
-   
-   
---  get articles for page        
-select * 
-from targets t
-join contents c on t.content_fk = c.pk
-where target.page_pk = 1232 --  our page
-and c.status = 'LIVE'
-and GETDATE() between t.live_date and t.dead_date
-and c.subtype = 'ARTICLE'
-order by t.pin_position + create_date
-
---  get the correct version and all data  of the textfield ( based on content.live_version) 
-select top 1 *
-from text_fields tf
-where tf.content_fk = 1234
-and   tf.version <= 123
-and   tf.subtype = 'DESCRIPTION_1'
-order by tf.version  desc
-
-
--- get all the text fields and the corrrect versions for an event
-select tf.subtype, max(tf.version)
-from text_fields
-where tf.content_pf = 1234
-and tf.version <= 123
-group by tf.subtype
-    
-    
-    
-select content_id , max(version)  
-from contents c  group by content_id 
-join text_fields  tf 
-on c.content_pk = tf.content_pk
-where tf.revision <= c.published.revision  
-     
-   
-  -- --------------------- examples
-  SELECT @last_version := pages_version , @last_pk := pages_pk FROM pages WHERE pages_version  = (select max(pages_version) from pages where pages_id = 2   ) and  pages_id = 2

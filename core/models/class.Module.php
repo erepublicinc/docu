@@ -32,6 +32,9 @@ class Module extends Content
         $ecomment= Query::Escape($this->mFields->contents_version_comment);
         $apk     = $_SESSION['user_pk'];    
         
+        // make sure this field is set
+        $this->mFields->contents_author_fk = $this->mFields->contents_author_fk >0 ? $this->mFields->contents_author_fk : 0;
+        
         $version = 1;
         
         if($pk > 0)
@@ -75,8 +78,7 @@ class Module extends Content
           $sql="SELECT contents_pk, contents_title, placement, link_order FROM (contents JOIN modules m ON m.contents_fk = contents_pk AND m.contents_version = $liveField )              
                 JOIN modules__pages l ON l.contents_fk = contents_pk 
                 WHERE pages_fk = $pages_pk ORDER BY placement, link_order";
-        
-            
+                 
         $r = new Query($sql);
         return $r;          
     }

@@ -16,7 +16,7 @@
 <!-- <link  href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/> 
  -->
  
- <script type="text/javascript" src="/common/ckeditor/ckeditor.js"></script>
+ <script type="text/javascript" src="/public/ckeditor/ckeditor.js"></script>
  
 {literal} 
 <script type="text/javascript">

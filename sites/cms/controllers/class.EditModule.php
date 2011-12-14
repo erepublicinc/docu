@@ -28,24 +28,24 @@ class EditModule extends Controller
                       
         if(!empty($_POST['contents_title']))
         {
-             $this->_SaveModule($site,$record_type);
+             $this->_SaveRecord($site,$record_type);
              return; //================================>
         }
         
         if($isNew || $pk >0)
         {
-            $this->_EditModule($pk);
+            $this->_EditRecord($pk);
             return;
         }
         
-        $this->_ListModules($site);
+        $this->_ListRecords($site);
         return;
       
     }
    
     
     
-    private function _SaveModule($site,$record_type)
+    private function _SaveRecord($site,$record_type)
     {
         //dump($_POST);
         $m = new Module($_POST);
@@ -56,7 +56,7 @@ class EditModule extends Controller
     }
 
     
-    private function _EditModule($pk)
+    private function _EditRecord($pk)
     {
         
         
@@ -100,7 +100,7 @@ class EditModule extends Controller
     }
     
     
-    private function _ListModules($site)
+    private function _ListRecords($site)
     { 
         $this->mPageTitle = getSiteName($site) . " - List Modules";
         

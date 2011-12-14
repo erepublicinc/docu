@@ -38,7 +38,7 @@ class Author
         else 
         {
         	$sql[] = "UPDATE authors SET authors_public_email = '$email', authors_name = '$name', authors_bio = '$bio', 
-        			authors_users_fk = $users_fk, authors_active = $active WHERE users_pk = $pk";
+        			authors_users_fk = $users_fk, authors_active = $active WHERE authors_pk = $pk";
         	$sql[] = "SELECT $pk as pk";
         }
         

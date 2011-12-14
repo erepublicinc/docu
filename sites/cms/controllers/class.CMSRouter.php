@@ -53,18 +53,12 @@ class CMSRouter extends Router
         }
 
         // the default map
-        $map = array( 'users'       => 'EditUser',
-        			  'new_users'    => 'EditUser',
-        			  'articles'    => 'EditArticle', 
-                      'article'     => 'EditArticle',
-                      'new_article' => 'EditArticle',
-                      'modules'     => 'EditModule', 
-                      'module'      => 'EditModule',
-                      'new_module'  => 'EditModule',
-                      'pages'       => 'EditPage', 
-                      'page'        => 'EditPage',
-                      'new_page'    => 'EditPage',
-                      'placement'	=> 'EditPlacement'
+        $map = array( 'users'       => 'EditUser',      			  
+        			  'articles'    => 'EditArticle',                                          
+                      'modules'     => 'EditModule',                     
+                      'pages'       => 'EditPage',                      
+                      'placement'	=> 'EditPlacement',
+                      'authors'     => 'EditAuthor'
         ) ;
         
         // allow overwrite of the default map according to the website

@@ -30,11 +30,7 @@ class User
     { //dump($this->mFields);
     	$email = Query::Escape($this->mFields->users_email);
     	
-    	if(!empty($this->mFields->users_password))
-    	{
-    	    $pw    = " users_password = '". Query::Escape($this->mFields->users_password)."', ";
-    	}
-    	
+    	$pw    = "";
     	$fname = Query::Escape($this->mFields->users_first_name);
     	$lname = Query::Escape($this->mFields->users_last_name);
     	$ad    = Query::Escape($this->mFields->users_ad_user);
@@ -46,12 +42,16 @@ class User
     	$sql = array();
     	if($pk == 0)
     	{
-        	$sql[] = "insert into users (users_email, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
+    	    $pw    =  Query::Escape($this->mFields->users_password);
+        	$sql[] = "INSERT INTO users (users_email, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
                  values('$email', '$pw','$fname', '$lname', $active, '$ad', '$notes')";
         	$sql[] = "SELECT LAST_INSERT_ID() as pk";
     	}
         else 
         {
+            if(!empty($this->mFields->users_password)) 
+        	    $pw    = " users_password = '". Query::Escape($this->mFields->users_password)."', ";
+        	
         	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname', users_notes = '$notes', $pw
         			users_ad_user = '$ad', users_active = $active WHERE users_pk = $pk";
         	$sql[] = "SELECT $pk as pk";
@@ -128,17 +128,16 @@ class User
                  WHERE users_email = '$email'"; 
        
        $userdata = new Query($sql);
-//die('asa'.$userdata->password);   
-
-       if($userdata && $userdata->users_active == 0)
-       {
-           self::$errorMessage = "user: $email  account is inactive";
-            return false; 
-       }
+       
        
        if($userdata && $userdata->users_password == $pw)
-       {         
-                
+       {    
+           if($userdata->users_active != 1)
+           {
+               self::$errorMessage = "user: $email  account is inactive";
+                  return false; 
+           }
+                          
            $_SESSION['user_email'] = $userdata->users_email;
            $_SESSION['user_password'] = $pw;
            $_SESSION['user_pk'] = $userdata->users_pk;

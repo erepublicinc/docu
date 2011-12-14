@@ -4,12 +4,24 @@
 			<div>
 				<h3><a href="#">Content</a></h3>
 				<div>
-                    <a href="#">Ad Module</a>
     				<a href="/cms/{$site_code}/articles">Articles</a>
-    				<a href="/cms/{$site_code}/modules">Modules</a>              
-    				<a href="/cms/{$site_code}/pages">Pages</a>          
+    				       
 			    </div>	
 			</div>
+            <div>
+                <h3><a href="#">Design</a></h3>
+                <div>          
+                    <a href="/cms/{$site_code}/modules">Modules</a>              
+                    <a href="/cms/{$site_code}/pages">Pages</a>          
+                </div>  
+            </div>
+            <div>
+                <h3><a href="#">Admin</a></h3>
+                <div>
+                    <a href="/cms/{$site_code}/users">Users</a>
+                    <a href="/cms/{$site_code}/authors">Author Profiles</a>                      
+                </div>  
+            </div>
 			<div>
 				<h3><a href="#">Media</a></h3>
 				<div><a href="#">Images</a>

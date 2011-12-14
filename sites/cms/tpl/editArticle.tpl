@@ -113,8 +113,10 @@ var ckConfig = {toolbar :
                                 
                 <div>
                     <label class="grid_12">Author:</label>
-                    <select  name="contents_main_authors_fk" class="required">
-                                 <option value="{$content->contents_main_authors_fk}" >{$content->users_first_name} {$content->users_last_name}</option>
+                    <select  name="contents_author_fk" class="required">
+                       {foreach $authors as $author}
+                                 <option value="{$author->authors_pk}" {if $author->authors_pk == $content->contents_author_fk} selected="selected"{/if} >{$author->authors_name}</option>
+                       {/foreach}
                     </select> 
                 </div>
                 <div>

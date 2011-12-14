@@ -1,5 +1,5 @@
-/html/*/tpl/cache/*
-/html/*/tpl/templates_c/*
+/sites/*/tpl/cache/*
+/sites/*/tpl/templates_c/*
 /.settings
 /.buildpath
 /.project

@@ -55,11 +55,12 @@ foreach( $results as $c)
 
 
 
-echo"<br><br> ================================================ create and retrieve a user <br>";
+echo"<br><br> ================================================ create update and retrieve a user <br>";
 $CONFIG->SetValue('show_sql',0,true);
 
-$data = array('users_first_name'=> 'First  Name'.$randomId,
-	'users_last_name'=>'Last Name'.$randomId, 
+$data = array(
+    'users_first_name'=> 'First Name'.$randomId,
+	'users_last_name'=>'Lname int. test'.$randomId, 
     'users_password' => '123456789',
 	'users_email' => 'verylongusername@verylongdomain.com',
 	'users_ad_user' => '',
@@ -72,15 +73,30 @@ assert_gt_zero($userspk, __LINE__);
 
 if($userpk)
    $revert[]= "delete from users where users_pk = $userpk";
-   
-assert_gt_zero($userspk, __LINE__);   
 
-User::SetRoles($userpk, array('GT_EDITOR'));
+// retrieve it into an array
+$user = User::GetDetails($userpk);
+$ar = $user->ToArray();
+$ar['users_email']   = 'newemail@test.com';
+$data['users_email'] = 'newemail@test.com';
+
+//save it with the new data 
+$user = new User($ar);
+$user->Save();
+
+// retrieve it again
+$user = User::GetDetails($userpk);
+
+unset($data['users_password']);  // GetDetails does not retrieve the password
+compare_data($data, $user);
+
+
+$result = User::SetRoles($userpk, array('GT_EDITOR'));
 
 
 echo" ================================================ create and retrieve a page <br>";
 $CONFIG->SetValue('show_sql',0,true);
-$data = array('pages_title'=> 'title'.$randomId,
+$data = array('pages_title'=> 'page integration test'.$randomId,
 	'pages_display_title'=>'pages_display_title', 
     'pages_is_live' => 1,
 	'pages_is_preview' => 0,
@@ -100,6 +116,8 @@ if($pagepk >0 )
 	$revert[]= "delete from pages where pages_pk = $pagepk";
 	
 $the_page = Page::GetDetails($pagepk);
+
+
 compare_data($data, $the_page);
 
 
@@ -108,11 +126,9 @@ echo"<br> =========================================== create and retrieve a modu
 $CONFIG->SetValue('show_sql',0,true);
 
 $data = array(
-    'contents_title' 		=> 'title'.$randomId,
+    'contents_title' 		=> 'module integration test'.$randomId,
     'contents_display_title'=>'pages_display_title', 
     'contents_status' 		=>'READY',
-    'pages_is_live'   		=> 1,
-	'pages_is_preview' 		=> 0,
 
     'contents_version_comment'=> ' this is a test',
 
@@ -120,21 +136,33 @@ $data = array(
     'modules_json_params' 	=> 'json',
  	'modules_php_class' 	=>'phpclass',
  	'modules_body' 			=>'this is the body'
+
 );
 $ct = new Module($data);
 $pk = $ct->Save();
+Content::setLiveVersion($pk, 1 );
 
 echo "created module pk : $pk <br>";
 if($pk >0 )
 	$revert[]= "delete from contents where contents_pk = $pk";
 	
-$the_module = Module::GetDetails($pk);
+$the_module = Module::GetDetails($pk, 1);
 compare_data($data, $the_module);
+
+
+
 
 echo"<br> =========================================== link  module to a page <br>";
 $CONFIG->SetValue('show_sql',0,true);
 
-Module::LinkModules($the_page->pages_pk, array($the_module->contents_pk), "DETAIL_LEFT_COLUMN");
+$o = new stdClass();
+$o->contents_fk = $the_module->contents_pk;
+$o->placement   = "DETAIL_LEFT_COLUMN";
+$o->link_order  = 4;
+
+$result = Module::LinkModules($the_page->pages_pk, array($o));
+
+clean_sql();
 
 $modules = Module::GetPageModules($the_page->pages_pk);
 $idx=0;
@@ -142,20 +170,20 @@ foreach($modules as $m)
 {
 	
 	$idx++;
-	assert_equal($m->title, $data->title, __LINE__);
+	assert_equal($m->contents_title, $data['contents_title'], __LINE__);
 }
 
-assert_equal($idx, '1' ,  __LINE__);
+assert_equal($idx, 1 ,  __LINE__);
 
 
 echo"<br> ======================================== create and retrieve a article <br>";
 $CONFIG->SetValue('show_sql',0,true);
 
 $data = array(
-    'contents_title' 		=> 'title'.$randomId,
-    'contents_display_title'=>'pages_display_title', 
-    'contents_status' 		=>'LIVE',
-    
+    'contents_title' 		=> 'article integration test'.$randomId,
+    'contents_display_title'=>'article_display_title', 
+    'contents_status' 		=>'DRAFT',
+    'contents_author_fk'    =>$test_user_pk,
 
     'contents_version_comment'=> ' this is a test',
  	'contents_article_body' 			=>'this is the body',
@@ -163,6 +191,7 @@ $data = array(
 );
 $article = new Article($data);
 $pk = $article->Save();
+Content::setLiveVersion($pk, 1 );
 
 echo "created article pk : $pk <br>";
 if($pk >0 )
@@ -171,7 +200,7 @@ if($pk >0 )
 $the_article = Article::GetDetails($pk);
 compare_data($data, $the_article);
 
-assert_equal($test_user_pk, $the_article->contents_main_author_fk, __LINE__);
+assert_equal($test_user_pk, $the_article->contents_author_fk, __LINE__);
 
 
 echo"<br> ======================================== target an article <br>";
@@ -200,20 +229,42 @@ foreach($targets as $t)
 }
 assert_equal($idx, 1, __LINE__);
 
+clean_sql();
+cleanup();
+
+die(" <br><br>================ died before cleaning up test data ======================<br>");
 
 
 
-//die(" <br><br>================ died before cleaning up test data ======================<br>");
-
-echo("<br><br>========================== deleting test data ===========================<br>");
-
-while($sql = array_pop($revert))
+//===========================================================================================
+//===========================================================================================
+function clean_sql()
 {
-	$d = new Query($sql); 
+    global $revert;
+    echo("<br><br>========================== cleanup script ===========================<br>");
+    
+    $ar = array_reverse($revert);
+    
+    foreach($ar as $sql)
+    {
+    	echo(" $sql <br>"); 
+    }   
 }
 
-die("<br>================ end of tests ================<br>");
-//=============================================================
+function cleanup()
+{
+    
+    global $revert;
+    echo("<br><br>========================== deleting test data ===========================<br>");
+    
+    
+    while($sql = array_pop($revert))
+    {
+    	$d = new Query($sql); 
+    }  
+    die("<br>================ end of tests ================<br>");
+}
+
 
 function assert_gt_zero($v1, $line)
 {
@@ -223,11 +274,27 @@ function assert_gt_zero($v1, $line)
 
 function assert_equal($v1, $v2, $line)
 {
-	if($v1 != $v2)
-	  terror("assertion error on line $line    $v1 should be equal to: $v2 ");
+    $v1 = trim($v1);
+    $v2 = trim($v2);
+    
+    if( is_int($v1) || is_int($v2) )
+    {
+        if (intval($v1) != intval($v2))
+            terror("assertion error on line $line    $v1 should be equal to: $v2 ");
+    }
+    else
+    {
+	  if($v1 != $v2)
+	       terror("assertion error on line $line    $v1 should be equal to: $v2 ");
+    }
 }
 
-
+/**
+ * 
+ * compares an array with a data object
+ * @param array  $data
+ * @param object $retrieved
+ */
 function compare_data($data, $retrieved)
 {
 	foreach($data as $field => $val)
