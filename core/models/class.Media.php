@@ -7,21 +7,21 @@ class Media
         
     }
     
-    public static function getMediaForContent($contents_fk)
+    public static function getMediaForContent($contents_id)
     {
-        $contents_fk  = intval($contents_fk);
-        $sql = "SELECT * FROM  (media JOIN media__contents ON media_pk = media_fk) 
-                         JOIN contents on contents_pk contents_fk
-                         WHERE contents_fk = $contents_fk";
+        $contents_id  = intval($contents_id);
+        $sql = "SELECT * FROM  (media JOIN media__contents ON media_id = media_id) 
+                         JOIN contents on contents_id contents_id
+                         WHERE contents_id = $contents_id";
         
         return new Query($sql);
     }
     
-    public static function linkMediaToContent($media_fk, $contents_fk)
+    public static function linkMediaToContent($media_id, $contents_id)
     {
-        $media_fk    = intval($media_fk);
-        $contents_fk  = intval($contents_fk);
-        $sql = "INSERT INTO media__contents (media_fk, contents_fk) VALUES($media_fk, $contents_fk)";
+        $media_id    = intval($media_id);
+        $contents_id  = intval($contents_id);
+        $sql = "INSERT INTO media__contents (media_id, contents_id) VALUES($media_id, $contents_id)";
         
         return new Query($sql);
     }

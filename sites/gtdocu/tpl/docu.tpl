@@ -68,16 +68,16 @@ function YaasEncode(method, params)
     return JSON.stringify( [{'method':method, 'params': params, 'dsid': Math.random().toString().substr(8)}] );
 }
 
-function loadPage(pk)
+function loadPage(id)
 {
   
     $.ajax({
        type: "POST",     
 	   url: '/common/yaas2.php',
 	   dataType: 'json',
-       data:  'data='+ YaasEncode('Documentation.GetDetails',{'pk':pk}),
+       data:  'data='+ YaasEncode('Documentation.GetDetails',{'id':id}),
 	   success: function( data ) {
-		   thePK = parseInt(data[0][0].contents_pk) +0;
+		   thePK = parseInt(data[0][0].contents_id) +0;
            theIndexing = data[0][0].indexing;
            theTitle = data[0][0].title;
            // get the field from the first row of the first request
@@ -101,7 +101,7 @@ function savePage()
        url: '/common/yaas2.php',
        dataType: 'json',
        data:  'data='+ YaasEncode('Documentation.Save',{
-           'contents_pk':thePK, 
+           'contents_id':thePK, 
            'specs_indexing':$('#id_indexing').text(), 
            'contents_title':$('#id_doc_title').text(), 
            'specs_design_docu':$('#id_design_doc').text(), 
@@ -205,7 +205,7 @@ $(document).ready(function(){
 
 {foreach $docu as $doc}
 
-   <li> <span onclick="loadPage({$doc->contents_pk}) "> {$doc->specs_indexing}  {$doc->contents_title} </span> </li>
+   <li> <span onclick="loadPage({$doc->contents_id}) "> {$doc->specs_indexing}  {$doc->contents_title} </span> </li>
 {/foreach} 
 
 

@@ -21,10 +21,10 @@
     {$zone = $page->page_url }
 {/if}
 
-{if $contents_contents_pk}
-    {$itemid =  $contents_contents_pk}
+{if $contents_contents_id}
+    {$itemid =  $contents_contents_id}
 {else}
-    {$itemid =  $pages_pages_pk}
+    {$itemid =  $pages_pages_id}
 {/if}
    
 {if $ad_class}

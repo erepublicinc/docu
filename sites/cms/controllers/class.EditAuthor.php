@@ -8,7 +8,7 @@ class EditAuthor extends Controller
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'pages' 'new_page' 'page' ( the first one produces a list the other fo editing
-     *          2:   [optional] pk of the page or 'new'  
+     *          2:   [optional] id of the page or 'new'  
      */
     public function __construct($routerObject, $arguments)
     {   
@@ -17,7 +17,7 @@ class EditAuthor extends Controller
 
         $site        = $CONFIG->cms_site_code;        
         $record_type = $arguments[0];
-        $pk          = 0 + intval($arguments[1]);       
+        $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                      
         $this->mSmarty->assign('site_code', $site);
@@ -31,9 +31,9 @@ class EditAuthor extends Controller
              return; //================================>
         }
         
-        if($isNew || $pk >0)
+        if($isNew || $id >0)
         {
-            $this->_EditRecord($pk);
+            $this->_EditRecord($id);
             return;
         }
         
@@ -48,16 +48,16 @@ class EditAuthor extends Controller
     {
         //dump($_POST);
         $m = new Author($_POST);
-        $pk = $m->Save();
+        $id = $m->Save();
        
         header("LOCATION: /cms/$site/$record_type");
         die;             
     }
 
     
-    private function _EditRecord($pk)
+    private function _EditRecord($id)
     {       
-        if($pk == 0)
+        if($id == 0)
         { 
             $this->mPageTitle =  "New Author Profile";
             $m = new stdClass();
@@ -65,7 +65,7 @@ class EditAuthor extends Controller
         else 
         {  
              $this->mPageTitle = "Edit Author Profile";
-             $author           = Author::GetDetails($pk);    
+             $author           = Author::GetDetails($id);    
         }        
 
         $users = $this->mSmarty->assign('users', User::GetUsers());
@@ -84,7 +84,7 @@ class EditAuthor extends Controller
         $this->mPageTitle = "List Author Profiles";
         
         $authors = Author::GetAuthors();
-        $authors->SetAlias(array('contents_pk' => 'authors_pk', 'contents_title' => 'authors_name'));
+        $authors->SetAlias(array('contents_id' => 'authors_id', 'contents_title' => 'authors_name'));
         $this->mMainTpl = 'listContent.tpl';
         
         $this->mSmarty->assign('contents', $authors );

@@ -84,7 +84,7 @@ $(function() {
                 	linkOrder++; 
                     var num = parseInt(pieces[pieces.length -1 ]);
                    // alert(placemnt+ ' '+num);
-                    dta.push({placement: placemnt, contents_fk: num, link_order: linkOrder });         
+                    dta.push({placement: placemnt, contents_id: num, link_order: linkOrder });         
                 }
             });
     		
@@ -110,7 +110,7 @@ $(function() {
 			<ul>
             {foreach $params->modules as $m}
                 {if $m->modules_site_code =="COMMON" } 
-                    <li> {$m->contents_title} #{$m->contents_pk}</li>
+                    <li> {$m->contents_title} #{$m->contents_id}</li>
                 {/if}
             {/foreach}           
 			</ul>
@@ -120,7 +120,7 @@ $(function() {
 			<ul>
 			{foreach $params->modules as $m}
                 {if $m->modules_site_code == $site_code }    
-                    <li> {$m->contents_title} #{$m->contents_pk}</li>
+                    <li> {$m->contents_title} #{$m->contents_id}</li>
                 {/if}
             {/foreach}
 			</ul>
@@ -145,7 +145,7 @@ $(function() {
         		<ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "LISTING_LEFT_COLUMN" }
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
         			<!--  li class="placeholder">Drop module here</li> -->
@@ -159,7 +159,7 @@ $(function() {
                 <ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "LISTING_CENTER_COLUMN" }
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
                 </ol>
@@ -172,7 +172,7 @@ $(function() {
                 <ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "LISTING_RIGHT_COLUMN" }
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
                 </ol>
@@ -188,7 +188,7 @@ $(function() {
                 <ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "DETAIL_LEFT_COLUMN" }
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
                 </ol>
@@ -201,7 +201,7 @@ $(function() {
                 <ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "DETAIL_CENTER_COLUMN" }
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
                 </ol>
@@ -214,7 +214,7 @@ $(function() {
                 <ol>
                     {foreach $params->page_modules as $m}
                         {if $m->placement == "DETAIL_RIGHT_COLUMN" } 
-                            <li>{$m->contents_title} #{$m->contents_pk}</li>
+                            <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
                 </ol>

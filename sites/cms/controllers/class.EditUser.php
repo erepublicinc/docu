@@ -10,7 +10,7 @@ class EditUser extends Controller
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'articles' 'new_article' 'article' ( the first one produces a list the other fo editing
-     *          2:   [optional] pk of the article 
+     *          2:   [optional] id of the article 
      */    
     public function __construct($RouterObject, $arguments)
     {
@@ -20,7 +20,7 @@ class EditUser extends Controller
         
         $site        = $CONFIG->cms_site_code;
         $record_type = $arguments[0];
-        $pk          = 0 + intval($arguments[1]);       
+        $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                  
         $this->mSmarty->assign('site_code', $site);
@@ -30,13 +30,13 @@ class EditUser extends Controller
         
         if(!empty($_POST['users_email']))   // save user
         {
-            $this->_saveUser($pk, $site);  
+            $this->_saveUser($id, $site);  
             return;         
         }     
         
-        if($isNew || $pk > 0)
+        if($isNew || $id > 0)
         {
-             $this->_editUser($pk);
+             $this->_editUser($id);
              return; 
         }
         
@@ -59,7 +59,7 @@ class EditUser extends Controller
     }
 
     
-    private function _saveUser($pk, $site)
+    private function _saveUser($id, $site)
     {
         
         if($_POST['users_password'])
@@ -82,16 +82,16 @@ class EditUser extends Controller
         $_POST['roles'] = $roles;
 //dump($_POST);       
         $u  = new User($_POST) ;        
-        $pk = $u->Save();                   
+        $id = $u->Save();                   
 
         header("LOCATION: /cms/{$site}/users");
         die; 
     }
     
     
-    private function _editUser($pk)
+    private function _editUser($id)
     {
-        if($pk == 0)  // new user
+        if($id == 0)  // new user
         { //die($_SESSION['user_first_name']);
             $this->mPageTitle = getSiteName($site) . " - New User";
             $user = new stdClass();
@@ -100,14 +100,14 @@ class EditUser extends Controller
         else // edit existing article
         {
             $this->mPageTitle = getSiteName($site) . " - Edit User";
-            $user = User::GetDetails($pk);                        
+            $user = User::GetDetails($id);                        
         }
 //dump($user);
         
         // create the left side modules
         $this->mModules['left'] = array(
                                         CMS::CreateDummyModule('contentMediaModule.tpl'),
-                                        CMS::CreateListauthorsModule($pk)
+                                        CMS::CreateListauthorsModule($id)
                                         );
                                         
         $this->mMainTpl = 'editUser.tpl';  

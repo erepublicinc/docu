@@ -82,7 +82,7 @@ var ckConfig = {toolbar :
             </div>     
             -->      
             <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />                                              
-            <input type="hidden" name='contents_pk' value="{$content->contents_pk}" />
+            <input type="hidden" name='contents_id' value="{$content->contents_id}" />
             <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
             <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
             <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />     
@@ -113,9 +113,9 @@ var ckConfig = {toolbar :
                                 
                 <div>
                     <label class="grid_12">Author:</label>
-                    <select  name="contents_author_fk" class="required">
+                    <select  name="contents_author_id" class="required">
                        {foreach $authors as $author}
-                                 <option value="{$author->authors_pk}" {if $author->authors_pk == $content->contents_author_fk} selected="selected"{/if} >{$author->authors_name}</option>
+                                 <option value="{$author->authors_id}" {if $author->authors_id == $content->contents_author_id} selected="selected"{/if} >{$author->authors_name}</option>
                        {/foreach}
                     </select> 
                 </div>

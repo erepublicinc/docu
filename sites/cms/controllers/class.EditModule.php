@@ -9,7 +9,7 @@ class EditModule extends Controller
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'pages' 'new_page' 'page' ( the first one produces a list the other fo editing
-     *          2:   [optional] pk of the page 
+     *          2:   [optional] id of the page 
      */
     public function __construct($routerObject, $arguments)
     {   
@@ -18,7 +18,7 @@ class EditModule extends Controller
 
         $site        = $CONFIG->cms_site_code;        
         $record_type = $arguments[0];
-        $pk          = 0 + intval($arguments[1]);       
+        $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                      
         $this->mSmarty->assign('site_code', $site);
@@ -32,9 +32,9 @@ class EditModule extends Controller
              return; //================================>
         }
         
-        if($isNew || $pk >0)
+        if($isNew || $id >0)
         {
-            $this->_EditRecord($pk);
+            $this->_EditRecord($id);
             return;
         }
         
@@ -49,18 +49,18 @@ class EditModule extends Controller
     {
         //dump($_POST);
         $m = new Module($_POST);
-        $pk = $m->Save();
+        $id = $m->Save();
        
         header("LOCATION: /cms/$site/$record_type");
         die;             
     }
 
     
-    private function _EditRecord($pk)
+    private function _EditRecord($id)
     {
         
         
-        if($pk == 0)
+        if($id == 0)
         { //die($_SESSION['user_first_name']);
             $m = new stdClass();
             $m->contents_create_date    = time(); //date();
@@ -70,18 +70,18 @@ class EditModule extends Controller
         else 
         {  
              $this->mPageTitle = getSiteName($site) . " - Edit Module";
-             $m    = Module::GetDetails($pk, LATEST_VERSION);    
+             $m    = Module::GetDetails($id, LATEST_VERSION);    
         }
         
 
         // for the moduleUsageModule
-        $pagelinks =  Module::GetPageLinks($pk); 
+        $pagelinks =  Module::GetPageLinks($id); 
         
         
         $this->mSmarty->assign('pageModuleLinks', $pagelinks);
         
         // for versionHistoyModule
-        $this->mSmarty->assign('pk', $pk);
+        $this->mSmarty->assign('id', $id);
         $this->mSmarty->assign('live_version',    $history->live_version);
         $this->mSmarty->assign('preview_version', $history->preview_version);      
         $this->mSmarty->assign('history', $history);
@@ -94,7 +94,7 @@ class EditModule extends Controller
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'),                                      
                                         CMS::CreateVersionHistoryModule($m,'modules'), 
-                                        CMS::CreateModuleUsageModule($pk), 
+                                        CMS::CreateModuleUsageModule($id), 
                                         CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'editModule.tpl';  
     }
@@ -106,15 +106,16 @@ class EditModule extends Controller
         
         if($_POST['makelive'])
         {
-            Content::setLiveVersion(intval($_POST['pk']), intval($_POST['version']));
+            Content::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
         }
         elseif($_POST['makepreview'])
         {
-             Content::setPreviewVersion(intval($_POST['pk']), intval($_POST['version']));
+             Content::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
         }
         
         $modules = Module::GetModules($site, TRUE);
-        //  foreach($arts as $a) echo $a->contents_pk;     die;   
+        //dump($modules);
+        //  foreach($arts as $a) echo $a->contents_id;     die;   
         $this->mSmarty->assign('contents', $modules );
         
         // create the left side modules for this page

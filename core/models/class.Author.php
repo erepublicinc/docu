@@ -23,56 +23,57 @@ class Author
         
     	$email    = Query::Escape($this->mFields->authors_public_email);
     	$name     = Query::Escape($this->mFields->authors_name);
+    	$dname     = Query::Escape($this->mFields->authors_display_name);
     	$bio      = Query::Escape($this->mFields->authors_bio);
     	$active   = empty($this->mFields->authors_active)? 0: 1;
-    	$pk       = intval($this->mFields->authors_pk);
-    	$users_fk = intval($this->mFields->authors_users_fk);
+    	$id       = intval($this->mFields->authors_id);
+    	$users_id = intval($this->mFields->authors_users_id);
     	
     	$sql = array();
-    	if($pk == 0)
+    	if($id == 0)
     	{
-        	$sql[] = "insert into authors (authors_public_email, authors_name, authors_bio, authors_active,authors_users_fk) 
-                 values('$email', '$name', '$bio', $active, $users_fk)";
-        	$sql[] = "SELECT LAST_INSERT_ID() as pk";
+        	$sql[] = "insert into authors (authors_public_email, authors_name, authors_display_name, authors_bio, authors_active,authors_users_id) 
+                 values('$email', '$name', '$dname', '$bio', $active, $users_id)";
+        	$sql[] = "SELECT LAST_INSERT_ID() as id";
     	}
         else 
         {
-        	$sql[] = "UPDATE authors SET authors_public_email = '$email', authors_name = '$name', authors_bio = '$bio', 
-        			authors_users_fk = $users_fk, authors_active = $active WHERE authors_pk = $pk";
-        	$sql[] = "SELECT $pk as pk";
+        	$sql[] = "UPDATE authors SET authors_public_email = '$email', authors_name = '$name', authors_display_name = '$dname',authors_bio = '$bio', 
+        			authors_users_id = $users_id, authors_active = $active WHERE authors_id = $id";
+        	$sql[] = "SELECT $id as id";
         }
         
         $r = Query::sTransaction($sql);
        
         if($r)
         {
-        	return $r->pk ;   // success
+        	return $r->id ;   // success
         }                  
         return false;
     }
     
     /**
      *  GetDetails
-     *  @param int authors_pk
+     *  @param int authors_id
      *  @return author record
      */
-    public static function GetDetails($pk)
+    public static function GetDetails($id)
     {
-        return new Query("SELECT * FROM authors WHERE authors_pk = $pk");
+        return new Query("SELECT * FROM authors WHERE authors_id = $id");
     }
     
     /**
      * GetAuthors4User
-	 * @param int users_pk
+	 * @param int users_id
 	 * @return all author profiles connected to this user
      */
-    public static function GetAuthors4User($users_fk)
+    public static function GetAuthors4User($users_id)
     {
-        $pk = intval($users_fk);
-        if($pk == 0)
+        $id = intval($users_id);
+        if($id == 0)
            return array();
         
-        return new Query("SELECT * FROM authors WHERE authors_users_fk = $pk");
+        return new Query("SELECT * FROM authors WHERE authors_users_id = $id");
     }
     
     

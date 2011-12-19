@@ -9,7 +9,7 @@ class Content
 {
     public    $mTargets;
     protected $mFields;
-    protected $mPk;
+    protected $mId;
     
        
     protected $mContentType;             // set by derived class in constructor    ex. 'ARTICLE' or 'DOCUMENTATION'   used for content_type field
@@ -18,7 +18,7 @@ class Content
     // this describes the fields that can be set by the "user"
     // this gets passed into : FormatUpdateString()
     protected static $mContentFieldDescriptions = array(
-          //'contents_pk'   we never need this, will be set by autoincrement and never updated
+          //'contents_id'   we never need this, will be set by autoincrement and never updated
             'contents_title'           => array('type'=>'varchar', 'required'=>true),
             'contents_display_title'   => array('type'=>'varchar'),
             'contents_create_date'     => array('type'=>'date', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
@@ -27,8 +27,8 @@ class Content
             'contents_summary'         => array('type'=>'varchar'),
             'contents_url_name'        => array('type'=>'varchar'),
           //'contents_status'          => array('type'=>'varchar'),    
-            'contents_update_users_fk' => array('type'=>'int', 'required'=>true),   
-            'contents_author_fk'       => array('type'=>'int'),   
+            'contents_update_users_id' => array('type'=>'int', 'required'=>true),   
+            'contents_authors_id'      => array('type'=>'int'),   
             'contents_extra_table'     => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_live_version'    => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newversion
             'contents_preview_version' => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newversion
@@ -38,9 +38,9 @@ class Content
             
     // these are the fields that a derived class must have        
     protected static $mStandardFieldDescriptions = array(            
-            'contents_fk'               => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // version is set with variable @pk 
+            'contents_fid'              => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // version is set with variable @id 
             'contents_version'          => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // version is set with variable @newversion
-            'contents_version_users_fk' => array('type'=>'int') , 
+            'contents_version_users_id' => array('type'=>'int') , 
             'contents_version_date'     => array('type'=>'date', 'do_not_validate'=>true) , // set with NOW()
             'contents_version_comment'  => array('type'=>'varchar') ,  
             'contents_version_status'   => array('type'=>'varchar')  
@@ -53,7 +53,7 @@ class Content
     
     
     /** 
-     * initialized with a row from the contents table, or with a pk
+     * initialized with a row from the contents table, or with a id
      * @param array, object or int 
      */
     protected function __construct($params)
@@ -66,11 +66,11 @@ class Content
         if(is_object($params))
         {
             $this->mFields =  $params; //echo('create contetn'.$row->title);
-            $this->mPk     = ($params->contents_pk >0)? $params->contents_pk :0;
+            $this->mId     = ($params->contents_id >0)? $params->contents_id :0;
         }      
         elseif( is_integer($params))
         {
-            $this->mPk =$params;
+            $this->mId =$params;
         }
         
     }
@@ -90,33 +90,30 @@ class Content
     
         /** 
      * This static class can be called by a yaas function 
-     * @param int $pk of the object
+     * @param int $id of the object
      * @param string $extraTable the table to be joined
      * @param int $version  the requested version 0 = the live version
      * @return a Query object with 2 result sets:  1. content item,   2. its targets
      */
-    public static function GetAllData($pk, $extraTable, $version = LIVE_VERSION, $includeAuthor = true)
+    public static function GetAllData($id, $extraTable, $version = LIVE_VERSION, $includeAuthor = true)
     {  
         global $CONFIG;  
         if($version == LATEST_VERSION)
-            $version = "(SELECT MAX(contents_version)from $extraTable WHERE contents_fk = $pk)";
+            $version = "(SELECT MAX(contents_version)from $extraTable WHERE contents_id = $id)";
         elseif($version == LIVE_VERSION)
             $version = $CONFIG->mode == 'PREVIEW'? "contents_preview_version" : "contents_live_version"; 
          
      
 
          if($includeAuthor)
-             $sql = "SELECT * FROM   contents c 
-                     JOIN $extraTable t 
-                     ON contents_pk = t.contents_fk and t.contents_version = $version     
-                     JOIN authors au
-                     ON au.authors_pk = c.contents_author_fk              
-                     WHERE c.contents_pk = $pk ";
+             $sql = "SELECT * FROM   contents 
+                     JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version     
+                     JOIN authors      ON authors_id = contents_authors_id              
+                     WHERE contents_id = $id ";
  		  else 
-              $sql = "SELECT * FROM   contents c 
-                     JOIN $extraTable t 
-                     ON contents_pk = t.contents_fk and t.contents_version = $version                 
-                     WHERE c.contents_pk = $pk ";
+              $sql = "SELECT * FROM   contents  
+                     JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version                 
+                     WHERE contents_id = $id ";
 		  
 		$result =  new Query($sql);            
 //dump($result->ToArray());				       
@@ -132,11 +129,11 @@ class Content
      */
     protected function GetExtraData($extraTable, $version=0)
     {
-        $pk = $this->pk;
+        $id = $this->mId;
         $theversion = $version > 0 ? $version : $this->mFields->contents_live_version; 
        
         $sql = "SELECT * from $extraTable t 
-        	    WHERE t.contents_fk = $pk     
+        	    WHERE t.contents_id = $id     
                 AND contents_version = $theversion ";
         	  			
         return  new Query($sql); 
@@ -177,11 +174,11 @@ class Content
         if($site && $site != 'ALL')
         {
             // need an extra join to figure out which page we are looking for
-            $sql="SELECT contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_author_fk  
-                FROM  (contents  JOIN targets ON targets_contents_fk = contents_pk )
+            $sql="SELECT contents_id, contents_title, contents_display_title, contents_summary, contents_status , contents_authors_id  
+                FROM  (contents  JOIN targets ON targets_contents_id = contents_id )
                            JOIN pages   ON pages_id = targets_pages_id           
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status
-               GROUP BY contents_pk, contents_title, contents_display_title, contents_summary, contents_status , contents_author_fk  
+               GROUP BY contents_id, contents_title, contents_display_title, contents_summary, contents_status , contents_authors_id  
                $topX ";
         }
         else 
@@ -196,7 +193,7 @@ class Content
     
     /**
      * Gets all data in case you only know the urlname   ( like a detail page)
-     * @param String $urlName ( also allows for a pk   or   12324.html)
+     * @param String $urlName ( also allows for a id   or   12324.html)
      */
     public static function GetContentByUrl($urlName)
     {
@@ -206,20 +203,20 @@ class Content
 
         if(is_int($urlName))   
         {
-           $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
-                  FROM contents JOIN users on users_pk = contents_author_fk 
-                  WHERE contents_pk = $urlName"; 
+           $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+                  FROM contents JOIN users on users_id = contents_authors_id 
+                  WHERE contents_id = $urlName"; 
         }
         else 
         {
-            $sql = "SELECT contents_pk, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
-                  FROM contents JOIN users on users_pk = contents_author_fk 
+            $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+                  FROM contents JOIN users on users_id = contents_authors_id 
                   WHERE contents_url_name = '$urlName'";
         }
 //dump($sql);        
         $r = new Query($sql);        
         
-        $sql = "SELECT * FROM $r->contents_extra_table WHERE contents_fk = $r->contents_pk AND contents_version = $r->contents_live_version";
+        $sql = "SELECT * FROM $r->contents_extra_table WHERE contents_id = $r->contents_id AND contents_version = $r->contents_live_version";
         $r2 = new Query($sql);
      
         // combine the 2 results into 1 content object  
@@ -272,7 +269,7 @@ class Content
             // need an extra join to figure out which page we are looking for
  
              $sql="SELECT  * FROM 
-               ( contents JOIN targets ON targets_contents_fk = contents_pk )
+               ( contents JOIN targets ON targets_contents_id = contents_id )
                           JOIN pages   ON pages_id = targets_pages_id             
                WHERE pages_url = '$url' AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
                  $types $statusStr  $orderStr $topX ";
@@ -283,7 +280,7 @@ class Content
             $pages_id = $pages_id > 0 ? $pages_id :  $CONFIG->current_page_id;
             
             $sql="SELECT  * FROM contents 
-                  JOIN targets  ON targets_contents_fk = contents_pk 
+                  JOIN targets  ON targets_contents_id = contents_id 
                   WHERE targets_pages_id = ". $pages_id ." 
                   AND targets_live_date < NOW() AND (targets_archive_date > NOW() OR targets_archive_date <'2000-01-01') 
                   $types $statusStr   $orderStr $topX ";
@@ -308,7 +305,7 @@ class Content
 
     /**
      * returns the number of pages
-     * @param int   page id
+     * @param int   page id      
      * @param array  of article types
      * @param int  page Size   [default = default pagesize for this site]
      */
@@ -317,7 +314,7 @@ class Content
         global $CONFIG;
         $page_size = $page_size > 0 ? $page_size : $CONFIG->page_size;
         
-        $page_pk = intval($page_pk);
+        $page_id = intval($page_id);
         
         $liveversion = ($CONFIG->mode == 'PREVIEW') ? 'contents_preview_version' : 'contents_live_version';  
         
@@ -325,7 +322,7 @@ class Content
         $type_list = " '$type_list' ";
         
         
-        $sql = "SELECT COUNT(*) as num  FROM contents JOIN targets ON contents_pk = targets_contents_fk 
+        $sql = "SELECT COUNT(*) as num  FROM contents JOIN targets ON contents_id = targets_contents_id 
                 WHERE contents_type in ($type_list) 
                 AND targets_pages_id = $page_id  
                 AND $liveversion > 0
@@ -337,27 +334,27 @@ class Content
     }
         
     /**
-     * Gets targets for this item
-     * @param int $pk
+     * Gets targets for this content item
+     * @param int $contents_id
      */
-    public static function GetTargets($pk, $onlyActiveTargets = true)
+    public static function GetTargets($contents_id, $onlyActiveTargets = true)
     {  
        global $CONFIG;  
                     
        $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';   
-       $sql = "SELECT targets_pages_id, targets_contents_fk, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title, pages_site_code
+       $sql = "SELECT targets_pages_id, targets_contents_id, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title, pages_site_code
        			FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
-		        WHERE targets_contents_fk = $pk  "; 
+		        WHERE targets_contents_id = $contents_id  "; 
   
        return new Query($sql); 
     }   
     
     
-    public static function GetVersionHistory($pk,$extraTable)
+    public static function GetVersionHistory($id,$extraTable)
     {
         $sql = "SELECT contents_version  as version, contents_version_date as version_date, contents_version_comment as version_comment, users_first_name, users_last_name, users_email
-                FROM {$extraTable} JOIN users ON contents_version_users_fk = users_pk
-                WHERE contents_fk = $pk ORDER BY contents_version DESC";
+                FROM {$extraTable} JOIN users ON contents_version_users_id = users_id
+                WHERE contents_fid = $id ORDER BY contents_version DESC";
 //   dump($sql);     
         return new Query($sql);
     }
@@ -370,8 +367,9 @@ class Content
      */  
     protected function Save($newVersion= true)
     {
-        $pk = intval( $this->mFields->contents_pk);
-        $newContent =   $pk == 0 ? true: false;
+        $id = intval( $this->mFields->contents_id);
+
+        $newContent =   $fid == 0 ? true: false;
           
         if($newVersion || $newContent )     
             $newVersion = true;
@@ -384,15 +382,12 @@ class Content
         // set the Standard fields of derived class   for which we are resposible        
         $this->mFields->contents_version_status   = $this->mFields->contents_version_status == 'READY' || $this->mFields->contents_version_status == 'REVIEW' ? $this->mFields->contents_version_status : 'DRAFT';                   
         $this->mFields->contents_version_date     = "NOW()";
-        $this->mFields->contents_version_users_fk = $_SESSION['user_pk']; 
-
-        $fk = intval($this->mFields->contents_pk);
-        $this->mFields->contents_fk = $fk;
-       
+        $this->mFields->contents_version_users_id = $_SESSION['user_id']; 
+     
         if($newContent)  
         { 
              $this->mFields->contents_version = 1;
-             $this->mFields->contents_fk = '@pk';
+             $this->mFields->contents_fid = '@id';
              $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
              array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
           //   dump($this->mSqlStack);
@@ -402,11 +397,12 @@ class Content
         {
             if($newVersion) 
             {
+                $this->mFields->contents_fid = $id;
                 $this->mFields->contents_version = '@newversion';
                 //dump($this->mFields); 
                 $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
                
-                array_push($this->mSqlStack, "SELECT  @newversion:= MAX(contents_version) +1  from $this->mExtraTable where contents_fk = $fk");
+                array_push($this->mSqlStack, "SELECT  @newversion:= MAX(contents_version) +1  from $this->mExtraTable where contents_id = $id");
                 array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
             }
             else
@@ -414,7 +410,7 @@ class Content
                 $version = intval($this->mFields->contents_version);
                 dump($this->mFields); 
                 $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
-                array_push($this->mSqlStack, "UPDATE $this->mExtraTable  SET $newvalues WHERE contents_fk = $fk AND contents_version = $version");
+                array_push($this->mSqlStack, "UPDATE $this->mExtraTable  SET $newvalues WHERE contents_id = $id AND contents_version = $version");
             }
          //   dump($this->mSqlStack); 
             return self::SaveExisting();           
@@ -427,9 +423,9 @@ class Content
     /**
      * Creates a new content item
      * @param stdClass object with the field values
-     * the following fields are mandatory:  title, contents_type, author_pk 
+     * the following fields are mandatory:  title, contents_type, authors_id 
      * @param array of strings $extra_sql     if supplied, this sql will run in the same call as a transaction
-     * @return the pk of the new item, or false
+     * @return the id of the new item, or false
      */
     protected function SaveNew()
     {
@@ -440,28 +436,30 @@ class Content
         $this->mFields->contents_extra_table     = $this->mExtraTable;
         $this->mFields->contents_type            = $this->mContentType;
         $this->mFields->contents_create_date     = 'NOW()';        
+        $this->mFields->contents_authors_id      = $this->mFields->contents_authors_id > 0 ?  $this->mFields->contents_authors_id : SYSTEM_AUTHOR_ID ;
+        
         
         // do we need these 3 fields, they would be similar to the fields on the latest version
         $this->mFields->contents_update_date     = 'NOW()';
-        $this->mFields->contents_update_users_fk = $_SESSION['user_pk'];
+        $this->mFields->contents_update_users_id = $_SESSION['user_id'];
 //        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
         
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, true); 
         
-        array_unshift($this->mSqlStack, "SELECT @pk:= LAST_INSERT_ID()");
+        array_unshift($this->mSqlStack, "SELECT @id:= LAST_INSERT_ID()");
         array_unshift($this->mSqlStack, "INSERT INTO contents $newvalues ");
-        array_push($this->mSqlStack,    "SELECT @pk as pk");
+        array_push($this->mSqlStack,    "SELECT @id as id");
         /* now the sqlStack has 4 items in the following order:
             0. create the content record
-            1. 'SELECT @pk:= LAST_INSERT_ID()'
-            2. create the extra table record , which is using @pk
-            3. 'SELECT @pk as pk' , so we can return this
+            1. 'SELECT @id:= LAST_INSERT_ID()'
+            2. create the extra table record , which is using @id
+            3. 'SELECT @id as id' , so we can return this
         */
         
         //   dump($this->mSqlStack);
         $result =  Query::sTransaction($this->mSqlStack);
         if($result != false)
-            return $result->pk;
+            return $result->id;
         return false;    
     }
 
@@ -470,7 +468,7 @@ class Content
      * Update a content item
      * we will only update the fields that are present and leave the rest alone
      * @param bool $newVersion to see if we have to increase the live version 
-     * @return   false (in case of failure,  otherwise the pk of the content item
+     * @return   false (in case of failure,  otherwise the id of the content item
      */   
     protected function SaveExisting($newVersion = TRUE)
     { 
@@ -481,17 +479,17 @@ class Content
 
         // do we need these 3 fields, they would be similar to the fields on the latest version
         $this->mFields->contents_update_date     = 'NOW()';
-        $this->mFields->contents_update_users_fk = $_SESSION['user_pk'];
+        $this->mFields->contents_update_users_id = $_SESSION['user_id'];
 //        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
         
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, false); 
         
-        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_pk =$this->mPk";   
+        $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_id =$this->mId";   
         //dump($this->mSqlStack);
 
         $result = Query::sTransaction($this->mSqlStack);
         if($result != false)
-            return $this->mFields->contents_pk;
+            return $this->mFields->contents_id;
         return false;  
     }
      
@@ -500,12 +498,12 @@ class Content
      * Makes a version  live
      * @param int $version
      */
-    public static function SetLiveVersion($pk, $version)
+    public static function SetLiveVersion($id, $version)
     {
-        if(!$pk)
-            return logerror('called setLiveVersion, pk == 0');
+        if(!$id)
+            return logerror('called setLiveVersion, id == 0');
         Query::SetAdminMode();
-        $q = new Query("UPDATE contents SET contents_live_version = $version WHERE contents_pk = $pk");
+        $q = new Query("UPDATE contents SET contents_live_version = $version WHERE contents_id = $id");
         return $q->version;
     }
     
@@ -514,48 +512,48 @@ class Content
      * Makes a version  Preview
      * @param int $version
      */
-    public static function SetPreviewVersion($pk, $version)
+    public static function SetPreviewVersion($id, $version)
     {
-         if(!$pk)
-            return logerror('called setLiveVersion, pk == 0');
+         if(!$id)
+            return logerror('called setLiveVersion, id == 0');
         Query::SetAdminMode();
-        $q = new Query("UPDATE contents SET contents_preview_version = $version WHERE contents_pk = $pk");
+        $q = new Query("UPDATE contents SET contents_preview_version = $version WHERE contents_id = $id");
         return $q->version;
     }
 
     
     /**
      * link content
-     * @param int    pk of main item 
+     * @param int    id of main item 
      * @param string type of this item
      * @param int or int array  array of items to be linked
      * @param string  type of these. all elements to be linked in this call have to be of the same type
      * @param string link type
      */
-    public static function LinkContent($pk1, $type1, $pk_array, $type2, $link_type ='')
+    public static function LinkContent($id1, $type1, $id_array, $type2, $link_type ='')
     {
         $type_one = 'type1';
         $type_two = 'type2';
-        $pk_one   = 'pk1';
-        $pk_two   = 'pk2';
+        $id_one   = 'id1';
+        $id_two   = 'id2';
         
          // order it alphabetically by type 
         if( $type1 > $type2)
         {
             $type_one = 'type2';
             $type_two = 'type1';
-            $pk_one   = 'pk2';
-            $pk_two   = 'pk1';         
+            $id_one   = 'id2';
+            $id_two   = 'id1';         
         }
         
     
-        if(! is_array($pk_array))
-            $pk_array = array($pk_array);
+        if(! is_array($id_array))
+            $id_array = array($id_array);
             
-        foreach ($pk_array as $pk2)
+        foreach ($id_array as $id2)
         {
-            $sql[] = "INSERT INTO contents__contents (contents_fk1, contents_type1 , contents_fk2, contents_type2 , link_type)
-                      VALUES(". $$pk_one. ", '". $$type_one."', ".$$pk_two. ", '".$$type_two."', '$link_type')";
+            $sql[] = "INSERT INTO contents__contents (contents_id1, contents_type1 , contents_id2, contents_type2 , link_type)
+                      VALUES(". $$id_one. ", '". $$type_one."', ".$$id_two. ", '".$$type_two."', '$link_type')";
         }
         dump($sql);
         return new Query($sql);
@@ -564,10 +562,10 @@ class Content
     
     /**
      * returns the content records linked 
-     * @param int $pk
+     * @param int $id
      * @param array or string of types [default 'ALL' returns all linked content]
      */
-    public static function GetLinkedContent($pk, $types_array = "ALL")
+    public static function GetLinkedContent($id, $types_array = "ALL")
     {    
        $liveversion = ($CONFIG->mode == 'PREVIEW') ? 'contents_preview_version' : 'contents_live_version';   
         
@@ -585,25 +583,25 @@ class Content
            }  
        }
        
-       $sql = "SELECT * FROM contents__contents  JOIN contents on contents_pk =  contents_fk1
-        		WHERE contents_fk2 = $pk  AND $liveversion > 0  $type_str
+       $sql = "SELECT * FROM contents__contents  JOIN contents on contents_id =  contents_id1
+        		WHERE contents_id2 = $id  AND $liveversion > 0  $type_str
                UNION 
-               SELECT * FROM contents__contents  JOIN contents on contents_pk =  contents_fk2
-                WHERE contents_fk1 = $pk  AND $liveversion > 0  $type_str ";
+               SELECT * FROM contents__contents  JOIN contents on contents_id =  contents_id2
+                WHERE contents_id1 = $id  AND $liveversion > 0  $type_str ";
     }
 
     
     /**
      * unlink  content items
-     * @param int $pk1
-     * @param array or int $pk_array
+     * @param int $id1
+     * @param array or int $id_array
      */
-    public static function UnlinkContent($pk1,$pk_array)
+    public static function UnlinkContent($id1,$id_array)
     {
-        if(is_array($pk_array))
-            $pk_array = implode("','",$pk_array);
-        $sql[] = "DELETE FROM contents_contents WHERE contents_fk1 = $pk1 AND contents_fk2 in ($pk_array)";
-        $sql[] = "DELETE FROM contents_contents WHERE contents_fk2 = $pk1 AND contents_fk1 in ($pk_array)";
+        if(is_array($id_array))
+            $id_array = implode("','",$id_array);
+        $sql[] = "DELETE FROM contents_contents WHERE contents_id1 = $id1 AND contents_id2 in ($id_array)";
+        $sql[] = "DELETE FROM contents_contents WHERE contents_id2 = $id1 AND contents_id1 in ($id_array)";
         return new Query($sql);
     }
     
@@ -615,7 +613,7 @@ class Content
      * creates a string used for inserting a record like: "(body,version) VALUES('hello', 12) "
      * typical use:    
      * $str = FormatUpdateString(GetFieldTypes(false), $params);
-     * $sql = "UPDATE events SET $str WHERE pk = $pk";
+     * $sql = "UPDATE events SET $str WHERE id = $id";
      * 
      * @param array of field types
      * @param bool  [default =  false] means that we request a string suitable for 

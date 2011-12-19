@@ -65,7 +65,7 @@
         {foreach $contents as $c}
             <li style="padding:0.6em 0 0"><div style="clear:both">
                 <div class="cell" style="width:15px;"><input type="checkbox" > </div>
-                <div class="cell" style="width:300px;"><a href="/cms/gt/{$c->contents_type}/{$c->contents_pk}">{$c->contents_title}</a></div>
+                <div class="cell" style="width:300px;"><a href="/cms/gt/{$c->contents_type}/{$c->contents_id}">{$c->contents_title}</a></div>
                 <div class="cell" style="width:120px;">{$c->contents_update_date|date_format:$DATETIME_FORMAT}</div>
                 <div style="width:5px;"{if $c->contents_live_version > 0}   class="ui-icon ui-icon-circle-check cell"                         
                                           {else} class="ui-icon-tan ui-icon-alert cell"

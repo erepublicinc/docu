@@ -93,7 +93,7 @@ function saveContent()
             </div>     
             -->      
             <input type="hidden" id="id_changed_roles" name='changed_roles' value="" />                                              
-            <input type="hidden" name='users_pk' value="{$user->users_pk}" />
+            <input type="hidden" name='users_id' value="{$user->users_id}" />
             <fieldset>                      
                 <div>
                     <label class="grid_2">Active:</label>

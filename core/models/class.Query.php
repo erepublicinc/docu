@@ -184,9 +184,9 @@ class Query  implements Iterator
     }
     
     /**
-     * Create shortcut fieldnames ex: 'pk' instead of 'contents_pk'
+     * Create shortcut fieldnames ex: 'id' instead of 'contents_id'
      * Great for use with generic templates
-     * @param array $alias_array  array( 'pk'=>'contents_pk', 'body'=>'articles_body');
+     * @param array $alias_array  array( 'id'=>'contents_id', 'body'=>'articles_body');
      */
     public function SetAlias($alias_array)
     {

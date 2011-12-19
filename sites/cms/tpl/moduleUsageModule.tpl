@@ -6,7 +6,7 @@
         <div class="m-10">
             <ul class="condenced">
                {foreach $params->pages as $p}
-                   <li><a href="/cms/{$p->pages_site_code}/page/{$p->pages_pk}">{$p->pages_site_code} {$p->pages_title} </a></li>
+                   <li><a href="/cms/{$p->pages_site_code}/page/{$p->pages_rev}">{$p->pages_site_code} {$p->pages_title} </a></li>
                 {/foreach}
             </ul>
         </div>

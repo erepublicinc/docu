@@ -6,7 +6,7 @@ class Documentation extends Content
         'specs_user_docu'    => array('type'=>'varchar'),
         'specs_design_docu'  => array('type'=>'varchar'),
         'specs_indexing'     => array('type'=>'varchar'),
-        'specs_authors_fk'    => array('type'=>'int'));
+        'specs_authors_id'    => array('type'=>'int'));
     
     public function __construct($fieldsObject)
     {
@@ -33,12 +33,12 @@ class Documentation extends Content
         $euser_docu   = Query::Escape($this->mFields->specs_user_docu);
         $edesign_docu = Query::Escape($this->mFields->specs_design_docu);
 
-        $author = $_SESSION['user_pk'];
-        $this->mFields->contents_main_authors_fk = $author;  
+        $author = $_SESSION['user_id'];
+        $this->mFields->contents_main_authors_id = $author;  
            
         
-        $this->mSqlStack[]  = "INSERT INTO specs(specs_contents_fk,specs_version,specs_indexing,specs_user_docu,specs_design_docu, specs_authors_fk) 
-                 VALUES(@pk, 1,'$eindexing','$euser_docu','$edesign_docu', $author)";
+        $this->mSqlStack[]  = "INSERT INTO specs(specs_contents_id,specs_version,specs_indexing,specs_user_docu,specs_design_docu, specs_authors_id) 
+                 VALUES(@id, 1,'$eindexing','$euser_docu','$edesign_docu', $author)";
         
 
        //  print_o( $this->mFields); die('here2'); 
@@ -53,18 +53,18 @@ class Documentation extends Content
         $euser_docu   = Query::Escape($this->mFields->specs_user_docu);
         $edesign_docu = Query::Escape($this->mFields->specs_design_docu);
         
-        $author = $_SESSION['user_pk'];
-        $this->mFields->specs_authors_fk = $author;      
+        $author = $_SESSION['user_id'];
+        $this->mFields->specs_authors_id = $author;      
                     
         if($newVersion)
         {
-            $this->mSqlStack[] = "INSERT INTO specs(specs_contents_fk,specs_version,specs_indexing,specs_user_docu,specs_design_docu, specs_authors_fk)            
+            $this->mSqlStack[] = "INSERT INTO specs(specs_contents_id,specs_version,specs_indexing,specs_user_docu,specs_design_docu, specs_authors_id)            
                      VALUES($this->mPk, @v,'$eindexing','$euser_docu','$edesign_docu', $author)";
         }
         else
         {
             $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions);           
-            $this->mSqlStack[] = "UPDATE specs set $newvalues  WHERE  specs_contents_fk = $this->mPk AND specs_version = @v -1  ";                              
+            $this->mSqlStack[] = "UPDATE specs set $newvalues  WHERE  specs_contents_id = $this->mPk AND specs_version = @v -1  ";                              
         }
         return parent::SaveExisting($newVersion);
     }
@@ -84,7 +84,7 @@ class Documentation extends Content
     public static function GetDocumentation()
     {    
         $sql = "select * from contents 
-			join specs  on contents_pk = specs_contents_fk and specs_version = contents_live_version
+			join specs  on contents_id = specs_contents_id and specs_version = contents_live_version
 			where contents_type = 'DOCUMENTATION'   			
 			order by specs_indexing ";
       
@@ -109,7 +109,7 @@ class Documentation extends Content
             return('unauthorized');
         }
          
-        $d = Content::getAllData($params->pk, "specs", intval($params->contents_version))->ToArray();
+        $d = Content::getAllData($params->id, "specs", intval($params->contents_version))->ToArray();
         
         
         if(! User::Authorize('SUPER_ADMIN')) // only super admins get to see the design documentation

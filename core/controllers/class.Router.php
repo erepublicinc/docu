@@ -44,7 +44,7 @@ abstract class Router
     public $mUser;         // do we need this ?
     protected $_mClassName;  //name of the page class
     public $mPageId;  
-    public $mPagePk;  
+    public $mPageRev;  
     public $mPagePath;
     
     public $mDefaultModules = array();     //Array of site wide default modules
@@ -160,9 +160,9 @@ abstract class Router
     {
         global $CONFIG;
         $this->_mClassName = $this->_mClassMapping[$tmp_path]['class'];
-		$CONFIG->SetValue('current_page_pk', $this->_mClassMapping[$tmp_path]['pages_pk']);
-		$CONFIG->SetValue('current_page_id', $this->_mClassMapping[$tmp_path]['pages_id']);
-		$CONFIG->SetValue('current_page_url',$tmp_path);       		
+		$CONFIG->SetValue('current_pages_rev', $this->_mClassMapping[$tmp_path]['pages_rev']);
+		$CONFIG->SetValue('current_pages_id', $this->_mClassMapping[$tmp_path]['pages_id']);
+		$CONFIG->SetValue('current_pages_url',$tmp_path);       		
     }
     
     

@@ -21,11 +21,11 @@
         <div class="m-10">
         {if $record_type == 'page'}
             <form method="post" action="/cms/{$site_code}/pages">
-             <input type="hidden" name="pk" value="{$p->pages_pk}" />
+             <input type="hidden" name="rev" value="{$p->pages_rev}" />
              <input type="hidden" name="id" value="{$p->pages_id}" />
         {else}
             <form method="post" action="/cms/{$site_code}/articles">
-            <input type="hidden" name="pk" value="{$content->contents_pk}" />
+            <input type="hidden" name="id" value="{$content->contents_id}" />
         {/if}
                        
 			<table class="condenced">
@@ -35,9 +35,9 @@
                 	<td>{$h->version}</td>
                     <td>
                         {if $record_type == 'page'}
-                           <a  target='_blank' href="/cms/{$site_code}/page/{$h->pk}" >
+                           <a  target='_blank' href="/cms/{$site_code}/page/{$h->id}?version={$h->rev}" >
                         {else} 
-                            <a  target='_blank' href="/cms/{$site_code}/{$content->contents_type}/{$content->contents_pk}?version={$h->version}" >
+                            <a  target='_blank' href="/cms/{$site_code}/{$content->contents_type}/{$content->contents_id}?version={$h->version}" >
                         {/if}
                         {$h->version_date|date_format:$DATETIME_FORMAT}</a></td>
 	            </tr>

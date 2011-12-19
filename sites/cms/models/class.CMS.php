@@ -27,10 +27,10 @@ class CMS
         
         $m->template        = 'versionHistoryModule.tpl';
         
-        if($c->contents_pk)    
+        if($c->contents_id)    
         {
-            $m->history         = Content::GetVersionHistory($c->contents_pk, $extra_table);
-            $m->pk              = $c->contents_pk;  
+            $m->history         = Content::GetVersionHistory($c->contents_id, $extra_table);
+            $m->id              = $c->contents_id;  
             $m->live_version    = $c->contents_live_version;
             $m->preview_version = $c->contents_preview_version;      
         }
@@ -51,7 +51,7 @@ class CMS
         if($pages_id)    
         {
             $m->history         = Page::GetVersionHistory($pages_id);
-          //  $m->pk              = $pk;  
+          //  $m->id              = $id;  
             $m->live_version    = $m->history->live_version;
             $m->preview_version = $m->history->preview_version;      
         }
@@ -62,18 +62,18 @@ class CMS
     
    /**
      * returns a module object
-     * @param int $pk of content object
+     * @param int $id of content object
      * @return object  module object
      */
-    static function CreateTargetsModule($pk)
+    static function CreateTargetsModule($id)
     {  
         $m = new stdClass();
         
         $m->template = 'targetsModule.tpl';
         $m->pages    = Page::getPages('ALL'); 
        
-        if($pk > 0) 
-            $m->targets  = Article::GetTargets($pk);
+        if($id > 0) 
+            $m->targets  = Article::GetTargets($id);
                          
         return $m;         
     }
@@ -83,10 +83,10 @@ class CMS
     
    /**
      * returns a module object
-     * @param int $pk of page object
+     * @param int $pages_rev of page object
      * @return object  module object
      */
-    static function CreateModule2PageModule($page_pk)
+    static function CreateModule2PageModule($pages_rev)
     {  
         global $CONFIG; 
         $m = new stdClass();
@@ -95,9 +95,9 @@ class CMS
         // list of all modules for this site plus common modules
         $m->modules  = Module::GetModules($CONFIG->cms_site_code, true);        
         
-        if($page_pk)    
+        if($pages_rev)    
         {        
-            $m->page_modules = Module::GetPageModules($page_pk,false); 
+            $m->page_modules = Module::GetPageModules($pages_rev,false); 
         }    
         
         return $m;         
@@ -106,19 +106,19 @@ class CMS
     
    /**
      * returns a module object  for all pages that use this module
-     * @param int $pk of module object
+     * @param int $id of module object
      * @return object  module object
      */
-    static function CreateModuleUsageModule($module_pk)
+    static function CreateModuleUsageModule($module_id)
     {  
         global $CONFIG; 
         $m = new stdClass();
         $m->template = 'moduleUsageModule.tpl';
       
-        if($module_pk)    
+        if($module_id)    
         {        
-            $m->pages = Module::GetPageLinks($module_pk); 
-            //dump( $module_pk);  
+            $m->pages = Module::GetPageLinks($module_id); 
+            //dump( $module_id);  
         }    
         
         return $m;         
@@ -127,21 +127,21 @@ class CMS
     
    /**
      * returns a module object  for all pages that use this module
-     * @param int $pk of module object
+     * @param int $id of module object
      * @return object  module object
      */
-    static function CreateListAuthorsModule($pk)
+    static function CreateListAuthorsModule($id)
     {  
         global $CONFIG; 
         $m = new stdClass();
         $m->template = 'listModule.tpl';
       
-        if($pk)    
+        if($id)    
         {      
-            $m->items      = Author::GetAuthors4User($pk); 
+            $m->items      = Author::GetAuthors4User($id); 
             
-            // the listModule.tpl uses the fields: pk and title   , so we have to crete aliases for these
-            $m->items->SetAlias(array('pk'=>'authors_pk', 'title'=>'authors_display_name'));
+            // the listModule.tpl uses the fields: $id and title   , so we have to crete aliases for these
+            $m->items->SetAlias(array('id'=>'authors_id', 'title'=>'authors_display_name'));
             $m->title      = "Author Profiles for this User";
             $m->path       = "/cms/authors/";
             // add a button to the module

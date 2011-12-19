@@ -11,7 +11,7 @@
 
     var targets = [];
     {foreach $params->targets as $t}
-      targets.push( {ldelim} record_state:'CLEAN', targets_pages_id:{$t->targets_pages_id}, targets_contents_fk:{$t->targets_contents_fk}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
+      targets.push( {ldelim} record_state:'CLEAN', targets_pages_id:{$t->targets_pages_id}, targets_contents_id:{$t->targets_contents_id}, title:'{$t->pages_title|escape}',targets_live_date:'{$t->targets_live_date}',targets_archive_date:'{$t->targets_archive_date}',targets_dead_date:'{$t->targets_dead_date}',targets_pin_position: {$t->targets_pin_position} {rdelim}); 
     {/foreach}      
 
     var maxTargetId = targets.length;
@@ -74,7 +74,7 @@
         {
             targets.push({ record_state:        'NEW',
                            targets_pages_id:    $("#id_target_pid").text(),
-                           targets_contents_fk: 0, 
+                           targets_contents_id: 0, 
                            title:               $("#id_target_site").text(),
                            targets_live_date:   formatTheDate(liveDate, liveTime) ,
                            targets_archive_date:formatTheDate(archiveDate, archiveTime),

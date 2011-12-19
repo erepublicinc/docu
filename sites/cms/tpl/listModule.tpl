@@ -6,7 +6,7 @@
         <div class="m-10">
             <ul class="condenced">
                {foreach $params->items as $item}
-                   <li><a href="{$params->path}{$item->pk}">{$item->title}</a></li>
+                   <li><a href="{$params->path}{$item->id}">{$item->title}</a></li>
                 {/foreach}
             </ul>
             <br clear="all">

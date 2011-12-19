@@ -11,8 +11,8 @@ abstract class Controller
     // @var array Modules to load in left, right and center column.
     public $mModules = array(); 
     
-    // @var int the pk of the page record, need to know this to create targets
-    protected $mPagePk;
+    // @var int the rev of the page record, need to know this to create targets
+    protected $mPageRev;
 
     //==============  for the head
     //@var string Page title

@@ -15,7 +15,7 @@ foreach ($data as $request)
     foreach($keys as $field => $value)
     {
         // there are 2 types of data: integer and text , all date/time fields are integers
-        if($field == 'pk'  || strpos($field,'_fk')   || strpos($field,'_pk') || strpos($field,'_date') || strpos($field,'_time') )
+        if( strpos($field,'_rev')   || strpos($field,'_id') ||  strpos($field,'_time') )
            $request->params->$field = intval($request->params->$field);
         else   
            $request->params->$field = Query::Escape( $request->params->$field);

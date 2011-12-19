@@ -8,7 +8,7 @@ class EditPage extends Controller
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'pages' 'new_page' 'page' ( the first one produces a list the other fo editing
-     *          2:   [optional] pk of the page 
+     *          2:   [optional] id of the page 
      */
     public function __construct($websiteObject, $arguments)
     {   
@@ -17,7 +17,7 @@ class EditPage extends Controller
         
         $site        = $CONFIG->cms_site_code;
         $record_type = $arguments[0];
-        $pk          = 0 + intval($arguments[1]);       
+        $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                  
         $this->mSmarty->assign('site_code', $site);
@@ -31,9 +31,9 @@ class EditPage extends Controller
              return; //================================>
         }
         
-        if($isNew || $pk >0)
+        if($isNew || $id >0)
         {
-            $this->_EditPage($pk, $command);
+            $this->_EditPage($id, $command);
             return; //================================>
         }
         
@@ -46,24 +46,24 @@ class EditPage extends Controller
     private function _SavePage($site,$record_type)
     {
         $p = new Page($_POST);
-        $pk = $p->Save();
-        Module::LinkModules($pk, json_decode($_POST['json_module_data']));
+        $id = $p->Save();
+        Module::LinkModules($id, json_decode($_POST['json_module_data']));
        
         header("LOCATION: /cms/$site/$record_type");
         die;             
     }
 
     
-    private function _EditPage($pk)
+    private function _EditPage($id)
     {
         
         
-        if( $pk == 0)
+        if( $id == 0)
         { //die($_SESSION['user_first_name']);
               $this->mPageTitle = getSiteName($site) . " - New Page";
             
             $page = new stdClass();
-            $page->pages_authors_fk     = $_SESSION['user_pk'];
+            $page->pages_authors_id     = $_SESSION['user_id'];
             $page->users_first_name     = $_SESSION['user_first_name'];
             $page->users_lastname       = $_SESSION['user_last_name'];
             $history = array();
@@ -71,13 +71,13 @@ class EditPage extends Controller
         else 
         {  
              $this->mPageTitle = getSiteName($site) . " - Edit Page";
-             $page    = Page::GetDetails($pk);       
+             $page    = Page::GetDetails($id);       
         }
         
         $this->mSmarty->assign('p',$page);     //NOTE: the Smarty var "page"  is already set as the current page
 
        // create the center module
-        $this->mModules['center'] = array(CMS::CreateModule2PageModule($pk));
+        $this->mModules['center'] = array(CMS::CreateModule2PageModule($id));
         
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 

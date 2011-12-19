@@ -31,7 +31,7 @@
             {foreach $pages as $p}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/{$site_code}/page/{$p->pages_pk}">{$p->pages_title}</a></td>
+                <td><a href="/cms/{$site_code}/page/{$p->pages_id}">{$p->pages_title}</a></td>
                 <td>{$p->pages_version_date|date_format:$DATETIME_FORMAT}</td>
                 <td><span {if $p->pages_status == 'READY'}  
                                 class="ui-icon ui-icon-circle-check float-l mr-5" >

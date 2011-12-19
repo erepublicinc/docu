@@ -40,7 +40,7 @@
             {foreach $users as $u}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/all/{$record_type}/{$u->users_pk}">{$u->users_first_name} {$u->users_last_name}</a></td>
+                <td><a href="/cms/all/{$record_type}/{$u->users_id}">{$u->users_first_name} {$u->users_last_name}</a></td>
                 <td>{$u->users_email}</td>
                 <td><span {if $u->users_active > 0}  class="ui-icon ui-icon-circle-check " 
                           {else} class=" "

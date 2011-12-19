@@ -37,15 +37,15 @@ class User
     	$notes    = Query::Escape($this->mFields->users_notes);
     	
     	$active = empty($this->mFields->users_active)? 0: 1;
-    	$pk    = intval($this->mFields->users_pk);
+    	$id    = intval($this->mFields->users_id);
     	
     	$sql = array();
-    	if($pk == 0)
+    	if($id == 0)
     	{
     	    $pw    =  Query::Escape($this->mFields->users_password);
         	$sql[] = "INSERT INTO users (users_email, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
                  values('$email', '$pw','$fname', '$lname', $active, '$ad', '$notes')";
-        	$sql[] = "SELECT LAST_INSERT_ID() as pk";
+        	$sql[] = "SELECT LAST_INSERT_ID() as id";
     	}
         else 
         {
@@ -53,8 +53,8 @@ class User
         	    $pw    = " users_password = '". Query::Escape($this->mFields->users_password)."', ";
         	
         	$sql[] = "UPDATE users SET users_email = '$email', users_first_name = '$fname', users_last_name = '$lname', users_notes = '$notes', $pw
-        			users_ad_user = '$ad', users_active = $active WHERE users_pk = $pk";
-        	$sql[] = "SELECT $pk as pk";
+        			users_ad_user = '$ad', users_active = $active WHERE users_id = $id";
+        	$sql[] = "SELECT $id as id";
         }
         
         $r = Query::sTransaction($sql);
@@ -63,17 +63,17 @@ class User
         {
             if($this->mFields->roles)
             {
-                self::SetRoles($r->pk, $this->mFields->roles);
+                self::SetRoles($r->id, $this->mFields->roles);
             }
-        	return $r->pk ;   // success
+        	return $r->id ;   // success
         }                  
         return false;
     }
     
-    public static function GetDetails($pk)
+    public static function GetDetails($id)
     {
-        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email,  users_active, roles_code, users_notes
-                FROM users LEFT JOIN roles ON users_pk = roles_users_fk WHERE users_pk = $pk";
+        $sql = "SELECT users_id, users_last_name, users_first_name, users_email,  users_active, roles_code, users_notes
+                FROM users LEFT JOIN roles ON users_id = roles_users_id WHERE users_id = $id";
         $result = new Query($sql);
         
         $roles = '';
@@ -91,30 +91,30 @@ class User
     
     public static function GetUsers()
     {
-        $sql = "SELECT users_pk, users_last_name, users_first_name, users_email, users_active
+        $sql = "SELECT users_id, users_last_name, users_first_name, users_email, users_active
                 FROM users ";
         return new Query($sql);
     }
     
     /**
      * sets the users roles to the set of roles being supplied, any others are removed
-     * @param int pk
+     * @param int id
      * @param array of $roles
      */
-    static function SetRoles($pk, $roles)
+    static function SetRoles($id, $roles)
     {
-    	$pk = intval($pk);
-    	if($pk <= 0)
-    		return logerror("User:SetRoles() invalid pk");
+    	$id = intval($id);
+    	if($id <= 0)
+    		return logerror("User:SetRoles() invalid id");
     	if(! is_array($roles))	 
     	    return logerror("User:SetRoles() invalid roles array");
 
     	$sql = array();
-    	$sql[] = "DELETE from roles where roles_users_fk = $pk";
+    	$sql[] = "DELETE from roles where roles_users_id = $id";
     	foreach($roles as $role)
     	{
     		$erole = Query::Escape($role);
-    		$sql[] = "INSERT INTO roles (roles_users_fk,roles_code) VALUES($pk, '$erole')";
+    		$sql[] = "INSERT INTO roles (roles_users_id,roles_code) VALUES($id, '$erole')";
     	}    
     	$return = Query::sTransaction($sql);
     }
@@ -124,7 +124,7 @@ class User
         
        $sql = "SELECT *
                  FROM users 
-                 LEFT JOIN roles ON users_pk = roles_users_fk                 
+                 LEFT JOIN roles ON users_id = roles_users_id                 
                  WHERE users_email = '$email'"; 
        
        $userdata = new Query($sql);
@@ -140,7 +140,7 @@ class User
                           
            $_SESSION['user_email'] = $userdata->users_email;
            $_SESSION['user_password'] = $pw;
-           $_SESSION['user_pk'] = $userdata->users_pk;
+           $_SESSION['user_id'] = $userdata->users_id;
            $_SESSION['user_first_name'] = $userdata->users_first_name;
            $_SESSION['user_last_name']  = $userdata->users_last_name;
            $_COOKIE['user_email'] = $email;

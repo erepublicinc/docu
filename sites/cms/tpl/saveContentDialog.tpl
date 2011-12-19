@@ -4,9 +4,10 @@
 <script type="text/javascript">
 function saveContent()
 {
-	$('#id_changed_targets').attr('value', gatherChangedTargets()); 
-	
-    
+	 
+    $('#id_changed_targets').attr('value', gatherChangedTargets()); 
+   
+        
     var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
         ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
                    {text: "Save", click: function() { saveContentPart2(); }  }

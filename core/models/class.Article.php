@@ -22,7 +22,7 @@ class Article extends Content
     }
 
     /**
-     * returns the pk
+     * returns the id
      * @see Content::Save()
      */
     public function Save()
@@ -52,13 +52,13 @@ class Article extends Content
     
      /**
      * returns the article details
-     * @param int $pk module pk (pk of the contents object)
+     * @param int $id module id (id of the contents object)
      * @param int $version [default = 0 gets the live version]
      * @param bool $includeAuthor [default false]
      */
-    public static function GetDetails($pk, $version = LIVE_VERSION, $includeAuthor = false)   
+    public static function GetDetails($id, $version = LIVE_VERSION, $includeAuthor = false)   
     {
-        return Content::getAllData($pk, "articles", $version, $includeAuthor);
+        return Content::getAllData($id, "articles", $version, $includeAuthor);
     }
     
     
@@ -68,7 +68,7 @@ class Article extends Content
      */
     public static function sYaasGetDetails($params)
     {
-        return Content::getAllData($params->pk, "articles", intval($params->version))->ToArray();
+        return Content::getAllData($params->id, "articles", intval($params->version))->ToArray();
     }
     
     public static function sYaasSave($params)

@@ -76,7 +76,7 @@ function saveContent()
             </div>     
             -->      
                                               
-            <input type="hidden" name='authors_pk' value="{$author->authors_pk}" />
+            <input type="hidden" name='authors_id' value="{$author->authors_id}" />
             <fieldset>                      
                 <div>
                     <label class="grid_2">Active:</label>
@@ -124,9 +124,9 @@ function saveContent()
                 
                <div>
                     <label class="grid_12">User owning this Author profile:</label>
-                    <select  name="authors_users_fk" class="required">
+                    <select  name="authors_users_id" class="required">
                        {foreach $users as $user}
-                                 <option value="{$user->users_pk}" {if $user->users_pk == $author->authors_users_fk} selected="selected"{/if} >{$user->users_first_name} {$user->users_last_name}</option>
+                                 <option value="{$user->users_id}" {if $user->users_id == $author->authors_users_id} selected="selected"{/if} >{$user->users_first_name} {$user->users_last_name}</option>
                        {/foreach}
                     </select> 
                 </div>

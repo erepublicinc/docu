@@ -1,6 +1,11 @@
+<!-- ===================== editModule.tpl ===============     -->
+
+{include file="saveContentDialog.tpl"}
 
 {literal}
 <script type="text/javascript">
+
+
 
 var ckConfig = {toolbar :
     [
@@ -21,38 +26,18 @@ var ckConfig = {toolbar :
          
     });
 
-function saveContent()
-{
-//	$('#id_changed_targets').attr('value', gatherChangedTargets()); 
-	$('#id_status').attr('value', $('#id_status_dropdown').attr('value') );
-    
-    var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
-        ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
-                   {text: "Save", click: function() { saveContentPart2(); }  }
-                  ]
-    });
-    
-	
-
-}
-
-function saveContentPart2()
-{
-    var comment = $('#id_enter_comment').attr('value') 
-	$('#id_comment').attr('value', comment );
-
-    //alert('saving: '+comment);
-	$('#id_details_form').submit();
-}
+    // Note:   saveModule() is slightkly differnt than saveContent()
+    function saveModule()
+    {        
+        var $dialog = $('#save_dialog').dialog({title: 'Save', modal:true
+            ,buttons: [{text: "Cancel", click: function() { $(this).dialog("close"); }  },
+                       {text: "Save", click: function() { saveContentPart2(); }  }
+                      ]
+        });   
+    }
     
 </script>
-
 {/literal}
-
-<div id='save_dialog' class="ui-dialog ui-widget ui-widget-content ui-corner-all"  style="display:none; background-color:white">
-    <textarea id="id_enter_comment">Please enter a comment</textarea>
-</div>
-
 
 
 
@@ -76,7 +61,7 @@ function saveContentPart2()
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
-        <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveContent();">
+        <h6><span class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5"   onclick="saveModule();">
         <span class="ui-icon ui-icon-disk float-l mr-5"></span>
         SAVE</span></h6>
 {*      
@@ -107,7 +92,7 @@ function saveContentPart2()
             </div>     
             -->      
             <input type="hidden" id="id_changed_targets" name='changed_targets' value="" />                                              
-            <input type="hidden" name='contents_pk' value="{$content->contents_pk}" />
+            <input type="hidden" name='contents_id' value="{$content->contents_id}" />
             <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
             <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
             <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />        
@@ -134,8 +119,8 @@ function saveContentPart2()
                                 
                 <div>
                     <label class="grid_12">Author:</label>
-                    <select  name="contents_main_authors_fk" class="required">
-                                 <option value="{$content->contents_main_authors_fk}" >{$content->users_first_name} {$content->users_last_name}</option>
+                    <select  name="contents_authors_id" class="required">
+                                 <option value="{$content->contents_authors_id}" >{$content->users_first_name} {$content->users_last_name}</option>
                     </select> 
                 </div>
                 <div>

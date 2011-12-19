@@ -6,7 +6,7 @@ if(! User::Authorize('EDITOR'))
    
 Query::SetAdminMode();
 
-$test_user_pk = $_SESSION['user_pk'];
+$test_user_id = $_SESSION['user_id'];
 
 echo('<h1>TEST PAGE</h1><br> <pre>');
 
@@ -62,36 +62,55 @@ $data = array(
     'users_first_name'=> 'First Name'.$randomId,
 	'users_last_name'=>'Lname int. test'.$randomId, 
     'users_password' => '123456789',
-	'users_email' => 'verylongusername@verylongdomain.com',
+	'users_email' => "email{$randomId}@verylongdomain.com",
 	'users_ad_user' => '',
 	'users_active' => 1
 );
 
 $user   = new User($data);
-$userpk = $user->Save();
-assert_gt_zero($userspk, __LINE__); 
+$user_id = $user->Save();
+assert_gt_zero($user_id, __LINE__); 
 
-if($userpk)
-   $revert[]= "delete from users where users_pk = $userpk";
+if($user_id)
+   $revert[]= "delete from users where users_id = $user_id";
 
 // retrieve it into an array
-$user = User::GetDetails($userpk);
+$user = User::GetDetails($user_id);
 $ar = $user->ToArray();
-$ar['users_email']   = 'newemail@test.com';
-$data['users_email'] = 'newemail@test.com';
+$ar['users_email']   = "newemail{$randomId}@test.com";
+$data['users_email'] = "newemail{$randomId}@test.com";
 
 //save it with the new data 
 $user = new User($ar);
 $user->Save();
 
 // retrieve it again
-$user = User::GetDetails($userpk);
+$user = User::GetDetails($user_id);
 
 unset($data['users_password']);  // GetDetails does not retrieve the password
 compare_data($data, $user);
 
 
-$result = User::SetRoles($userpk, array('GT_EDITOR'));
+$result = User::SetRoles($user_id, array('GT_EDITOR'));
+
+echo" ================================================ create and retrieve a author <br>";
+
+$data = array(
+    'authors_name'=> 'Test author'.$randomId,
+    'authors_display_name'=> 'Test author display',
+	'authors_bio'=>'this is the bio', 
+    'authors_public_email'=> "test{$randomId}@test.com",
+    'authors_users_id'=> $user_id,
+	'authors_active' => 1
+);
+
+$author =  new Author($data);
+$author_id = $author->Save();
+
+$revert[]= "delete from authors where authors_id = $author_id";
+
+$author_rec = Author::GetDetails($author_id);
+compare_data($data, $author_rec);
 
 
 echo" ================================================ create and retrieve a page <br>";
@@ -110,12 +129,12 @@ $data = array('pages_title'=> 'page integration test'.$randomId,
 );
 
 $page = new Page($data);
-$pagepk = $page->Save();
-echo "created page pk : $pagepk <br>";
-if($pagepk >0 )
-	$revert[]= "delete from pages where pages_pk = $pagepk";
+$pages_id = $page->Save();
+echo "created page id : $pages_id <br>";
+if($pages_id >0 )
+	$revert[]= "delete from pages where pages_id = $pages_id";
 	
-$the_page = Page::GetDetails($pagepk);
+$the_page = Page::GetDetails($pages_id);
 
 
 compare_data($data, $the_page);
@@ -139,14 +158,14 @@ $data = array(
 
 );
 $ct = new Module($data);
-$pk = $ct->Save();
-Content::setLiveVersion($pk, 1 );
+$id = $ct->Save();
+Content::setLiveVersion($id, 1 );
 
-echo "created module pk : $pk <br>";
-if($pk >0 )
-	$revert[]= "delete from contents where contents_pk = $pk";
+echo "created module id : $id <br>";
+if($id >0 )
+	$revert[]= "delete from contents where contents_id = $id";
 	
-$the_module = Module::GetDetails($pk, 1);
+$the_module = Module::GetDetails($id, false);
 compare_data($data, $the_module);
 
 
@@ -156,15 +175,15 @@ echo"<br> =========================================== link  module to a page <br
 $CONFIG->SetValue('show_sql',0,true);
 
 $o = new stdClass();
-$o->contents_fk = $the_module->contents_pk;
+$o->contents_id = $the_module->contents_id;
 $o->placement   = "DETAIL_LEFT_COLUMN";
 $o->link_order  = 4;
 
-$result = Module::LinkModules($the_page->pages_pk, array($o));
+$result = Module::LinkModules($the_page->pages_id, array($o));
 
 clean_sql();
 
-$modules = Module::GetPageModules($the_page->pages_pk);
+$modules = Module::GetPageModules($the_page->pages_id);
 $idx=0;
 foreach($modules as $m)
 {
@@ -183,34 +202,34 @@ $data = array(
     'contents_title' 		=> 'article integration test'.$randomId,
     'contents_display_title'=>'article_display_title', 
     'contents_status' 		=>'DRAFT',
-    'contents_author_fk'    =>$test_user_pk,
+    'contents_authors_id'    =>$test_user_id,
 
     'contents_version_comment'=> ' this is a test',
  	'contents_article_body' 			=>'this is the body',
  	'contents_article_type'		=> 'article type'
 );
 $article = new Article($data);
-$pk = $article->Save();
-Content::setLiveVersion($pk, 1 );
+$id = $article->Save();
+Content::setLiveVersion($id, 1 );
 
-echo "created article pk : $pk <br>";
-if($pk >0 )
-	$revert[]= "delete from contents where contents_pk = $pk";
+echo "created article id : $id <br>";
+if($id >0 )
+	$revert[]= "delete from contents where contents_id = $id";
 	
-$the_article = Article::GetDetails($pk);
+$the_article = Article::GetDetails($id);
 compare_data($data, $the_article);
 
-assert_equal($test_user_pk, $the_article->contents_author_fk, __LINE__);
+assert_equal($test_user_id, $the_article->contents_authors_id, __LINE__);
 
 
 echo"<br> ======================================== target an article <br>";
 $CONFIG->SetValue('show_sql',0,true);
 
-$id= $the_page->pages_id;
-$pk = $the_article->contents_pk;
+$pages_id = $the_page->pages_id;
+$contents_id = $the_article->contents_id;
 
-$data = array( 'targets_contents_fk' => $pk,
-			   'targets_pages_id'    => $id,
+$data = array( 'targets_contents_id' => $contents_id,
+			   'targets_pages_id'    => $pages_id,
 			   'targets_live_date'	 => '2011-11-11 00:00:00',
 			   'targets_dead_date'	 => '2014-12-11 00:00:00',
 			   'targets_archive_date'=> '2011-11-05 00:00:00',

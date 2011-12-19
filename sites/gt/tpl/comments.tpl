@@ -1,6 +1,6 @@
 <!-- comments.tpl -->
 {foreach $comments as $c}
-    {if $c->comments_pk == $c->comments_fk}   <div>    {else}     <div style="margin-left:50px">    {/if}
+    {if $c->comments_id == $c->comments_parent_id}   <div>    {else}     <div style="margin-left:50px">    {/if}
         {$c->comments_commenter} &nbsp;&nbsp;&nbsp; {$c->comments_date|date_format:$DATE_FORMAT} <br>
         <b>{$c->comments_title}</b><br>
          {$c->comments_body}
@@ -12,8 +12,8 @@
 leave a comment
 <form method="post" action="/common/post_comment.php">
     <input type="hidden" name= "redirect_url" value="{$redirect_url}" /> 
-    <input type="hidden" name= "comments_contents_fk" value="{$article->contents_pk}" /> 
-    <input type="hidden" name= "comments_fk" value="" /> 
+    <input type="hidden" name= "comments_contents_id" value="{$article->contents_id}" /> 
+    <input type="hidden" name= "comments_parent_id" value="" /> 
     <table>
         <tr><td>name</td><td><input type="text" name= 'comments_commenter' />
         email<input type="text" name= 'comments_email' /></td></tr>

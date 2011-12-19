@@ -13,6 +13,9 @@ $CONFIG;
 define('LATEST_VERSION', -1);
 define('LIVE_VERSION', 0);
 
+define('SYSTEM_AUTHOR_ID',1);
+define('SYSTEM_USER_ID',1);
+
 
 
 function __new_autoload($class_name)

@@ -35,7 +35,7 @@ class ChannelPage extends Controller
         if(! empty( $this->mArguments[0]))
         {            
             $article = Content::GetContentByUrl($this->mArguments[0]);
-            $comments = Comment::getComments($article->contents_pk)  ;
+            $comments = Comment::getComments($article->contents_id)  ;
             
             $this->mSmarty->assign('redirect_url', $_SERVER['REQUEST_URI']);
             $this->mSmarty->assign('comments', $comments);

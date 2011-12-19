@@ -10,7 +10,7 @@ class EditArticle extends Controller
      * @param array  with the following values
      *          0:  'gt', 'gov', or 'all'
      *          1:   'articles' 'new_article' 'article' ( the first one produces a list the other fo editing
-     *          2:   [optional] pk of the article 
+     *          2:   [optional] id of the article 
      */
     public function __construct($websiteObject, $arguments)
     {
@@ -21,7 +21,7 @@ class EditArticle extends Controller
         
         $site        = $CONFIG->cms_site_code;
         $record_type = $arguments[0];
-        $pk          = 0 + intval($arguments[1]);       
+        $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                      
         $this->mSmarty->assign('site_code', $site);
@@ -31,13 +31,13 @@ class EditArticle extends Controller
         
         if(!empty($_POST['contents_title']))   // save article
         {
-            $this->_saveArticle($pk, $site, $record_type);  
+            $this->_saveArticle($id, $site, $record_type);  
             return;         
         }
         
-        if($isNew || $pk > 0 )
+        if($isNew || $id > 0 )
         {
-            $this->_editArticle($pk);  // edit new or existing article
+            $this->_editArticle($id);  // edit new or existing article
             return; 
         }
                 
@@ -51,15 +51,15 @@ class EditArticle extends Controller
     {
         if($_POST['makelive'])
         {
-            Content::setLiveVersion(intval($_POST['pk']), intval($_POST['version']));
+            Content::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
         }
         elseif($_POST['makepreview'])
         {
-             Content::setPreviewVersion(intval($_POST['pk']), intval($_POST['version']));
+             Content::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
         }
         
         $arts = Article::GetArticles($site,null,50,0,'ALL');
-        //  foreach($arts as $a) echo $a->contents_pk;     die;   
+        //  foreach($arts as $a) echo $a->contents_id;     die;   
         $this->mSmarty->assign('contents', $arts );
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
                                         CMS::CreateContentTypesModule(),  
@@ -70,15 +70,15 @@ class EditArticle extends Controller
     }
 
     
-    private function _saveArticle($pk, $site,$record_type)
+    private function _saveArticle($id, $site,$record_type)
     {
 //dump($_POST);        
-        $pk = Article::sYaasSave($_POST);                   
+        $id = Article::sYaasSave($_POST);                   
         $targets = json_decode($_POST['changed_targets']);
    
         foreach($targets as $params)
         {
-            $params->targets_contents_fk = $pk;
+            $params->targets_contents_id = $id;
            //dump($params);     
             if($params->record_state != 'CLEAN')
                 Page::sYaasSaveTarget($params);
@@ -89,9 +89,9 @@ class EditArticle extends Controller
     }
     
     
-    private function _editArticle($pk)
+    private function _editArticle($id)
     {
-        if($pk == 0)  // new article
+        if($id == 0)  // new article
         { //die($_SESSION['user_first_name']);
             $this->mPageTitle = getSiteName($site) . " - New Article";
             
@@ -102,11 +102,11 @@ class EditArticle extends Controller
         else // edit existing article
         {
             $this->mPageTitle = getSiteName($site) . " - Edit Article";
-            $article = Article::GetDetails($pk, LATEST_VERSION);                        
+            $article = Article::GetDetails($id, LATEST_VERSION);                        
         }
 
         // create the center module
-        $this->mModules['center'] = array(CMS::CreateTargetsModule($pk));
+        $this->mModules['center'] = array(CMS::CreateTargetsModule($id));
         
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('contentStatusModule.tpl'), 
