@@ -13,6 +13,10 @@ $CONFIG;
 define('LATEST_VERSION', -1);
 define('LIVE_VERSION', 0);
 
+// used by Model
+define('SQL_INSERT', 1);
+define('SQL_UPDATE', 0);
+
 define('SYSTEM_AUTHOR_ID',1);
 define('SYSTEM_USER_ID',1);
 

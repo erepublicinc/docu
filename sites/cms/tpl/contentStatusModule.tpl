@@ -14,7 +14,7 @@
         <div class="m-10">
         	<h6>
             Created:  {$content->contents_create_date|date_format:$DATETIME_FORMAT}<br>
- 			Modified: {$content->contents_update_date|date_format:$DATETIME_FORMAT}</h6>
+ 			Modified: {$content->contents_change_date|date_format:$DATETIME_FORMAT}</h6>
         </div>                                                           
     </div>
      

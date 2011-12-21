@@ -19,12 +19,12 @@
             	  
 		</table>         
         <div class="m-10">
-        {if $record_type == 'page'}
+        {if $record_type == 'pages'}
             <form method="post" action="/cms/{$site_code}/pages">
              <input type="hidden" name="rev" value="{$p->pages_rev}" />
              <input type="hidden" name="id" value="{$p->pages_id}" />
         {else}
-            <form method="post" action="/cms/{$site_code}/articles">
+            <form method="post" action="/cms/{$site_code}/{$record_type}">
             <input type="hidden" name="id" value="{$content->contents_id}" />
         {/if}
                        
@@ -34,10 +34,10 @@
                 	<td><input type="radio" name="version" value="{$h->version}"></td>
                 	<td>{$h->version}</td>
                     <td>
-                        {if $record_type == 'page'}
-                           <a  target='_blank' href="/cms/{$site_code}/page/{$h->id}?version={$h->rev}" >
+                        {if $record_type == 'pages'}
+                           <a  target='_blank' href="/cms/{$site_code}/{$record_type}/{$h->id}?version={$h->rev}" >
                         {else} 
-                            <a  target='_blank' href="/cms/{$site_code}/{$content->contents_type}/{$content->contents_id}?version={$h->version}" >
+                            <a  target='_blank' href="/cms/{$site_code}/{$record_type}/{$content->contents_id}?version={$h->version}" >
                         {/if}
                         {$h->version_date|date_format:$DATETIME_FORMAT}</a></td>
 	            </tr>

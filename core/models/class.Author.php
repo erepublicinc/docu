@@ -6,9 +6,20 @@
  * also users can have different profiles 
  * 
  */    
-class Author
+class Author extends Model
 {
     protected $mFields; // the object with all the fields
+
+    protected static $mFieldDescriptions = array(
+            'authors_id'              => array('type'=>'pk'),
+            'authors_users_id'        => array('type'=>'int', 'required'=>true ),         
+            'authors_name'            => array('type'=>'varchar', 'required'=>true),
+            'authors_display_name'    => array('type'=>'varchar', 'required'=>true), 
+            'authors_bio'             => array('type'=>'varchar'),  
+            'authors_active'          => array('type'=>'bit'),  
+            'authors_public_email'    => array('type'=>'varchar','required'=>true ), 
+    );
+     
     
     public function __construct($params)
     {
@@ -19,28 +30,20 @@ class Author
     }
     
     public function Save()
-    {   //dump($this->mFields);
-        
-    	$email    = Query::Escape($this->mFields->authors_public_email);
-    	$name     = Query::Escape($this->mFields->authors_name);
-    	$dname     = Query::Escape($this->mFields->authors_display_name);
-    	$bio      = Query::Escape($this->mFields->authors_bio);
-    	$active   = empty($this->mFields->authors_active)? 0: 1;
-    	$id       = intval($this->mFields->authors_id);
-    	$users_id = intval($this->mFields->authors_users_id);
-    	
+    {   
+        $id  = intval($this->mFields->authors_id);	 
     	$sql = array();
     	if($id == 0)
     	{
-        	$sql[] = "insert into authors (authors_public_email, authors_name, authors_display_name, authors_bio, authors_active,authors_users_id) 
-                 values('$email', '$name', '$dname', '$bio', $active, $users_id)";
-        	$sql[] = "SELECT LAST_INSERT_ID() as id";
+    	    $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_INSERT);   	    
+        	$sql[]  = "INSERT INTO authors $values";
+        	$sql[]  = "SELECT LAST_INSERT_ID() as id";
     	}
         else 
         {
-        	$sql[] = "UPDATE authors SET authors_public_email = '$email', authors_name = '$name', authors_display_name = '$dname',authors_bio = '$bio', 
-        			authors_users_id = $users_id, authors_active = $active WHERE authors_id = $id";
-        	$sql[] = "SELECT $id as id";
+            $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_UPDATE);           
+        	$sql[]  = "UPDATE authors SET $values WHERE authors_id = $id";
+        	$sql[]  = "SELECT $id as id";
         }
         
         $r = Query::sTransaction($sql);
@@ -61,6 +64,7 @@ class Author
     {
         return new Query("SELECT * FROM authors WHERE authors_id = $id");
     }
+
     
     /**
      * GetAuthors4User
@@ -85,9 +89,5 @@ class Author
     {
         return new Query("SELECT * FROM authors");
     }
-    
-    
-    
-    
     
 }

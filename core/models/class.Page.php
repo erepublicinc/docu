@@ -5,10 +5,30 @@
  * @author michael
  *
  */
-class Page 
+class Page extends Model
 {
     protected $mFields = null;            // object of database field values
-     
+
+     protected static $mFieldDescriptions = array(
+            'pages_rev'                => array('type'=>'pk'),
+            'pages_id'   			   => array('type'=>'int', 'insert_only'=>true, 'required'=>true, 'do_not_validate'=>true),         
+            'pages_version_users_id'   => array('type'=>'int', 'insert_only'=>true, 'required'=>true),  
+            'pages_version_date'       => array('type'=>'datetime', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
+            'pages_version_comment'    => array('type'=>'varchar'),  
+            'pages_version_status'     => array('type'=>'varchar', 'required'=>true),  
+            'pages_is_preview'         => array('type'=>'bit' ), 
+            'pages_is_live'            => array('type'=>'bit'),
+            'pages_site_code'          => array('type'=>'varchar', 'required'=>true), 
+            'pages_title'              => array('type'=>'varchar', 'required'=>true),   
+            'pages_display_title'      => array('type'=>'varchar'),    
+            'pages_url'                => array('type'=>'varchar', 'required'=>true),   
+            'pages_type'               => array('type'=>'varchar'),   
+            'pages_no_robots'          => array('type'=>'bit'), 
+            'pages_password'           => array('type'=>'varchar'),   
+            'pages_php_class'          => array('type'=>'varchar'), 
+            'pages_body'               => array('type'=>'varchar') 
+            );
+    
     public function __construct($params)
     {
       if(is_object($params))
@@ -20,101 +40,92 @@ class Page
     /**
      * setting live_version or proof_version to 0 , will cause these versions to be set to the most recent version
      * update_version is the version to update, if set to 0 we will create a new version if -1 we will not update the text field
+     * @return id of the page
      */
     public function Save()
-    {           
-        // clean it up before saving
-        $f = $this->mFields;
-        $p            = new stdClass(); 
-        $p->site_code = Query::Escape($f->pages_site_code);
-        $p->title     = Query::Escape($f->pages_title);
-        $p->dtitle    = Query::Escape($f->pages_display_title);
-        $p->url       = Query::Escape($f->pages_url);
-        $p->status    = Query::Escape(strtoupper($f->pages_status));
-        $p->type      = Query::Escape(strtoupper($f->pages_type));
-        $p->phpClass  = Query::Escape($f->pages_php_class);
-        $p->comment   = Query::Escape($f->pages_version_comment);
-        $p->uid       = $_SESSION['user_id'];
-        $p->is_live   = $f->pages_is_live? 1:0;
-        $p->is_preview  = $f->pages_is_preview? 1:0;
-        $p->version   = intval($f->pages_version);
-        $p->rev       = intval($f->pages_rev);
-        $p->id        = intval($f->pages_id);
-        $p->robots    = $f->pages_no_robots ? 1:0;
-        $p->new_version = $f->new_version ? 1:0;
-                
-        $body = trim($f->pages_body);
-        if(!empty($body))
-        {
-            $p->body      = Query::Escape($body);
-        }
-        
+    {   
+        $this->mFields->pages_version_users_id = $_SESSION['user_id'];         
+        $this->mFields->pages_version_date     = "NOW()";
+          
         if($this->mFields->pages_rev  > 0)
-            return $this->SaveExisting($p);
-        return $this->SaveNew($p);    
+            return $this->SaveExisting();
+        return $this->SaveNew();    
     }
 
-    protected function SaveNew($p)
-    {          
+    protected function SaveNew()
+    {   
+        $this->mFields->pages_id = '@page_id';       
+        $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_INSERT); 
+               
         $sql = array(); 
         $sql[]= "SELECT @page_id := MAX(pages_id) +1 FROM pages";
+        $sql[]= "INSERT INTO pages $values ";
+ /*       
         $sql[]= "INSERT INTO pages (pages_id, pages_is_live, pages_is_preview, pages_version, pages_site_code, pages_title, pages_display_title, 
                 pages_url, pages_type, pages_no_robots, pages_status, pages_php_class, pages_version_users_id, pages_body, pages_version_comment, pages_version_date) 
                   values(@page_id,$p->is_live,$p->is_preview,1,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',
                      $p->robots,'$p->status','$p->phpClass',$p->uid, '$p->body','$p->comment', NOW())";   
-        
-        $sql[] = "SELECT LAST_INSERT_ID() as rev"  ;
+ */       
+        $sql[] = "SELECT LAST_INSERT_ID() as rev, @page_id as id"  ;
                    
         $ret = Query::sTransaction($sql);
-        return $ret->rev;
+        return $ret->id;
     }
     
     
-    protected function SaveExisting($p)
+    protected function SaveExisting()
     {  
-               
+        $rev =  intval($this->mFields->pages_rev);
+        $id  = intval($this->mFields->pages_id);
+                
         $sql = array();
      
-        if($p->new_version == 0) //  means: keep the same version
+        if($this->mFields->new_version == 0) //  means: keep the same version
         {    
-               
+            $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_UPDATE); 
+/*            
              $sql[] = "UPDATE pages SET pages_title = '$p->title', pages_display_title = '$p->dtitle', pages_url='$p->url', pages_type = '$p->type', 
                     pages_no_robots = $p->robots, pages_password = '$p->password', pages_status = '$p->status', pages_php_class = '$p->phpClass', 
                     pages_version_users_id = $p->uid, pages_body = '$p->body'             
         		where pages_rev = $p->rev";
-             $sql[] = "SELECT  $p->rev as new_rev";
+*/        	
+            
+             $sql[] = "UPDATE pages SET $values WHERE pages_rev = $rev";	
+             $sql[] = "SELECT  $rev as rev, $id as id";
+
         }
         else  // create a new version
-        {
-        
-            if($p->is_live) // make sure none of the other versions is live
+        {                                   
+            if($this->mFields->is_live) // make sure none of the other versions is live
             {
-                 $sql[]= "UPDATE pages set pages_is_live = 0 where pages_id = $p->id";
+                 $sql[]= "UPDATE pages set pages_is_live = 0 where pages_id = $id";
             }
-            if($p->is_proof)
+            if($this->mFields->is_proof)
             {
-                 $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $p->id";
+                 $sql[]= "UPDATE pages set pages_is_preview = 0 where pages_id = $id";
             }
-            
-            
-            $sql[]= "SELECT @version := MAX(pages_version) +1 FROM pages WHERE pages_id =  $p->id ";
+                        
+            $sql[]= "SELECT @version := MAX(pages_version) +1 FROM pages WHERE pages_id =  $id ";
             // add the new record
+/*            
             $sql[]= "INSERT INTO pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,
                       pages_type,pages_no_robots, pages_status, pages_php_class,pages_version_users_id,pages_body, pages_version_comment, pages_version_date)  
                   values($p->id,$p->is_live,$p->is_preview,@version,'$p->site_code','$p->title','$p->dtitle','$p->url','$p->type',$p->robots,
                            '$p->status','$p->phpClass',$p->uid, '$p->body','$p->comment', NOW())";  
+  */
+            $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_INSERT); 
             
+            $sql[]= "INSERT INTO pages $values";
+                       
             // get the new record
-            $sql[] = 'SELECT LAST_INSERT_ID() as new_id';
-
-            
+            $sql[] = "SELECT LAST_INSERT_ID() as rev, $id as id";
+           
         } 
-        
         
         
  // dump($sql);           
         $ret =  Query::sTransaction($sql);
-        return $ret->new_id;              
+        return $ret->id;  // $ret->rev;            
     }
     
     
@@ -236,25 +247,32 @@ class Page
     
     /**
      * returns all fields
-     * @param int $rev [default = 0 returns the current page]
-     * @param int $id [default = 0] if set returns live or preview version of this page
+     * @param int $id  [default = 0] if set returns live or preview version of this page
+     * @param int $rev [default = LIVE_VERSION returns the current page]
      */
-    static public function  GetDetails($rev = 0, $id = 0)
+    static public function  GetDetails($id = 0, $rev = LIVE_VERSION)
     {
         global $CONFIG;
         
-        if($id > 0)
+        if($rev > 0)  // we ask for a very specific revision
         {
-            $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';  
-            $r =  new Query("SELECT * FROM pages WHERE pages_id = $id  AND $liveField = 1");
+            $sql = "SELECT * FROM pages WHERE pages_rev = $rev";
         }
-        else
+        elseif ($id == 0) // we get the current page
+        {
+            $rev = intval($CONFIG->current_pages_rev);
+            $sql = "SELECT * FROM pages WHERE pages_rev = $rev";
+        }
+        elseif( $rev == LATEST_VERSION )  // the user supplied the id  and wants the latest version
+        {
+            $sql = "SELECT * FROM pages WHERE pages_id = $id  ORDER BY pages_rev TOP 1";
+        }
+        else // get live version  for a particular page id  ($rev == LIVE_VERSION)
         { 
-            if($rev == 0) 
-                $rev = intval($CONFIG->current_pages_rev);
-            $r =  new Query("SELECT * FROM pages WHERE pages_rev = $rev");
+            $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';           
+            $sql = "SELECT * FROM pages WHERE pages_id = $id  AND $liveField = 1";
         }
-        return $r;     
+        return new Query($sql);     
     }
 
     /**
@@ -340,7 +358,6 @@ class Page
         if(is_array($params))
             $params = (object)$params;
         
-        $id        = intval($params->targets_id);
         $page      = intval( $params->targets_pages_id);
         $content   = intval( $params->targets_contents_id);
         $live_date = Query::Escape($params->targets_live_date);
@@ -360,7 +377,7 @@ class Page
         }
         else 
         {
-            logerror(" unexpected state: $params->record_state "  ,__FILE__ . __LINE__);
+            logerror(" unexpected state: $params->record_state " );
         }
         return new Query($sql);
     }

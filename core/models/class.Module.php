@@ -15,15 +15,23 @@ class Module extends Content
         parent::__construct($fieldsObjectOrArray);
         $this->mExtraTable  = 'modules';
         $this->mContentType = 'MODULE';        
+        $this->mExtraFieldDescriptions = array(      
+        	'modules_php_class'   => array('type'=>'varchar') ,  
+            'modules_json_params'    => array('type'=>'varchar') ,
+            'modules_body'        => array('type'=>'varchar') ,
+            'modules_site_code'   => array('type'=>'varchar') ,
+        );   
     }
     
     /**
      * returns the id
      * @see Content::Save()
      */
+    
     public function Save()
-    {                        
-//dump ($this->mFields);       
+    {   
+     /*                        
+        //dump ($this->mFields);       
         $id      = $this->mId; 
         $eclass  = Query::Escape($this->mFields->modules_php_class);
         $ejson   = Query::Escape($this->mFields->modules_json_params);
@@ -49,8 +57,10 @@ class Module extends Content
             $result = parent::SaveExisting();  
         else
             $result = parent::SaveNew();
-     
-        return $result;
+        return $result;    
+     */
+        $newVersion = true;  // always create a new version
+        return parent::Save($newVersion);
     }    
 
     public function Delete()

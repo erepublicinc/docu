@@ -95,7 +95,9 @@ var ckConfig = {toolbar :
             <input type="hidden" name='contents_id' value="{$content->contents_id}" />
             <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
             <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
-            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />        
+            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />    
+            <input type="hidden" id="id_make_preview" name='make_preview'  />  
+            <input type="hidden" id="id_make_live" name='make_live'  />       
             <fieldset>                      
 
                 <div>

@@ -96,13 +96,14 @@ class EditArticle extends Controller
             $this->mPageTitle = getSiteName($site) . " - New Article";
             
             $article = new stdClass();
-            $article->contents_create_date    = time(); //date();
+            $article->contents_pub_date    = time(); //date();
            // $history = array();
         } 
         else // edit existing article
         {
+            $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
             $this->mPageTitle = getSiteName($site) . " - Edit Article";
-            $article = Article::GetDetails($id, LATEST_VERSION);                        
+            $article = Article::GetDetails($id, $version);                        
         }
 
         // create the center module

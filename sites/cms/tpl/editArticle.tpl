@@ -113,9 +113,9 @@ var ckConfig = {toolbar :
                                 
                 <div>
                     <label class="grid_12">Author:</label>
-                    <select  name="contents_author_id" class="required">
+                    <select  name="contents_authors_id" class="required">
                        {foreach $authors as $author}
-                                 <option value="{$author->authors_id}" {if $author->authors_id == $content->contents_author_id} selected="selected"{/if} >{$author->authors_name}</option>
+                                 <option value="{$author->authors_id}" {if $author->authors_id == $content->contents_authors_id} selected="selected"{/if} >{$author->authors_name}</option>
                        {/foreach}
                     </select> 
                 </div>
@@ -137,8 +137,8 @@ var ckConfig = {toolbar :
                     <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                     <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                     </div>                            
-                    <input type="text" name="contents_create_date" class="required" 
-                    value="{$content->contents_create_date|date_format:$DATETIME_FORMAT}">                                       
+                    <input type="text" name="contents_pub_date" class="required" 
+                    value="{$content->contents_pub_date|date_format:$DATETIME_FORMAT}">                                       
                 </div>
                 <div>
                     <label class="grid_12">Abstract:</label>

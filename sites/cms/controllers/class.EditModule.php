@@ -69,8 +69,9 @@ class EditModule extends Controller
         } 
         else 
         {  
+             $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
              $this->mPageTitle = getSiteName($site) . " - Edit Module";
-             $m    = Module::GetDetails($id, LATEST_VERSION);    
+             $m    = Module::GetDetails($id, $version);    
         }
         
 
@@ -114,7 +115,7 @@ class EditModule extends Controller
         }
         
         $modules = Module::GetModules($site, TRUE);
-        //dump($modules);
+       // dump($modules);
         //  foreach($arts as $a) echo $a->contents_id;     die;   
         $this->mSmarty->assign('contents', $modules );
         

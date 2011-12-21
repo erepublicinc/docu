@@ -63,7 +63,7 @@ class Documentation extends Content
         }
         else
         {
-            $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions);           
+            $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, SQL_UPDATE);           
             $this->mSqlStack[] = "UPDATE specs set $newvalues  WHERE  specs_contents_id = $this->mPk AND specs_version = @v -1  ";                              
         }
         return parent::SaveExisting($newVersion);

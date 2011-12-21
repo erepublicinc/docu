@@ -97,9 +97,10 @@ CREATE TABLE
         contents_title VARCHAR(150) NOT NULL,
         contents_display_title VARCHAR(150),
         contents_summary VARCHAR(500),
-        contents_create_date DATETIME NOT NULL,
-        contents_update_date DATETIME NOT NULL,
-        contents_update_users_id INT NOT NULL,
+        contents_pub_date DATETIME ,             --  can be changed by editorial staff
+        contents_create_date DATETIME NOT NULL,  -- system field cannot be updated
+        contents_change_date DATETIME NOT NULL,
+        contents_change_users_id INT NOT NULL,
         contents_type VARCHAR(20) NOT NULL,
         contents_extra_table VARCHAR(30) NOT NULL,
         contents_status VARCHAR(20) NOT NULL,
@@ -254,6 +255,7 @@ CREATE TABLE pages
         pages_version INT NOT NULL ,    
         pages_version_users_id INT NOT NULL,   --  the last person to edit this page 
         pages_version_date DATETIME,
+        pages_version_status VARCHAR(20),       -- like 'DRAFT', 'READY','REVIEW' 
         pages_version_comment VARCHAR(255),
 
         pages_is_preview BIT,
@@ -265,7 +267,6 @@ CREATE TABLE pages
         pages_type VARCHAR(50)   NOT NULL,     --  TOPIC
         pages_no_robots  BIT,         --  this should set the no_robots line in the <head>
         pages_password VARCHAR(20)  , --  for customer preview only
-        pages_status VARCHAR(20),       -- like 'LIVE', 'TEST','OLD' (only 1 version should be live)
         pages_php_class VARCHAR(20) NOT NULL,    --  the class that renders this page        
         pages_body TEXT, 
         
@@ -412,7 +413,7 @@ CREATE TABLE forms.bestof_contests
         custom_header VARCHAR(255) ,
         limit_player BIT,
         PRIMARY KEY (contest_pk)
-    );
+    )engine InnoDB;  
 
 CREATE TABLE forms.bestof_players
     (
@@ -435,8 +436,11 @@ CREATE TABLE forms.bestof_players
         player_addlinfo VARCHAR(100) ,
         player_limit_event INT,
         PRIMARY KEY (player_pk)
-    );    
+    )engine InnoDB;     
+    
+    
 
+drop table forms.bestof_categories;
 CREATE TABLE forms.bestof_categories
     (
         category_pk int NOT NULL ,
@@ -444,10 +448,11 @@ CREATE TABLE forms.bestof_categories
         category_name VARCHAR(255) ,
         category_sortby INT DEFAULT 5,
         FOREIGN KEY (category_contestid) REFERENCES bestof_contests (contest_pk) ,
+        INDEX category_contestid (category_contestid),
         PRIMARY KEY (category_pk)
-    );    
+    )engine InnoDB;  
     
-
+drop table forms.bestof_entries;
 CREATE TABLE    forms.bestof_entries
     (
         entry_pk INT NOT NULL ,
@@ -462,10 +467,12 @@ CREATE TABLE    forms.bestof_entries
         FOREIGN KEY (entry_category)  REFERENCES bestof_categories (category_pk) ,
         FOREIGN KEY (entry_playerid)  REFERENCES bestof_players (player_pk) ,
         FOREIGN KEY (entry_contestid) REFERENCES bestof_contests (contest_pk) ,
+        INDEX entry_category (entry_category),
+        INDEX entry_playerid (entry_playerid),
         PRIMARY KEY (entry_pk)
-    ) ;    
+    ) engine InnoDB;     
     
-
+drop table forms.bestof_questions;
 CREATE TABLE forms.bestof_questions
     (
         question_pk INT NOT NULL ,
@@ -475,13 +482,15 @@ CREATE TABLE forms.bestof_questions
         question_category INT,
         FOREIGN KEY (question_category)  REFERENCES bestof_categories (category_pk) ,
         FOREIGN KEY (question_contestid) REFERENCES bestof_contests (contest_pk) ,
-
+        INDEX question_category (question_category),
+        INDEX question_contestid (question_contestid),
         PRIMARY KEY (question_pk)
-    );
+    )engine InnoDB;  
 
+drop table forms.bestof_answers;   
 CREATE TABLE forms.bestof_answers
     (
-        answer_pk NUMERIC(32,0) NOT NULL ,
+        answer_pk INT NOT NULL ,
         answer_entryid INT,
         answer_playerid INT,
         answer_eventid INT,
@@ -493,11 +502,15 @@ CREATE TABLE forms.bestof_answers
         answer_category INT,
         FOREIGN KEY (answer_entryid)  REFERENCES bestof_entries  (entry_pk) ,
         FOREIGN KEY (answer_playerid)  REFERENCES bestof_players (player_pk) ,
+        FOREIGN KEY (answer_questionid)  REFERENCES bestof_questions (question_pk) ,
+        INDEX answer_questionid (answer_questionid),
+        INDEX answer_entryid (answer_entryid),
+        INDEX answer_playerid (answer_playerid),
         PRIMARY KEY (answer_pk)
-    );
+    )engine InnoDB;  
     
 
-    
+drop table forms.bestof_scores;    
 CREATE TABLE forms.bestof_scores
     (
         score_pk INT NOT NULL ,
@@ -510,7 +523,20 @@ CREATE TABLE forms.bestof_scores
         score_value INT,
         score_comments TEXT ,
         FOREIGN KEY (score_contestid) REFERENCES bestof_contests (contest_pk) ,
+        FOREIGN KEY (score_entryid) REFERENCES  bestof_entries (entry_pk) ,
+        FOREIGN KEY (score_questionid) REFERENCES  bestof_questions (question_pk) ,
+        FOREIGN KEY (score_judge) REFERENCES  bestof_players (player_pk) ,
+        INDEX score_questionid (score_questionid),
+        INDEX score_entryid (score_entryid),
+        INDEX score_contestid (score_contestid),
+        INDEX score_judge (score_judge),
+        
+        
         PRIMARY KEY (score_pk)
-    );        
+    )engine InnoDB;         
 
     
+SELECT contest_pk, contest_name, entry_title , entry_contestid , player_fname, player_lname
+FROM  (bestof_contests JOIN bestof_entries ON contest_pk  = entry_contestid )
+      JOIN bestof_players ON player_pk = entry_playerid
+      JOIN bestof_answers ON answer_entryid = entry_pk

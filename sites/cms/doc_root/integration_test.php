@@ -74,21 +74,27 @@ assert_gt_zero($user_id, __LINE__);
 if($user_id)
    $revert[]= "delete from users where users_id = $user_id";
 
+unset($data['users_password']);  // GetDetails does not retrieve the password   
+   
 // retrieve it into an array
 $user = User::GetDetails($user_id);
+compare_data($data, $user);
+
+//======================= now we going to change the user
 $ar = $user->ToArray();
 $ar['users_email']   = "newemail{$randomId}@test.com";
 $data['users_email'] = "newemail{$randomId}@test.com";
 
 //save it with the new data 
-$user = new User($ar);
-$user->Save();
+$user2 = new User($ar);
+$id2 = $user2->Save();
+
+assert_equal($user_id, $id2, __LINE__);
 
 // retrieve it again
-$user = User::GetDetails($user_id);
+$user2 = User::GetDetails($id2);
 
-unset($data['users_password']);  // GetDetails does not retrieve the password
-compare_data($data, $user);
+compare_data($data, $user2);
 
 
 $result = User::SetRoles($user_id, array('GT_EDITOR'));
@@ -105,11 +111,24 @@ $data = array(
 );
 
 $author =  new Author($data);
-$author_id = $author->Save();
+$auhors_id = $author->Save();
 
-$revert[]= "delete from authors where authors_id = $author_id";
+$revert[]= "delete from authors where authors_id = $auhors_id";
 
-$author_rec = Author::GetDetails($author_id);
+$author_rec = Author::GetDetails($auhors_id);
+compare_data($data, $author_rec);
+
+// now change it
+$rec = $author_rec->ToArray();
+$rec['authors_bio']  = 'the new bio';
+$data['authors_bio'] = 'the new bio';
+
+//dump($rec, false);
+$author2 =  new Author($rec);
+$auhors_id2 = $author2->Save();
+assert_equal($auhors_id2, $auhors_id, __LINE__);
+
+$author_rec = Author::GetDetails($auhors_id2);
 compare_data($data, $author_rec);
 
 
@@ -122,7 +141,7 @@ $data = array('pages_title'=> 'page integration test'.$randomId,
     'pages_site_code' => 'GT',
     'pages_url' => 'testurl',
     'pages_no_robots' => 0,
-    'pages_status' =>'READY',
+    'pages_version_status' =>'READY',
  	'pages_php_class' =>'phpclass',
  	'pages_body' =>'this is the body',
     'pages_version_comment'=> ' this is a test'
@@ -136,8 +155,22 @@ if($pages_id >0 )
 	
 $the_page = Page::GetDetails($pages_id);
 
-
 compare_data($data, $the_page);
+
+echo" ================================================ change the page <br>";
+$rec = $the_page->ToArray();
+$rec['pages_body']  = 'the new body';
+$data['pages_body'] = 'the new body';
+
+//dump($rec, false);
+$page2 =  new Page($rec);
+$id2 = $page2->Save();
+
+$rec = Page::GetDetails($id2);
+
+assert_equal($the_page->id, $rec->id, __LINE__);
+
+compare_data($data, $rec);
 
 
 
@@ -146,9 +179,9 @@ $CONFIG->SetValue('show_sql',0,true);
 
 $data = array(
     'contents_title' 		=> 'module integration test'.$randomId,
-    'contents_display_title'=>'pages_display_title', 
-    'contents_status' 		=>'READY',
-
+    'contents_display_title'=>'pages_display_title',
+ 
+    'contents_version_status' =>'READY',
     'contents_version_comment'=> ' this is a test',
 
     'modules_site_code' 	=> 'GT',
@@ -179,11 +212,11 @@ $o->contents_id = $the_module->contents_id;
 $o->placement   = "DETAIL_LEFT_COLUMN";
 $o->link_order  = 4;
 
-$result = Module::LinkModules($the_page->pages_id, array($o));
+$result = Module::LinkModules($the_page->pages_rev, array($o));
 
-clean_sql();
 
-$modules = Module::GetPageModules($the_page->pages_id);
+
+$modules = Module::GetPageModules($the_page->pages_rev);
 $idx=0;
 foreach($modules as $m)
 {
@@ -201,10 +234,11 @@ $CONFIG->SetValue('show_sql',0,true);
 $data = array(
     'contents_title' 		=> 'article integration test'.$randomId,
     'contents_display_title'=>'article_display_title', 
-    'contents_status' 		=>'DRAFT',
     'contents_authors_id'    =>$test_user_id,
-
+    'contents_version_status' 		=>'DRAFT',
     'contents_version_comment'=> ' this is a test',
+    'contents_pub_date' => '2011-12-09 12:12:00',
+
  	'contents_article_body' 			=>'this is the body',
  	'contents_article_type'		=> 'article type'
 );
@@ -220,6 +254,22 @@ $the_article = Article::GetDetails($id);
 compare_data($data, $the_article);
 
 assert_equal($test_user_id, $the_article->contents_authors_id, __LINE__);
+
+echo" ================================================ change the article <br>";
+$rec = $the_article->ToArray();
+$rec['contents_article_body']  = 'the new article body';
+$data['contents_article_body'] = 'the new article body';
+
+//dump($rec, false);
+$art2 = new Article($rec);
+$id2  = $art2->Save();
+assert_equal($id2, $id, __LINE__);
+
+$rec = Article::GetDetails($id2, LATEST_VERSION);
+compare_data($data, $rec);
+
+
+
 
 
 echo"<br> ======================================== target an article <br>";
@@ -238,7 +288,7 @@ $data = array( 'targets_contents_id' => $contents_id,
 
 Page::sYaasSaveTarget($data);
 
-$targets = Page::GetTargets($id);
+$targets = Page::GetTargets($pages_id);
 $idx=0;
 foreach($targets as $t)
 {
@@ -248,12 +298,16 @@ foreach($targets as $t)
 }
 assert_equal($idx, 1, __LINE__);
 
+
+
+
+
+
+
 clean_sql();
 cleanup();
 
 die(" <br><br>================ died before cleaning up test data ======================<br>");
-
-
 
 //===========================================================================================
 //===========================================================================================
@@ -287,7 +341,7 @@ function cleanup()
 
 function assert_gt_zero($v1, $line)
 {
-	if($v1 != $v2)
+	if(intval($v1) <= 0)
 	  terror("assertion error on line $line    $v1 should be greater than 0 ");
 }
 

@@ -28,7 +28,7 @@ class Article extends Content
     public function Save()
     {         
         $newVersion = true;  // always create a new version
-        return $result = parent::Save($newVersion);
+        return parent::Save($newVersion);
     }
      
     

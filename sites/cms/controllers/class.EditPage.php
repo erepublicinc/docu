@@ -70,8 +70,9 @@ class EditPage extends Controller
         } 
         else 
         {  
+             $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
              $this->mPageTitle = getSiteName($site) . " - Edit Page";
-             $page    = Page::GetDetails($id);       
+             $page    = Page::GetDetails($id, $version);       
         }
         
         $this->mSmarty->assign('p',$page);     //NOTE: the Smarty var "page"  is already set as the current page

@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+select * from bestof_answers where answer_eventid >75;
+select * from bestof_categories;
+select * from bestof_contests where contest_pk >75;
+select * from bestof_entries where entry_contestid >75;
+select * from bestof_players 
+select * from bestof_questions where question_contestid >75;
+select * from bestof_scores where score_contestid >75;
+
+
+
+models:
+
+Survey   
+Form    
+
+
+tables:
+
+forms              
+ forms_pk  
+ forms_css            css file to be used (to math the different color schemes)
+ forms_controller     this translates in differnt handling of the form       
+ forms_field_1 -20    20 fields for questions
+ forms_steps          processing steps
+ 
+ 
+ 
+ 
+submissions   20 fields for answers
+ submissions_pk
+ submissions_forms_fk
+ submissions_person_id  // for mathing in eloqua -salesforce
+ submissions_field1-20 
+
+
+bestof_contests
+bestof_questions
+bestof_answers
+bestof_scores      
+bestof_categories
+bestof_entries
+bestof_players
+
+-----relationships --------
+contest - person(judge) m-m
+contest - entry         1-m  
+contest - category      1-m
+contest - question      1-m
+
+entry  - person         m-1
+entry  - answer         1-m
+
+score - person          m-1
+score - entry           m-1
+
+category - question     1-m
+
+
+bestof functionality
+- signup   (as judge or participant)
+- login
+    - forgot password
+
+- submit entry
+  edit entry
+  
+- judge entry
+
+
+models:
+person 
+  new
+  login
+  logout
+  
+bestof
+   get_entries
+   create_entry
+   answer_question
+   get_next_question
+   get_score_form
+   post_score_form
+   get_results
+   
+   save_contest
+   save_question
+   save_category
+   
+   clone_contest
+   
+controllers:
+   person
+   bestof
+   bestof_manage
+     
+tpls:
+  login
+  new_user
+  list_entries
+  new_entry
+  answer_question
+  score_form
+  results
+
+  manage_list
+  manage_edit
+
+</body>
+</html>

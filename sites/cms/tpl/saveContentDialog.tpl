@@ -42,9 +42,9 @@ function saveContentPart2()
     <label><input type="checkbox" id="id_dlg_make_live" >Make Live</label>&nbsp;
     <label><input type="checkbox" id="id_dlg_make_preview" >Make Preview</label>&nbsp;
     <select  id="id_status_dropdown" class="select-list-small" style="width:80px">
-                <option {if $content->contents_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
-                <option {if $content->contents_status == 'READY'} selected='selected'{/if}> READY </option>
+                <option {if $content->contents_version_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
+                <option {if $content->contents_version_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
+                <option {if $content->contents_version_status == 'READY'} selected='selected'{/if}> READY </option>
             </select> 
 </div>
 

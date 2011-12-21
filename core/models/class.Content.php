@@ -5,7 +5,7 @@
  * "contents"   doe not have a version, instead a live_version fields specifies which version is live
  * "extra data" does have a  version
  */
-class Content
+class Content extends Model
 {
     public    $mTargets;
     protected $mFields;
@@ -21,13 +21,14 @@ class Content
           //'contents_id'   we never need this, will be set by autoincrement and never updated
             'contents_title'           => array('type'=>'varchar', 'required'=>true),
             'contents_display_title'   => array('type'=>'varchar'),
-            'contents_create_date'     => array('type'=>'date', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
-            'contents_update_date'     => array('type'=>'date', 'do_not_validate'=>true),  // NOW()
+            'contents_create_date'     => array('type'=>'datetime', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
+            'contents_change_date'     => array('type'=>'datetime', 'do_not_validate'=>true),  // NOW()
+            'contents_pub_date'        => array('type'=>'datetime' ), 
             'contents_type'            => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_summary'         => array('type'=>'varchar'),
             'contents_url_name'        => array('type'=>'varchar'),
           //'contents_status'          => array('type'=>'varchar'),    
-            'contents_update_users_id' => array('type'=>'int', 'required'=>true),   
+            'contents_change_users_id' => array('type'=>'int', 'required'=>true),   
             'contents_authors_id'      => array('type'=>'int'),   
             'contents_extra_table'     => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_live_version'    => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newversion
@@ -41,7 +42,7 @@ class Content
             'contents_fid'              => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // version is set with variable @id 
             'contents_version'          => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // version is set with variable @newversion
             'contents_version_users_id' => array('type'=>'int') , 
-            'contents_version_date'     => array('type'=>'date', 'do_not_validate'=>true) , // set with NOW()
+            'contents_version_date'     => array('type'=>'datetime', 'do_not_validate'=>true) , // set with NOW()
             'contents_version_comment'  => array('type'=>'varchar') ,  
             'contents_version_status'   => array('type'=>'varchar')  
     );        
@@ -367,7 +368,7 @@ class Content
      */  
     protected function Save($newVersion= true)
     {
-        $id = intval( $this->mFields->contents_id);
+        $fid = intval( $this->mFields->contents_id);
 
         $newContent =   $fid == 0 ? true: false;
           
@@ -388,7 +389,7 @@ class Content
         { 
              $this->mFields->contents_version = 1;
              $this->mFields->contents_fid = '@id';
-             $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
+             $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_INSERT);
              array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
           //   dump($this->mSqlStack);
              return self::SaveNew();
@@ -397,20 +398,20 @@ class Content
         {
             if($newVersion) 
             {
-                $this->mFields->contents_fid = $id;
+                $this->mFields->contents_fid = $fid;
                 $this->mFields->contents_version = '@newversion';
                 //dump($this->mFields); 
-                $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
+                $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_INSERT);
                
-                array_push($this->mSqlStack, "SELECT  @newversion:= MAX(contents_version) +1  from $this->mExtraTable where contents_id = $id");
+                array_push($this->mSqlStack, "SELECT  @newversion:= MAX(contents_version) +1  from $this->mExtraTable where contents_fid = $fid");
                 array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
             }
             else
             {
                 $version = intval($this->mFields->contents_version);
                 dump($this->mFields); 
-                $newvalues = $this->FormatUpdateString($fieldDescriptions, $newVersion);
-                array_push($this->mSqlStack, "UPDATE $this->mExtraTable  SET $newvalues WHERE contents_id = $id AND contents_version = $version");
+                $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_UPDATE);
+                array_push($this->mSqlStack, "UPDATE $this->mExtraTable  SET $newvalues WHERE contents_fid = $fid AND contents_version = $version");
             }
          //   dump($this->mSqlStack); 
             return self::SaveExisting();           
@@ -440,11 +441,11 @@ class Content
         
         
         // do we need these 3 fields, they would be similar to the fields on the latest version
-        $this->mFields->contents_update_date     = 'NOW()';
-        $this->mFields->contents_update_users_id = $_SESSION['user_id'];
+        $this->mFields->contents_change_date     = 'NOW()';
+        $this->mFields->contents_change_users_id = $_SESSION['user_id'];
 //        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
         
-        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, true); 
+        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, SQL_INSERT); 
         
         array_unshift($this->mSqlStack, "SELECT @id:= LAST_INSERT_ID()");
         array_unshift($this->mSqlStack, "INSERT INTO contents $newvalues ");
@@ -478,11 +479,11 @@ class Content
         $this->mFields->contents_preview_version =  $this->mFields->make_preview == 1 ? '@newversion': intval(contents_preview_version);
 
         // do we need these 3 fields, they would be similar to the fields on the latest version
-        $this->mFields->contents_update_date     = 'NOW()';
-        $this->mFields->contents_update_users_id = $_SESSION['user_id'];
+        $this->mFields->contents_change_date     = 'NOW()';
+        $this->mFields->contents_change_users_id = $_SESSION['user_id'];
 //        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
         
-        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, false); 
+        $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, SQL_UPDATE); 
         
         $this->mSqlStack[] = "UPDATE contents SET $newvalues where contents_id =$this->mId";   
         //dump($this->mSqlStack);
@@ -605,71 +606,6 @@ class Content
         return new Query($sql);
     }
     
-    
-
-    
-    /**
-     * creates a string used for updating a record like:  "body='hello', version=12"
-     * creates a string used for inserting a record like: "(body,version) VALUES('hello', 12) "
-     * typical use:    
-     * $str = FormatUpdateString(GetFieldTypes(false), $params);
-     * $sql = "UPDATE events SET $str WHERE id = $id";
-     * 
-     * @param array of field types
-     * @param bool  [default =  false] means that we request a string suitable for 
-     *                                 the UPDATE command like: "body='hello', version=12"
-     */
-    protected  function FormatUpdateString($Fieldsarray, $insert = false)
-    {
-        $insertStr = '(';         //  (body,version)
-        $newvalues = '';          //  VALUES('hello', 12)  or body='hello', version=12"
-                    
-        foreach($Fieldsarray as $field => $Description)
-        {
-            if($insert && $Description['required']  && ! isset($this->mFields->$field) )            
-                logerror("required field $field is missing" );
-
-            if($insert == false && $Description['insert_only'] )  // these fields cannot be updated
-                continue;  
-                
-            $value = $this->mFields->$field;
-                
-            if(! $Description['do_not_validate'] )
-            {
-                if($Description['type'] == 'varchar' )
-                    $value = "'". Query::Escape($value) ."'";   
-                
-                if($Description['type'] == 'int' )
-                    $value =  intval($value);
-            }                   
-            if($insert)
-            {
-                $insertStr .= "$field,";
-                $newvalues .= "$value,";
-            }
-            else 
-            {
-                $newvalues .= "$field = $value,";
-            }
-        }
-        
-        if($insert)
-        {               
-            $insertStr = substr($insertStr, 0, strlen($insertStr)-1); // remove last comma  
-            $newvalues =  $insertStr . ') VALUES(' . $newvalues;             // combine the strings
-          
-            $newvalues  = substr($newvalues, 0, strlen($newvalues)-1); // remove last comma  
-            $newvalues .= ')';
-        }
-        else 
-        {   
-            $newvalues = substr($newvalues, 0, strlen($newvalues)-1); // remove last comma  
-        } 
- //dump($newvalues);       
-        return  $newvalues;   
-    }
-   
-     
 
 } // end of class
 

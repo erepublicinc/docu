@@ -26,7 +26,7 @@ class EditPlacement extends Controller
         $this->mSmarty->assign('site_name', getSiteName($site));
         
         
-        $page = Page::GetDetails(0,$pages_id);
+        $page = Page::GetDetails($pages_id);
         $this->mPageTitle = " $site Placement List: $page->pages_title ($page->pages_url)";
         
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'),                                        
