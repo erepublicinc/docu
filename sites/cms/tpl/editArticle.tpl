@@ -58,9 +58,9 @@ var ckConfig = {toolbar :
         <div class="m-5 ml-20 float-r">
             Save to: 
             <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-                <option {if $content->contents_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
-                <option {if $content->contents_status == 'READY'} selected='selected'{/if}> READY </option>
+                <option {if $content->contents_version_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
+                <option {if $content->contents_version_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
+                <option {if $content->contents_version_status == 'READY'} selected='selected'{/if}> READY </option>
             </select> 
         </div>
  --> *}

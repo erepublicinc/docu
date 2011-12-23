@@ -85,7 +85,7 @@ class Module extends Content
                 WHERE mp_pages_rev = $pages_rev ORDER BY mp_placement, mp_link_order";
         
         else
-          $sql="SELECT contents_id, contents_title, mp_placement, mp_link_order FROM (contents JOIN modules  ON contents_fid = contents_id AND contents_version = $liveField )              
+          $sql="SELECT contents_id, contents_title, mp_placement, mp_link_order FROM (contents JOIN modules  ON contents_fid = contents_id AND contents_version = $liveVersion )              
                 JOIN modules__pages ON mp_contents_id = contents_id 
                 WHERE mp_pages_rev = $pages_rev ORDER BY mp_placement, mp_link_order";
                  

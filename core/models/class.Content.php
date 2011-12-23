@@ -27,7 +27,6 @@ class Content extends Model
             'contents_type'            => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_summary'         => array('type'=>'varchar'),
             'contents_url_name'        => array('type'=>'varchar'),
-          //'contents_status'          => array('type'=>'varchar'),    
             'contents_change_users_id' => array('type'=>'int', 'required'=>true),   
             'contents_authors_id'      => array('type'=>'int'),   
             'contents_extra_table'     => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
@@ -100,10 +99,11 @@ class Content extends Model
     {  
         global $CONFIG;  
         if($version == LATEST_VERSION)
-            $version = "(SELECT MAX(contents_version)from $extraTable WHERE contents_id = $id)";
+            $version = "(SELECT contents_latest_version from contents WHERE contents_id = $id)";
         elseif($version == LIVE_VERSION)
             $version = $CONFIG->mode == 'PREVIEW'? "contents_preview_version" : "contents_live_version"; 
-         
+        else 
+           $version = intval($version); 
      
 
          if($includeAuthor)
@@ -115,11 +115,40 @@ class Content extends Model
               $sql = "SELECT * FROM   contents  
                      JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version                 
                      WHERE contents_id = $id ";
-		  
+//dump($sql);		  
 		$result =  new Query($sql);            
 //dump($result->ToArray());				       
         return $result;
     }   
+    
+     /**
+     * retrieves the field descriptionList, filled with data
+     * @param datatable
+     * @param [optional]  the version
+     * @return the fielddescriptionlist filled with data
+     */
+    protected static function GetFormData($id, $extraTable, $version = LATEST_VERSION)
+    {
+        global $CONFIG; 
+        $id         = intval($id);
+        $extraTable = Query::Escape($extraTable) ;
+         
+        if($version == LATEST_VERSION)
+            $version = "(SELECT contentslatest_version from contents WHERE contents_id = $id)";
+        elseif($version == LIVE_VERSION)
+            $version = $CONFIG->mode == 'PREVIEW'? "contents_preview_version" : "contents_live_version"; 
+        else 
+           $version = intval($version); 
+               
+           
+         $sql = "SELECT * FROM   contents 
+                 JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version     
+                 JOIN authors      ON authors_id = contents_authors_id              
+                 WHERE contents_id = $id ";        	  			
+        $result =  new Query($sql);
+         
+    } 
+    
     
 
     /**
@@ -162,7 +191,8 @@ class Content extends Model
         
         if($status != 'ALL')
         {
-            $status = " AND contents_status = '$status' ";
+            $liveversion = ($CONFIG->mode == 'PREVIEW') ? 'contents_preview_version' : 'contents_live_version';  
+            $status = " AND $liveversion = 1";
         }
 
                 
@@ -172,14 +202,14 @@ class Content extends Model
             $order = " ORDER BY "
         }
   */      
-        if($site && $site != 'ALL')
+        if($site )
         {
             // need an extra join to figure out which page we are looking for
-            $sql="SELECT contents_id, contents_title, contents_display_title, contents_summary, contents_status , contents_authors_id  
+            $sql="SELECT contents_id, contents_title, contents_display_title, contents_summary,  contents_authors_id  
                 FROM  (contents  JOIN targets ON targets_contents_id = contents_id )
                            JOIN pages   ON pages_id = targets_pages_id           
                WHERE contents_type = '$contentType'  and   pages_site_code = '$site'    $status
-               GROUP BY contents_id, contents_title, contents_display_title, contents_summary, contents_status , contents_authors_id  
+               GROUP BY contents_id, contents_title, contents_display_title, contents_summary,  contents_authors_id  
                $topX ";
         }
         else 
@@ -204,13 +234,13 @@ class Content extends Model
 
         if(is_int($urlName))   
         {
-           $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+           $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type,  contents_extra_table, users_last_name, users_first_name
                   FROM contents JOIN users on users_id = contents_authors_id 
                   WHERE contents_id = $urlName"; 
         }
         else 
         {
-            $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type, contents_status, contents_extra_table, users_last_name, users_first_name
+            $sql = "SELECT contents_id, contents_live_version, contents_url_name, contents_title, contents_display_title, contents_summary, contents_create_date, contents_type,  contents_extra_table, users_last_name, users_first_name
                   FROM contents JOIN users on users_id = contents_authors_id 
                   WHERE contents_url_name = '$urlName'";
         }
@@ -262,7 +292,7 @@ class Content extends Model
 /*        
         if($status != 'ALL')
         {
-            $statusStr = " AND contents_status = '$status' ";
+            $statusStr = " AND contents_version_status = '$status' ";
         }
 */        
         if(!empty($url))
@@ -443,7 +473,7 @@ class Content extends Model
         // do we need these 3 fields, they would be similar to the fields on the latest version
         $this->mFields->contents_change_date     = 'NOW()';
         $this->mFields->contents_change_users_id = $_SESSION['user_id'];
-//        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
+//        $this->mFields->contents_version_status          = empty($this->mFields->contents_version_status) ? 'DRAFT' : $this->mFields->contents_version_status ;
         
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, SQL_INSERT); 
         
@@ -481,7 +511,7 @@ class Content extends Model
         // do we need these 3 fields, they would be similar to the fields on the latest version
         $this->mFields->contents_change_date     = 'NOW()';
         $this->mFields->contents_change_users_id = $_SESSION['user_id'];
-//        $this->mFields->contents_status          = empty($this->mFields->contents_status) ? 'DRAFT' : $this->mFields->contents_status ;
+//        $this->mFields->contents_version_status          = empty($this->mFields->contents_version_status) ? 'DRAFT' : $this->mFields->contents_version_status ;
         
         $newvalues = $this->FormatUpdateString(self::$mContentFieldDescriptions, SQL_UPDATE); 
         

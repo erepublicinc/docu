@@ -133,7 +133,7 @@ class Documentation extends Content
         Query::SetAdminMode();
                 
         $d = new Documentation($params);
-        $d->mFields->contents_status = 'READY'; // make it live
+        $d->mFields->contents_version_status = 'READY'; // make it live
         $d->mFields->contents_version_status = 'READY'; // make it live
         
         $result = $d->Save(); 

@@ -265,7 +265,7 @@ class Page extends Model
         }
         elseif( $rev == LATEST_VERSION )  // the user supplied the id  and wants the latest version
         {
-            $sql = "SELECT * FROM pages WHERE pages_id = $id  ORDER BY pages_rev TOP 1";
+            $sql = "SELECT * FROM pages WHERE pages_id = $id  ORDER BY pages_rev LIMIT 1";
         }
         else // get live version  for a particular page id  ($rev == LIVE_VERSION)
         { 
