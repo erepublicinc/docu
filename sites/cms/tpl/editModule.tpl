@@ -119,18 +119,7 @@ var ckConfig = {toolbar :
                     <input type="text" name="contents_display_title" class="required"  value="{$content->contents_display_title}"/>
                 </div>
                                 
-                <div>
-                    <label class="grid_12">Author:</label>
-                    <select  name="contents_authors_id" class="required">
-                                 <option value="{$content->contents_authors_id}" >{$content->users_first_name} {$content->users_last_name}</option>
-                    </select> 
-                </div>
-                <div>
-                    <label class="grid_12">Meta Keywords:</label>
-                  
-                    <input type="text" name="">
-                </div>   
-                                                                                               
+                                                            
 
                 <div>
                     <label class="grid_12">Notes:</label>

@@ -43,7 +43,7 @@ class Model
                 if($Description['type'] == 'pk')
                     continue;  // this field will never be inserted or updated
                     
-                elseif($Description['type'] == 'varchar')
+                elseif($Description['type'] == 'varchar' || $Description['type'] == 'text')
                     $value = "'". Query::Escape($value) ."'";   
                 
                 elseif($Description['type'] == 'datetime')

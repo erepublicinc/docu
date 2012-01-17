@@ -16,10 +16,10 @@ class Module extends Content
         $this->mExtraTable  = 'modules';
         $this->mContentType = 'MODULE';        
         $this->mExtraFieldDescriptions = array(      
-        	'modules_php_class'   => array('type'=>'varchar') ,  
-            'modules_json_params'    => array('type'=>'varchar') ,
-            'modules_body'        => array('type'=>'varchar') ,
-            'modules_site_code'   => array('type'=>'varchar') ,
+        	'modules_php_class'   => array('type'=>'varchar', 'label'=> 'PHP Class') ,  
+            'modules_json_params'    => array('type'=>'varchar', 'label'=> 'JSON Params') ,
+            'modules_body'        => array('type'=>'varchar', 'label'=> 'BOdy') ,
+            'modules_site_code'   => array('type'=>'varchar', 'label'=> 'site code') ,
         );   
     }
     

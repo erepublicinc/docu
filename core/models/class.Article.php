@@ -2,8 +2,7 @@
 // a model class
 class Article extends Content
 {
-    
-    
+        
     /**
      *  creates a new article from an array or object
      *  @param object or array with fields
@@ -14,28 +13,13 @@ class Article extends Content
         
         // for documentation on these members see the Content class   
         $this->mExtraTable  = 'articles';
-        $this->mContentType = 'ARTICLE';               
+        $this->mContentType = 'Article';               
         $this->mExtraFieldDescriptions = array(      
-        	'contents_article_body'    => array('type'=>'varchar') ,  
+        	'contents_article_body'    => array('type'=>'text', 'label'=>'Body') ,  
             'contents_article_type'    => array('type'=>'varchar')  
         );        
     }
 
-    /**
-     * returns the id
-     * @see Content::Save()
-     */
-    public function Save()
-    {         
-        $newVersion = true;  // always create a new version
-        return parent::Save($newVersion);
-    }
-     
-    
-    public static function GetFieldDescriptions()
-    {
-        return array_merge(self::$mStandardFieldDescriptions, $this->mExtraFieldDescriptions, self::$mContentFieldDescriptions);         
-    }
     
     /**
      * returns an array of articles
@@ -47,7 +31,7 @@ class Article extends Content
      */
     public static function GetArticles( $site = null, $orderby = null, $limit = 10, $skip = 0, $status = 'READY')  
     {
-        return parent::GetContentByType('ARTICLE', $site, $orderby, $limit, $skip , $status) ; 
+        return parent::GetContentByType('Article', $site, $orderby, $limit, $skip , $status) ; 
     }
     
      /**

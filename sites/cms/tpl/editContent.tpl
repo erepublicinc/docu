@@ -71,36 +71,39 @@ var ckConfig = {toolbar :
             <fieldset>                      
 
           
-                {foreach $field_list as $field_name=>$field}
+                {foreach $form_data as $field_name => $field}
                 {if $field.label}
                     
                     <div>
-                        <label class="grid_12">$field.label</label>                   
+                        <label class="grid_12">{$field.label}</label>                   
                         <div class="float-r" style="width: 100px;">
                             <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                             <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                         </div>     
                         <br clear="all">
+                        
+                       
                          
-                        {if $field.type = 'text'}                         
-                            <textarea id="id_body" type="text" name="{field_name}" rows="25" class="required">{$field.value}</textarea>
-                        {elseif $field.type = 'bit'}
-                            <input name="{field_name}" type="checkbox" {if $field.value == 1} selected="selected"{/f} />
-                        {elseif $field.form_el = 'select'}
-                             <label class="grid_12">Author:</label>
-                            <select  name="{field_name}" class="required">
-                               {foreach $field.items as $item}
-                                         <option value="{$item->item_id}" {if {$item->item_id} == $field.value} selected="selected"{/if} >{$item->item_title}</option>
+                        {if $field.type == 'text'}                         
+                            <textarea id="id_body" type="text" name="{$field_name}" rows="25" class="required">{$field.value}</textarea>
+                        {elseif $field.type == 'bit'}
+                            <input name="{$field_name}" type="checkbox" {if $field.value == 1} selected="selected"{/if} />
+                        {elseif $field.form_element == 'select'}                        
+                            <select  name="{$field_name}" class="required">
+                               {foreach $field.options as $option}
+                                     <option value="{$option->id}" {if {$option->id} == $field.value} selected="selected"{/if} >{$option->title}</option>                            
                                {/foreach}
                             </select>                            
-                        {elseif $field.type = 'varchar'}
-                            <input type="text" name="{field_name}" class="required" value="{$field.value}">    
-                        {elseif $field.type = 'datetime'}
-                            <input type="text" name="{field_name}" class="required" value="{$field.value|date_format:$DATETIME_FORMAT}">                                                             
+                        {elseif $field.type == 'varchar'}
+                            <input type="text" name="{$field_name}" class="required" value="{$field.value}">    
+                        {elseif $field.type == 'datetime'}
+                            <input type="text" name="{$field_name}" class="required" value="{$field.value|date_format:$DATETIME_FORMAT}">                                                             
                         {/if}
                             
                     </div>    
+                
                 {/if}
+                
                 {/foreach}
                
                                         

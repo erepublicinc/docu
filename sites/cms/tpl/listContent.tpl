@@ -40,7 +40,7 @@
             {foreach $contents as $c}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/gt/{$record_type}/{$c->contents_id}">{$c->contents_title}</a></td>
+                <td><a href="/cms/gt/{$model_name}/{$c->contents_id}">{$c->contents_title}</a></td>
                 <td>{$c->contents_updated_date|date_format:$DATETIME_FORMAT}</td>
                 <td><span {if $c->contents_live_version > 0}  class="ui-icon ui-icon-circle-check " 
                           {else} class="ui-icon-tan ui-icon-alert "

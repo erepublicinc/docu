@@ -1,6 +1,7 @@
 <?php
 class CMSRouter extends Router
-{    
+{   
+      
     function __construct()
     { 
         // Check if this page already exists in our cache of complete pages
@@ -15,10 +16,53 @@ class CMSRouter extends Router
 
     }
     
+    /**
+     * maps from url-segment (or tablename) to model class
+     * @param $url-segment string
+     * @return the model class
+     */
+ /*   
+    function getModelClass($segment)
+    {
+       switch($segment)
+       {
+           case 'articles': 
+               return 'Article'; 
+           case 'modules' : 
+               return 'Module';
+       }  
+      
+    }
+ */   
+   
+    
     // this is a stub because we don't use this , we'll overide _GetPageClassName ( see below)
     protected function _InitClassMapping()
     {
         $this->_mClassMapping = array();
+    }
+
+    
+    // the default map, maps from url-segment to Controller and the main Model
+    static private $map = array( // for content types , use the table name 
+        			  'User'       => array('EditUser',     'User'),      			  
+        			  'Article'    => array('EditContent',  'Article'),                                          
+                      'Module'     => array('EditModule',   'Module'),                    
+                      'Page'       => array('EditPage',     'Page'),                     
+                      'Placement'  => array('EditPlacement',''),
+                      'Author'     => array('EditAuthor',   'Author')
+                      
+    ) ;    
+    
+    /**
+     * maps from extra-tablename to model class
+     * used by Content 
+     * @param string table name
+     * @return string Model class name
+     */
+    public function GetModelFromTable($table)
+    {
+        return self::$map[$table][1];
     }
     
     
@@ -30,50 +74,44 @@ class CMSRouter extends Router
     protected function _GetPageClassName()
     {  
         global $CONFIG;
-        $uri            = strtolower( $_SERVER['REQUEST_URI']);
+        $uri            = $_SERVER['REQUEST_URI'];
         $uri            = parse_url($uri);
         $path           = trim($uri['path'], "/");
-        strtolower($path);
+        
         $pathSegments   = explode("/", $path);
         $numOfSegments  = count($pathSegments);
         $site           = 'ALL'; 
         $this->_mClassName = 'CmsHome'; // default
         
-        if($pathSegments[0] == 'preview')
+        $piece = strtolower($pathSegments[0]);
+        if($piece == 'preview')
             array_shift($pathSegments);
-            
-        if($pathSegments[0] == 'cms')
+
+        $piece = strtolower($pathSegments[0]);    
+        if($piece == 'cms')
             array_shift($pathSegments);
         
-        if(in_array($pathSegments[0], array('gt','gov','em','cv','all','er','cdg','cde','dc')))
+        $piece = strtolower($pathSegments[0]);    
+        if(in_array($piece, array('gt','gov','em','cv','all','er','cdg','cde','dc')))
         {
-            $site = strtoupper($pathSegments[0]);
+            $site = strtoupper($piece);
             $CONFIG->SetValue('cms_site_code',$site);
             array_shift($pathSegments);
         }
 
-        // the default map
-        $map = array( 'test'        => 'EditContent',
-        			  'users'       => 'EditUser',      			  
-        			  'articles'    => 'EditArticle',                                          
-                      'modules'     => 'EditModule',                     
-                      'pages'       => 'EditPage',                      
-                      'placement'	=> 'EditPlacement',
-                      'authors'     => 'EditAuthor'
-                      
-        ) ;
+
         
         // allow overwrite of the default map according to the website
         switch($site)
         {          
             case 'EM' :
-                $map['articles'] = 'EditArticle' ;
+              //  self::$map['articles'][0] = 'EditArticle' ;
             break;       
         }
             
-        if(count($pathSegments) > 0 && $map && isset($map[$pathSegments[0]]))
+        if(count($pathSegments) > 0  && isset(self::$map[$pathSegments[0]][0]))
         {
-            $this->_mClassName = $map[$pathSegments[0]] ;
+            $this->_mClassName = self::$map[$pathSegments[0]][0] ;
         }
       
         $this->_mClassArguments = $pathSegments;
@@ -81,6 +119,8 @@ class CMSRouter extends Router
         return true;
     }
       
+   
+    
 }
 
 

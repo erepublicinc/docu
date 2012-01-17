@@ -20,18 +20,18 @@ class EditArticle extends Controller
         parent::__construct($websiteObject, $arguments); 
         
         $site        = $CONFIG->cms_site_code;
-        $record_type = $arguments[0];
+        $model_name = $arguments[0];
         $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                      
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type', $record_type);
+        $this->mSmarty->assign('model_name', $model_name);
    
         
         if(!empty($_POST['contents_title']))   // save article
         {
-            $this->_saveArticle($id, $site, $record_type);  
+            $this->_saveArticle($id, $site, $model_name);  
             return;         
         }
         
@@ -70,7 +70,7 @@ class EditArticle extends Controller
     }
 
     
-    private function _saveArticle($id, $site,$record_type)
+    private function _saveArticle($id, $site,$model_name)
     {
 //dump($_POST);        
         $id = Article::sYaasSave($_POST);                   
@@ -84,7 +84,7 @@ class EditArticle extends Controller
                 Page::sYaasSaveTarget($params);
         }
         
-        header("LOCATION: /cms/{$site}/$record_type");
+        header("LOCATION: /cms/{$site}/$model_name");
         die; 
     }
     

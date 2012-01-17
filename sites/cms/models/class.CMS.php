@@ -17,22 +17,25 @@ class CMS
     
     /**
      * returns a module object
-     * @param object $c  content object
+     * @param int id 
+     * @param int liveVersion
+     * @param int previewVersion
      * @param String $extra_table for the content object
      * @return object  module object
      */
-    static function CreateVersionHistoryModule($c, $extra_table)
-    { 
+    static function CreateVersionHistoryModule($id, $liveVersion, $previewVersion , $extra_table)
+    {
+       
         $m = new stdClass();
         
         $m->template        = 'versionHistoryModule.tpl';
         
-        if($c->contents_id)    
+        if($c['contents_fid']['value'] >0)    
         {
-            $m->history         = Content::GetVersionHistory($c->contents_id, $extra_table);
-            $m->id              = $c->contents_id;  
-            $m->live_version    = $c->contents_live_version;
-            $m->preview_version = $c->contents_preview_version;      
+            $m->history         = Content::GetVersionHistory($id, $extra_table);
+            $m->id              = $id;  
+            $m->live_version    = $liveVersion;
+            $m->preview_version = $previewVersion;      
         }
         return $m;
     }

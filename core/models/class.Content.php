@@ -19,16 +19,16 @@ class Content extends Model
     // this gets passed into : FormatUpdateString()
     protected static $mContentFieldDescriptions = array(
           //'contents_id'   we never need this, will be set by autoincrement and never updated
-            'contents_title'           => array('type'=>'varchar', 'required'=>true),
-            'contents_display_title'   => array('type'=>'varchar'),
+            'contents_title'           => array('type'=>'varchar', 'label'=>'Title', 'required'=>true),
+            'contents_display_title'   => array('type'=>'varchar', 'label'=>'Display title'),
             'contents_create_date'     => array('type'=>'datetime', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
             'contents_change_date'     => array('type'=>'datetime', 'do_not_validate'=>true),  // NOW()
-            'contents_pub_date'        => array('type'=>'datetime' ), 
+            'contents_pub_date'        => array('type'=>'datetime', 'label'=>'Publication Date' ), 
             'contents_type'            => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
-            'contents_summary'         => array('type'=>'varchar'),
-            'contents_url_name'        => array('type'=>'varchar'),
+            'contents_summary'         => array('type'=>'varchar', 'label'=>'Summary'),
+            'contents_url_name'        => array('type'=>'varchar', 'label'=>'URL Name'),
             'contents_change_users_id' => array('type'=>'int', 'required'=>true),   
-            'contents_authors_id'      => array('type'=>'int'),   
+            'contents_authors_id'      => array('type'=>'int', 'label'=>'Author', 'form_element' =>'select'),   
             'contents_extra_table'     => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_live_version'    => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newversion
             'contents_preview_version' => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newversion
@@ -49,8 +49,7 @@ class Content extends Model
     // these are the "extra" fields that a derived class has.  this array must be instantiated by the derived class
     protected $mExtraFieldDescriptions;
     protected $mExtraTable;                     // and this is the table for the derived class
-    
-    
+        
     
     /** 
      * initialized with a row from the contents table, or with a id
@@ -87,6 +86,15 @@ class Content extends Model
         return $this->mFields;
     }
 
+    public function GetExtraTableName()
+    {
+        return $this->mExtraTable;
+    }
+    
+    public function GetFieldDescriptions()
+    {
+        return array_merge(self::$mContentFieldDescriptions, self::$mStandardFieldDescriptions, $this->mExtraFieldDescriptions );         
+    }
     
         /** 
      * This static class can be called by a yaas function 
@@ -125,28 +133,52 @@ class Content extends Model
      * retrieves the field descriptionList, filled with data
      * @param datatable
      * @param [optional]  the version
-     * @return the fielddescriptionlist filled with data
+     * @return the fielddescriptionlist  as arrayof fields,  filled with data
      */
-    protected static function GetFormData($id, $extraTable, $version = LATEST_VERSION)
-    {
+    public static function GetFormData($id, $model_name, $version = LATEST_VERSION)
+    { 
         global $CONFIG; 
         $id         = intval($id);
-        $extraTable = Query::Escape($extraTable) ;
-         
-        if($version == LATEST_VERSION)
-            $version = "(SELECT contentslatest_version from contents WHERE contents_id = $id)";
-        elseif($version == LIVE_VERSION)
-            $version = $CONFIG->mode == 'PREVIEW'? "contents_preview_version" : "contents_live_version"; 
-        else 
-           $version = intval($version); 
+        
+        $Model      = new $model_name();
+        $formData   = $Model->GetFieldDescriptions();
+        $extraTable = $Model->mExtraTable;
+        
+        
+        if($id > 0)
+        {
+            if($version == LATEST_VERSION)
+                $version = "(SELECT contents_latest_version from contents WHERE contents_id = $id)";
+            elseif($version == LIVE_VERSION)
+                $version = $CONFIG->mode == 'PREVIEW'? "contents_preview_version" : "contents_live_version"; 
+            else 
+               $version = intval($version); 
+                   
                
-           
-         $sql = "SELECT * FROM   contents 
-                 JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version     
-                 JOIN authors      ON authors_id = contents_authors_id              
-                 WHERE contents_id = $id ";        	  			
-        $result =  new Query($sql);
-         
+            $sql = "SELECT * FROM   contents 
+                     JOIN $extraTable  ON contents_id = contents_fid and contents_version = $version     
+                     JOIN authors      ON authors_id = contents_authors_id              
+                     WHERE contents_id = $id ";   
+                       	  			
+            $result =  new Query($sql);
+            
+            
+            foreach($formData as $name => $dta)
+            {
+                $formData[$name]['value'] = $result->$name;
+            }
+        }    
+        else 
+        {
+             $formData['contents_pub_date']['value']    = time(); 
+        }  
+        
+        $authors = Author::getAuthors();
+        $authors->SetAlias(array('id' => 'authors_id','title' => 'authors_display_name' ));       
+        // set the options for the authors select list      
+        $formData['contents_authors_id']['options'] = $authors;
+       
+        return $formData;
     } 
     
     
@@ -157,18 +189,19 @@ class Content extends Model
      * @param [optional]  the version
      * @return a Query object
      */
-    protected function GetExtraData($extraTable, $version=0)
+/*  NOT USED !   
+    protected function GetExtraData( $version = LIVE_VERSION)
     {
         $id = $this->mId;
         $theversion = $version > 0 ? $version : $this->mFields->contents_live_version; 
        
-        $sql = "SELECT * from $extraTable t 
+        $sql = "SELECT * from $this->mExtraTable t 
         	    WHERE t.contents_id = $id     
                 AND contents_version = $theversion ";
         	  			
         return  new Query($sql); 
     } 
-    
+*/  
     
     /** 
      * GetContentByType , primarily used by cms
@@ -334,8 +367,10 @@ class Content extends Model
         return $contents;
     }
 
+    
     /**
-     * returns the number of pages
+     * used by listing pages
+     * returns the number of pages of content items for a page (wss)
      * @param int   page id      
      * @param array  of article types
      * @param int  page Size   [default = default pagesize for this site]
@@ -363,7 +398,8 @@ class Content extends Model
         $ret = new Query($sql);
         return  ceil($ret->num / $page_size);
     }
-        
+
+    
     /**
      * Gets targets for this content item
      * @param int $contents_id
@@ -379,9 +415,14 @@ class Content extends Model
   
        return new Query($sql); 
     }   
+
     
-    
-    public static function GetVersionHistory($id,$extraTable)
+    /**
+     * retrieves the history of this content item
+     * @param unknown_type $id   
+     * @param unknown_type $extraTable
+     */
+    public static function GetVersionHistory($id, $extraTable)
     {
         $sql = "SELECT contents_version  as version, contents_version_date as version_date, contents_version_comment as version_comment, users_first_name, users_last_name, users_email
                 FROM {$extraTable} JOIN users ON contents_version_users_id = users_id
@@ -389,14 +430,13 @@ class Content extends Model
 //   dump($sql);     
         return new Query($sql);
     }
- 
         
     
     /**
      *      
      * @param bool $newVersion [default=true], so you can choose to update the current version or create a new version
      */  
-    protected function Save($newVersion= true)
+    public function Save($newVersion= true)
     {
         $fid = intval( $this->mFields->contents_id);
 
@@ -487,7 +527,7 @@ class Content extends Model
             3. 'SELECT @id as id' , so we can return this
         */
         
-        //   dump($this->mSqlStack);
+         //  dump($this->mSqlStack);
         $result =  Query::sTransaction($this->mSqlStack);
         if($result != false)
             return $result->id;
