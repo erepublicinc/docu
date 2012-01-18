@@ -141,10 +141,9 @@ $data = array('pages_title'=> 'page integration test'.$randomId,
     'pages_site_code' => 'GT',
     'pages_url' => 'testurl',
     'pages_no_robots' => 0,
-    'pages_version_status' =>'READY',
  	'pages_php_class' =>'phpclass',
  	'pages_body' =>'this is the body',
-    'pages_version_comment'=> ' this is a test'
+    'pages_rev_comment'=> ' this is a test'
 );
 
 $page = new Page($data);
@@ -181,8 +180,8 @@ $data = array(
     'contents_title' 		=> 'module integration test'.$randomId,
     'contents_display_title'=>'pages_display_title',
  
-    'contents_version_status' =>'READY',
-    'contents_version_comment'=> ' this is a test',
+    'contents_rev_status' =>'READY',
+    'contents_rev_comment'=> ' this is a test',
 
     'modules_site_code' 	=> 'GT',
     'modules_json_params' 	=> 'json',
@@ -192,7 +191,7 @@ $data = array(
 );
 $ct = new Module($data);
 $id = $ct->Save();
-Content::setLiveVersion($id, 1 );
+Content::setLiveRevision($id, 1 );
 
 echo "created module id : $id <br>";
 if($id >0 )
@@ -235,8 +234,8 @@ $data = array(
     'contents_title' 		=> 'article integration test'.$randomId,
     'contents_display_title'=>'article_display_title', 
     'contents_authors_id'    =>$test_user_id,
-    'contents_version_status' 		=>'DRAFT',
-    'contents_version_comment'=> ' this is a test',
+    'contents_rev_status' 		=>'DRAFT',
+    'contents_rev_comment'=> ' this is a test',
     'contents_pub_date' => '2011-12-09 12:12:00',
 
  	'contents_article_body' 			=>'this is the body',
@@ -244,7 +243,7 @@ $data = array(
 );
 $article = new Article($data);
 $id = $article->Save();
-Content::setLiveVersion($id, 1 );
+Content::setLiveRevision($id, 1 );
 
 echo "created article id : $id <br>";
 if($id >0 )
@@ -265,7 +264,7 @@ $art2 = new Article($rec);
 $id2  = $art2->Save();
 assert_equal($id2, $id, __LINE__);
 
-$rec = Article::GetDetails($id2, LATEST_VERSION);
+$rec = Article::GetDetails($id2, LATEST_REV);
 compare_data($data, $rec);
 
 

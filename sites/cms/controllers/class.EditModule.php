@@ -17,18 +17,18 @@ class EditModule extends Controller
         parent::__construct($routerObject, $arguments); 
 
         $site        = $CONFIG->cms_site_code;        
-        $record_type = $arguments[0];
+        $model_name  = $arguments[0];
         $id          = 0 + intval($arguments[1]);       
         $isNew       = $arguments[1] == 'new' ? true :false;
                      
         $this->mSmarty->assign('site_code', $site);
         $this->mSmarty->assign('site_name', getSiteName($site));
-        $this->mSmarty->assign('record_type', $record_type);
+        $this->mSmarty->assign('model_name', $model_name);
                   
                       
         if(!empty($_POST['contents_title']))
         {
-             $this->_SaveRecord($site,$record_type);
+             $this->_SaveRecord($site,$model_name);
              return; //================================>
         }
         
@@ -45,13 +45,13 @@ class EditModule extends Controller
    
     
     
-    private function _SaveRecord($site,$record_type)
+    private function _SaveRecord($site,$model_name)
     {
         //dump($_POST);
         $m = new Module($_POST);
         $id = $m->Save();
        
-        header("LOCATION: /cms/$site/$record_type");
+        header("LOCATION: /cms/$site/$model_name");
         die;             
     }
 
@@ -69,9 +69,9 @@ class EditModule extends Controller
         } 
         else 
         {  
-             $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
+             $rev = intval($_GET['rev']) > 0 ?  intval($_GET['rev']): LATEST_REV ;
              $this->mPageTitle = getSiteName($site) . " - Edit Module";
-             $m    = Module::GetDetails($id, $version);    
+             $m    = Module::GetDetails($id, $rev);    
         }
         
 
@@ -81,10 +81,10 @@ class EditModule extends Controller
         
         $this->mSmarty->assign('pageModuleLinks', $pagelinks);
         
-        // for versionHistoyModule
+        // for RevisionHistoyModule
         $this->mSmarty->assign('id', $id);
-        $this->mSmarty->assign('live_version',    $history->live_version);
-        $this->mSmarty->assign('preview_version', $history->preview_version);      
+        $this->mSmarty->assign('live_rev',    $history->live_rev);
+        $this->mSmarty->assign('preview_rev', $history->preview_rev);      
         $this->mSmarty->assign('history', $history);
         
         
@@ -94,7 +94,7 @@ class EditModule extends Controller
         
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'),                                      
-                                        CMS::CreateVersionHistoryModule($m,'modules'), 
+                                        CMS::CreateRevisionHistoryModule($m), 
                                         CMS::CreateModuleUsageModule($id), 
                                         CMS::CreateDummyModule('recentlyModifiedModule.tpl') );
         $this->mMainTpl = 'editModule.tpl';  
@@ -107,11 +107,11 @@ class EditModule extends Controller
         
         if($_POST['makelive'])
         {
-            Content::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
+            Content::setLiveRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         elseif($_POST['makepreview'])
         {
-             Content::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
+             Content::setPreviewRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         
         $modules = Module::GetModules($site, TRUE);

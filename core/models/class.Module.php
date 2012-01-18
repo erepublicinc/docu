@@ -1,7 +1,7 @@
 <?
 /*
- * Modules are a hybrid object. They are a content item, so that they can use the versioning of the content items
- * However it does not use targeting but has its own link table that links it to a specific version of a page
+ * Modules are a hybrid object. They are a content item, so that they can use the revisioning of the content items
+ * However it does not use targeting but has its own link table that links it to a specific revision of a page
  * 
  */
 class Module extends Content
@@ -37,30 +37,30 @@ class Module extends Content
         $ejson   = Query::Escape($this->mFields->modules_json_params);
         $ebody   = Query::Escape($this->mFields->modules_body); 
         $ecode   = Query::Escape($this->mFields->modules_site_code);
-        $ecomment= Query::Escape($this->mFields->contents_version_comment);
+        $ecomment= Query::Escape($this->mFields->contents_rev_comment);
         $uid     = $_SESSION['user_id'];    
         
         // make sure this field is set
         $this->mFields->contents_authors_id = $this->mFields->contents_authors_id >0 ? $this->mFields->contents_authors_id : 0;
         
-        $version = 1;
+        $rev = 1;
         
         if($id > 0)
-            $version = $this->mFields->contents_latest_version + 1;   
+            $rev = $this->mFields->contents_latest_rev + 1;   
         else     
             $id ='@id';          // the parent adds a sql query to set this sql variable
             
-         $this->mSqlStack[]  = "INSERT INTO modules(contents_fid, contents_version, contents_version_users_id, contents_version_date, contents_version_comment, 
+         $this->mSqlStack[]  = "INSERT INTO modules(contents_fid, contents_rev, contents_rev_users_id, contents_rev_date, contents_rev_comment, 
                                		modules_body, modules_php_class, modules_json_params, modules_site_code) 
-                 				VALUES($id, $version, $uid, NOW(), '$ecomment','$ebody','$eclass','$ejson','$ecode')";
+                 				VALUES($id, $rev, $uid, NOW(), '$ecomment','$ebody','$eclass','$ejson','$ecode')";
         if($id > 0)    
             $result = parent::SaveExisting();  
         else
             $result = parent::SaveNew();
         return $result;    
      */
-        $newVersion = true;  // always create a new version
-        return parent::Save($newVersion);
+        $newrev = true;  // always create a new rev
+        return parent::Save($newrev);
     }    
 
     public function Delete()
@@ -78,18 +78,19 @@ class Module extends Content
         global $CONFIG;
         $pages_rev = $pages_rev > 0 ? $pages_rev : $CONFIG->current_pages_rev;
         
-        $liveVersion = $CONFIG->mode == 'PREVIEW'? 'contents_preview_version' : 'contents_live_version';  
+        $liveRev = $CONFIG->mode == 'PREVIEW'? 'contents_preview_rev' : 'contents_live_rev';  
         if($includeDetails)
-          $sql="SELECT * FROM (contents  JOIN modules  ON contents_fid = contents_id AND contents_version = $liveVersion )              
+          $sql="SELECT * FROM (contents  JOIN modules  ON contents_fid = contents_id AND contents_rev = $liveRev )              
                 JOIN modules__pages ON mp_contents_id = contents_id 
                 WHERE mp_pages_rev = $pages_rev ORDER BY mp_placement, mp_link_order";
         
         else
-          $sql="SELECT contents_id, contents_title, mp_placement, mp_link_order FROM (contents JOIN modules  ON contents_fid = contents_id AND contents_version = $liveVersion )              
+          $sql="SELECT contents_id, contents_title, mp_placement, mp_link_order FROM (contents JOIN modules  ON contents_fid = contents_id AND contents_rev = $liveRev )              
                 JOIN modules__pages ON mp_contents_id = contents_id 
                 WHERE mp_pages_rev = $pages_rev ORDER BY mp_placement, mp_link_order";
-                 
+//dump($sql);                 
         $r = new Query($sql);
+      
         return $r;          
     }
     
@@ -109,7 +110,7 @@ class Module extends Content
     
     /**
      * for CMS use
-     * returns the latest version of the modules
+     * returns the latest rev of the modules
      */
     public static function GetModules($site_code, $includeCommon = false)
     {
@@ -117,23 +118,23 @@ class Module extends Content
         if($includeCommon)
            $sql = "SELECT * FROM contents JOIN modules ON contents_id = contents_fid
 					WHERE modules_site_code in ('$site_code', 'COMMON')
-					AND contents_version = contents_latest_version "; 
+					AND contents_rev = contents_latest_rev "; 
         else 
              $sql = "SELECT * FROM contents JOIN modules ON contents_id = contents_fid
 					WHERE   modules_site_code = '$site_code' 
-					AND contents_version = contents_latest_version ";
+					AND contents_rev = contents_latest_rev ";
         return new Query($sql);    
     }
 
     /**
      * returns the module details
      * @param int $id module id (id of the contents object)
-     * @param int $version [default = 0 gets the live version]
+     * @param int $rev [default = 0 gets the live rev]
      * @param bool $includeAuthor [default false]
      */
-    public static function GetDetails($id, $version = LIVE_VERSION, $includeAuthor = false)  
+    public static function GetDetails($id, $rev = LIVE_rev, $includeAuthor = false)  
     {
-        return Content::getAllData($id, "modules", $version, $includeAuthor);
+        return Content::getAllData($id, "modules", $rev, $includeAuthor);
     }
    
     

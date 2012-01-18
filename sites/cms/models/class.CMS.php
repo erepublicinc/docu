@@ -17,31 +17,29 @@ class CMS
     
     /**
      * returns a module object
-     * @param int id 
-     * @param int liveVersion
-     * @param int previewVersion
-     * @param String $extra_table for the content object
+     * @param object  the content object
      * @return object  module object
      */
-    static function CreateVersionHistoryModule($id, $liveVersion, $previewVersion , $extra_table)
+    static function CreateRevisionHistoryModule($c)
     {
        
         $m = new stdClass();
         
-        $m->template        = 'versionHistoryModule.tpl';
+        $m->template        = 'revisionHistoryModule.tpl';
         
-        if($c['contents_fid']['value'] >0)    
+        if($c->contents_fid > 0)    
         {
-            $m->history         = Content::GetVersionHistory($id, $extra_table);
+            $m->history         = Content::GetRevisionHistory($c->contents_fid, $c->contents_extra_table);
             $m->id              = $id;  
-            $m->live_version    = $liveVersion;
-            $m->preview_version = $previewVersion;      
+            $m->live_rev    = $c->contents_live_rev;
+            $m->preview_rev = $c->contents_preview_rev;     
+            
         }
         return $m;
     }
     
    /**
-     * returns a module object for version history of this page
+     * returns a module object for rev history of this page
      * @param object $p  page object
      * @return object  module object
      */
@@ -49,14 +47,14 @@ class CMS
     { 
         $m = new stdClass();
         
-        $m->template        = 'versionHistoryModule.tpl';
+        $m->template        = 'revisionHistoryModule.tpl';
         
         if($pages_id)    
         {
-            $m->history         = Page::GetVersionHistory($pages_id);
+            $m->history         = Page::GetRevisionHistory($pages_id);
           //  $m->id              = $id;  
-            $m->live_version    = $m->history->live_version;
-            $m->preview_version = $m->history->preview_version;      
+            $m->live_rev    = $m->history->live_rev;
+            $m->preview_rev = $m->history->preview_rev;      
         }
         return $m;
     }
@@ -97,7 +95,7 @@ class CMS
 
         // list of all modules for this site plus common modules
         $m->modules  = Module::GetModules($CONFIG->cms_site_code, true);        
-        
+      
         if($pages_rev)    
         {        
             $m->page_modules = Module::GetPageModules($pages_rev,false); 

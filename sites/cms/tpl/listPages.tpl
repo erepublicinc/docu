@@ -32,7 +32,7 @@
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
                 <td><a href="/cms/{$site_code}/{$record_type}/{$p->pages_id}">{$p->pages_title}</a></td>
-                <td>{$p->pages_version_date|date_format:$DATETIME_FORMAT}</td>
+                <td>{$p->pages_rev_date|date_format:$DATETIME_FORMAT}</td>
                 <td><span {if $p->pages_status == 'READY'}  
                                 class="ui-icon ui-icon-circle-check float-l mr-5" >
                           {elseif $p->pages_status == 'REVIEW'}  

@@ -51,17 +51,17 @@ class EditContent extends Controller
     {
         if($_POST['makelive'])
         {
-            Content::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
+            Content::setLiveRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         elseif($_POST['makepreview'])
         {
-             Content::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
+             Content::setPreviewRevision(intval($_POST['id']), intval($_POST['rev']));
         }
 
-        if($model_name == 'Module')
-            $items = Module::GetModules($site, TRUE);
-        else
-            $items = Content::GetContentByType($model_name, $site, null,50,0,'ALL');
+        $limit  = 50;
+        $paging = intval($_GET[pg]);
+        $skip   = $paging * $limit;  
+        $items = Content::GetContentByType($model_name, $site, null, $limit, $skip, 'ALL');
               
         //  foreach($items as $a) echo $a->contents_id;     die;   
         $this->mSmarty->assign('contents', $items );
@@ -102,13 +102,14 @@ class EditContent extends Controller
         } 
         else // edit existing article
         {
-            $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
+            $rev = intval($_GET['rev']) > 0 ?  intval($_GET['rev']): LATEST_REV ;
             $this->mPageTitle = getSiteName($site) . " - Edit Article";            
         }
         
-        $model = new $model_name();
-        
-        $formData = Content::GetFormData($id, $model_name, $version);     
+        $model    = new $model_name();
+        $formData = $model->GetFieldDescriptions(true);  // include authors
+        $content  = $model->GetData($id, $rev);  
+           
        
         // create the center module
         $this->mModules['center'] = array(CMS::CreateTargetsModule($id));
@@ -117,11 +118,13 @@ class EditContent extends Controller
         $this->mModules['left'] = array(CMS::CreateDummyModule('contentStatusModule.tpl'), 
                                         CMS::CreateDummyModule('contentMediaModule.tpl'), 
                                         CMS::CreateDummyModule('relatedItemsModule.tpl'), 
-                                        CMS::CreateVersionHistoryModule($formData['contents_id'][value], $formData['contents_live_version'][value], $formData['contents_preview_version'][value], $model->GetExtraTableName()) 
+                                        CMS::CreateRevisionHistoryModule($content) 
                                         );
         $this->mMainTpl = 'editContent.tpl'; 
                                                                  
         $this->mSmarty->assign('form_data',$formData);
+        $this->mSmarty->assign('content', $content);
+        $this->mSmarty->assign('value', $content->ToArray());
     }
     
     

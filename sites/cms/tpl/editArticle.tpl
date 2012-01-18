@@ -58,9 +58,9 @@ var ckConfig = {toolbar :
         <div class="m-5 ml-20 float-r">
             Save to: 
             <select  id="id_status_dropdown" class="select-list-medium" style="width:170px">
-                <option {if $content->contents_version_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
-                <option {if $content->contents_version_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
-                <option {if $content->contents_version_status == 'READY'} selected='selected'{/if}> READY </option>
+                <option {if $content->contents_rev_status == 'DRAFT'} selected='selected'{/if}> DRAFT </option>
+                <option {if $content->contents_rev_status == 'REVIEW'} selected='selected'{/if}> REVIEW  </option>
+                <option {if $content->contents_rev_status == 'READY'} selected='selected'{/if}> READY </option>
             </select> 
         </div>
  --> *}
@@ -83,9 +83,9 @@ var ckConfig = {toolbar :
             -->      
             <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />                                              
             <input type="hidden" name='contents_id' value="{$content->contents_id}" />
-            <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
-            <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
-            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />     
+            <input type="hidden" name='contents_latest_rev' value="{$content->contents_latest_rev}" />
+            <input type="hidden" id="id_comment" name='contents_rev_comment' value="{$content->contents_rev_comment}" />
+            <input type="hidden" id="id_status" name='contents_rev_status' value="{$content->contents_rev_status}" />     
             <input type="hidden" id="id_make_preview" name='make_preview'  />  
             <input type="hidden" id="id_make_live" name='make_live'  />   
                

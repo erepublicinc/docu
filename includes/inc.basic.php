@@ -12,6 +12,8 @@ $CONFIG;
 
 define('LATEST_VERSION', -1);
 define('LIVE_VERSION', 0);
+define('LATEST_REV', -1);
+define('LIVE_REV', 0);
 
 // used by Model
 define('SQL_INSERT', 1);

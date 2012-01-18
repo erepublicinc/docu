@@ -144,7 +144,7 @@ $(function() {
         	<div class="ui-widget-content">
         		<ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "LISTING_LEFT_COLUMN" }
+                        {if $m->mp_placement == "LISTING_LEFT_COLUMN" }
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
@@ -158,7 +158,7 @@ $(function() {
             <div class="ui-widget-content">
                 <ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "LISTING_CENTER_COLUMN" }
+                        {if $m->mp_placement == "LISTING_CENTER_COLUMN" }
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
@@ -171,7 +171,7 @@ $(function() {
             <div class="ui-widget-content">
                 <ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "LISTING_RIGHT_COLUMN" }
+                        {if $m->mp_placement == "LISTING_RIGHT_COLUMN" }
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
@@ -187,7 +187,7 @@ $(function() {
             <div class="ui-widget-content">
                 <ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "DETAIL_LEFT_COLUMN" }
+                        {if $m->mp_placement == "DETAIL_LEFT_COLUMN" }
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
@@ -200,7 +200,7 @@ $(function() {
             <div class="ui-widget-content">
                 <ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "DETAIL_CENTER_COLUMN" }
+                        {if $m->mp_placement == "DETAIL_CENTER_COLUMN" }
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}
@@ -213,7 +213,7 @@ $(function() {
             <div class="ui-widget-content">
                 <ol>
                     {foreach $params->page_modules as $m}
-                        {if $m->placement == "DETAIL_RIGHT_COLUMN" } 
+                        {if $m->mp_placement == "DETAIL_RIGHT_COLUMN" } 
                             <li>{$m->contents_title} #{$m->contents_id}</li>
                         {/if}
                     {/foreach}

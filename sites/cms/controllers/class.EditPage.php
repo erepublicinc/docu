@@ -46,8 +46,8 @@ class EditPage extends Controller
     private function _SavePage($site,$record_type)
     {
         $p = new Page($_POST);
-        $id = $p->Save();
-        Module::LinkModules($id, json_decode($_POST['json_module_data']));
+        $rev = $p->Save();
+        Module::LinkModules($rev, json_decode($_POST['json_module_data']));
        
         header("LOCATION: /cms/$site/$record_type");
         die;             
@@ -70,15 +70,15 @@ class EditPage extends Controller
         } 
         else 
         {  
-             $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
+             $rev = intval($_GET['rev']) > 0 ?  intval($_GET['rev']): LATEST_REV ;
              $this->mPageTitle = getSiteName($site) . " - Edit Page";
-             $page    = Page::GetDetails($id, $version);       
+             $page    = Page::GetDetails($id, $rev);       
         }
         
         $this->mSmarty->assign('p',$page);     //NOTE: the Smarty var "page"  is already set as the current page
 
        // create the center module
-        $this->mModules['center'] = array(CMS::CreateModule2PageModule($id));
+        $this->mModules['center'] = array(CMS::CreateModule2PageModule($page->pages_rev));
         
         // create the left side modules
         $this->mModules['left'] = array(CMS::CreateDummyModule('searchModule.tpl'), 
@@ -97,11 +97,11 @@ class EditPage extends Controller
         $this->mPageTitle = getSiteName($site) . " - List Pages";
         if($_POST['makelive'])
         {
-            Page::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
+            Page::setLiveRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         elseif($_POST['makepreview'])
         {
-             Page::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
+             Page::setPreviewRevision(intval($_POST['id']), intval($_POST['rev']));
         }
           $pages = Page::GetPages($site, TRUE);
           //dump($pages);   

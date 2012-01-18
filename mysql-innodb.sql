@@ -85,22 +85,24 @@ CREATE TABLE roles
         
     
     
+  
+    
 -- drop table contents;   
 CREATE TABLE
     contents
     (
         contents_id INT NOT NULL AUTO_INCREMENT, 
-        contents_live_version INT NOT NULL,
-        contents_preview_version INT ,    
-        contents_latest_version INT NOT NULL,    
+        contents_live_rev INT NOT NULL,
+        contents_preview_rev INT ,    
+        contents_latest_rev INT NOT NULL,    
         contents_url_name VARCHAR(500),
         contents_title VARCHAR(150) NOT NULL,
         contents_display_title VARCHAR(150),
         contents_summary VARCHAR(500),
         contents_pub_date DATETIME ,             --  can be changed by editorial staff
-        contents_create_date DATETIME NOT NULL,  -- system field cannot be updated
-        contents_change_date DATETIME NOT NULL,
-        contents_change_users_id INT NOT NULL,
+        contents_create_date DATETIME  NOT NULL,
+        contents_mod_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        contents_mod_users_id INT NOT NULL,
         contents_type VARCHAR(20) NOT NULL,
         contents_extra_table VARCHAR(30) NOT NULL,
         contents_status VARCHAR(20) NOT NULL,
@@ -108,28 +110,29 @@ CREATE TABLE
          
         PRIMARY KEY (contents_id),
         FOREIGN KEY (contents_authors_id) REFERENCES authors(authors_id),      
-        FOREIGN KEY (contents_update_users_id) REFERENCES users(users_id)      
+        FOREIGN KEY (contents_mod_users_id) REFERENCES users(users_id)      
     )engine InnoDB;
 
     
+   
 -- drop table articles;
 CREATE TABLE articles   
     (
         --  make sure that these field names are differnt form the fields in the table: contents
         -- first 2 field are required for all content extension tables  
         contents_fid INT NOT NULL ,
-        contents_version INT  NOT NULL,       
-        contents_version_users_id INT,                -- author of latest change
-        contents_version_date DATETIME NOT NULL,
-        contents_version_comment   VARCHAR(255) ,   --  commit comment
-        contents_version_status   VARCHAR(20) ,   
+        contents_rev INT  NOT NULL,       
+        contents_rev_users_id INT,                -- author of latest change
+        contents_rev_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        contents_rev_comment   VARCHAR(255) ,   --  commit comment
+        contents_rev_status   VARCHAR(20) ,   
                   
         contents_article_type  VARCHAR(20),
         contents_article_body   TEXT , 
        
-        PRIMARY KEY (contents_fid, contents_version),
+        PRIMARY KEY (contents_fid, contents_rev),
         FOREIGN KEY (contents_fid) REFERENCES contents(contents_id) ON DELETE CASCADE,  
-        FOREIGN KEY (contents_version_users_id) REFERENCES users(users_id)
+        FOREIGN KEY (contents_rev_users_id) REFERENCES users(users_id)
     )engine InnoDB;
 
 CREATE TABLE modules   
@@ -137,22 +140,24 @@ CREATE TABLE modules
         --  make sure that these field names are differnt form the fields in the table: contents
         -- first 2 field are required for all content extension tables  
         contents_fid INT NOT NULL ,
-        contents_version INT  NOT NULL,       
-        contents_version_users_id INT,                -- author of latest change
-        contents_version_date DATETIME NOT NULL,
-        contents_version_comment   VARCHAR(255) ,   --  commit comment
-        contents_version_status   VARCHAR(20) ,   
+        contents_rev INT  NOT NULL,       
+        contents_rev_users_id INT,                -- author of latest change
+        contents_rev_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        contents_rev_comment   VARCHAR(255) ,   --  commit comment
+        contents_rev_status   VARCHAR(20) ,   
                                     
         modules_php_class VARCHAR(40),
         modules_json_params  VARCHAR(255),
         modules_body TEXT,
         modules_site_code VARCHAR(20),                    -- COMMON, GT GOV etc
         
-        PRIMARY KEY (contents_fid, contents_version),
+        PRIMARY KEY (contents_fid, contents_rev),
         FOREIGN KEY (contents_fid) REFERENCES contents(contents_id) ON DELETE CASCADE,  
-        FOREIGN KEY (contents_version_users_id) REFERENCES users(users_id)
+        FOREIGN KEY (contents_rev_users_id) REFERENCES users(users_id)
     )engine InnoDB;
 
+    
+ 
     
    
     
@@ -162,16 +167,16 @@ CREATE TABLE specs
     (
         -- first 3 field are required for all content extension tables  
         contents_fid INT NOT NULL ,
-        contents_version INT  NOT NULL,
+        contents_rev INT  NOT NULL,
         contents_users_id INT,                -- author of latest change
-        contents_version_status   VARCHAR(20) ,   
+        contents_rev_status   VARCHAR(20) ,   
         
         contents_indexing VARCHAR(30),
         contents_specs_type  VARCHAR(20),
         contents_specs_user_docu   TEXT , 
         contents_specs_design_docu TEXT ,
         
-        PRIMARY KEY (contents_id, contents_version),
+        PRIMARY KEY (contents_id, contents_rev),
         FOREIGN KEY (contents_id) REFERENCES contents(contents_id) ON DELETE CASCADE,  
         FOREIGN KEY (contents_users_id) REFERENCES users(users_id)
     )engine InnoDB;
@@ -233,30 +238,28 @@ CREATE TABLE textfields
         textfields_table VARCHAR(30) NOT NULL, --  tablename
         textfields_table_id INT NOT NULL,      --  the pk in that table
         textfields_field VARCHAR(30) NOT NULL, --  fieldname
-        textfields_version INT NOT NULL,       --  the version 
+        textfields_rev INT NOT NULL,       --  the rev 
         
         textfields_body TEXT NOT NULL,         --  the actual text
         textfields_author_id INT,             --  the author of the text
         textfields_date DATETIME,
-        PRIMARY KEY (textfields_table, textfields_table_id, textfields_field, textfields_version), 
+        PRIMARY KEY (textfields_table, textfields_table_id, textfields_field, textfields_rev), 
         FOREIGN KEY (textfields_author_id) REFERENCES users(users_id)
     )engine InnoDB;
        
        
       
 
--- to see a version that's not the live version add ?version=23&pw=govtech123 ( to see a version that's not live you need to be logged in or have the pw param 
+-- to see a rev that's not the live rev add ?rev=23&pw=govtech123 ( to see a rev that's not live you need to be logged in or have the pw param 
 -- drop table pages;
 CREATE TABLE pages   
     (
         pages_rev INT NOT NULL AUTO_INCREMENT,
-        pages_id INT NOT NULL,               --  this id does not change with a new version,  
-        
-        pages_version INT NOT NULL ,    
-        pages_version_users_id INT NOT NULL,   --  the last person to edit this page 
-        pages_version_date DATETIME,
-        pages_version_status VARCHAR(20),       -- like 'DRAFT', 'READY','REVIEW' 
-        pages_version_comment VARCHAR(255),
+        pages_id INT NOT NULL,               --  this id does not change with a new rev,  
+               
+        pages_rev_users_id INT NOT NULL,   --  the last person to edit this page 
+        pages_rev_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        pages_rev_comment VARCHAR(255),
 
         pages_is_preview BIT,
         pages_is_live BIT,     
@@ -271,11 +274,11 @@ CREATE TABLE pages
         pages_body TEXT, 
         
         PRIMARY KEY (pages_rev),
-        FOREIGN KEY (pages_version_users_id) REFERENCES users(users_id)
+        FOREIGN KEY (pages_rev_users_id) REFERENCES users(users_id)
     )  engine InnoDB ;
 
     
-create index  pages_id on pages(pages_id);            
+create index  pages_id on pages(pages_id);      
 
 
 
@@ -348,15 +351,16 @@ CREATE TABLE modules__pages
         FOREIGN KEY (mp_contents_id) REFERENCES contents (contents_id)   ON DELETE CASCADE ,
         FOREIGN KEY (mp_pages_rev) REFERENCES pages (pages_rev)   ON DELETE CASCADE 
     )  engine InnoDB ; 
-    
-CREATE VIEW max_page_version as
+
+        
+CREATE VIEW max_page_revisions as
 (
-SELECT pages_id AS mpv_pages_id, MAX(pages_version) AS mpv_pages_version FROM pages GROUP BY pages_id
+SELECT pages_id AS mpr_pages_id, MAX(pages_rev) AS mpr_pages_rev FROM pages GROUP BY pages_id
 );
 create view current_pages as
 (
- SELECT * FROM pages JOIN max_page_version ON mpv_pages_id = pages_id  AND  pages_version = mpv_pages_version 
-);    
+ SELECT * FROM pages JOIN max_page_revisions ON mpr_pages_id = pages_id  AND  pages_rev = mpr_pages_rev 
+);     
 
     
 
@@ -372,20 +376,20 @@ insert into users (users_last_name, users_first_name, users_password, users_emai
 insert into roles(roles_users_id,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 
 -- creating a few pages
-insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
-                   pages_body,pages_status,pages_php_class,pages_version_users_id,pages_version_comment,pages_version_date) 
-    values(1,1,1,1,'GT','homepage','Government Technology','/','HOMEPAGE',' homepage ' ,'LIVE','HomePage',1, 'this is the first version', NOW());
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_rev,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
+                   pages_body,pages_php_class,pages_rev_users_id,pages_rev_comment) 
+    values(1,1,1,1,'GT','homepage','Government Technology','/','HOMEPAGE',' homepage ' ,'HomePage',1, 'this is the first rev');
     
-insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
-                   pages_body,pages_status,pages_php_class,pages_version_users_id,pages_version_comment,pages_version_date) 
-    values(2,1,1,1,'GT','about','About Government Technology','/about','STATIC',' this is the about page ' ,'LIVE','StaticPage',1, 'this is the first version', NOW());
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_rev,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
+                   pages_body,pages_php_class,pages_rev_users_id,pages_rev_comment) 
+    values(2,1,1,2,'GT','about','About Government Technology','/about','STATIC',' this is the about page ' ,'StaticPage',1, 'this is the first rev');
     
-insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
-                   pages_body,pages_status,pages_php_class,pages_version_users_id,pages_version_comment,pages_version_date) 
-    values(3,1,1,1,'GT','e-government','E-Government','/e-government','CHANNEL','  ' ,'LIVE','ChannelPage',1, 'this is the first version',now());
-insert into pages (pages_id,pages_is_live,pages_is_preview,pages_version,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
-                   pages_body,pages_status,pages_php_class,pages_version_users_id,pages_version_comment,pages_version_date)  
-    values(4,1,1,1,'GT','technology','Emerging and Sustainable Technology','/technology','CHANNEL','  ' ,'LIVE','ChannelPage',1, 'this is the first version',now());
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_rev,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
+                   pages_body,pages_php_class,pages_rev_users_id,pages_rev_comment) 
+    values(3,1,1,3,'GT','e-government','E-Government','/e-government','CHANNEL','  ' ,'ChannelPage',1, 'this is the first rev');
+insert into pages (pages_id,pages_is_live,pages_is_preview,pages_rev,pages_site_code,pages_title,pages_display_title,pages_url,pages_type,
+                   pages_body,pages_php_class,pages_rev_users_id,pages_rev_comment)  
+    values(4,1,1,4,'GT','technology','Emerging and Sustainable Technology','/technology','CHANNEL','  ' ,'ChannelPage',1, 'this is the first rev');
 -- ----------------------------------------------------------------------------------------
 
 

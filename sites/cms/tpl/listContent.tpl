@@ -11,7 +11,7 @@
 
   <div class="ui-widget-content ui-corner-all bk_color2 p-10">          
             <h6>
-          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="{$record_type}/new">New</a>
+          <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="/cms/{$site_code}/{$model_name}/new">New</a>
           <a class="ui-state-red ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Filter</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Copy</a>
           <a class="ui-state-inactive ui-corner-all mt-10 p-5 pr-10 pl-10" href="#">Quick Edit</a>
@@ -40,9 +40,9 @@
             {foreach $contents as $c}
             <tr>
                 <td><input name="" type="checkbox" value=""></td>
-                <td><a href="/cms/gt/{$model_name}/{$c->contents_id}">{$c->contents_title}</a></td>
+                <td><a href="/cms/{$site_code}/{$model_name}/{$c->contents_id}">{$c->contents_title}</a></td>
                 <td>{$c->contents_updated_date|date_format:$DATETIME_FORMAT}</td>
-                <td><span {if $c->contents_live_version > 0}  class="ui-icon ui-icon-circle-check " 
+                <td><span {if $c->contents_live_rev > 0}  class="ui-icon ui-icon-circle-check " 
                           {else} class="ui-icon-tan ui-icon-alert "
                           {/if}
                    </span></td>

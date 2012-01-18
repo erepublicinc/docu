@@ -62,9 +62,9 @@ var ckConfig = {toolbar :
     
             <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />                                              
             <input type="hidden" name='contents_id' value="{$content->contents_id}" />
-            <input type="hidden" name='contents_latest_version' value="{$content->contents_latest_version}" />
-            <input type="hidden" id="id_comment" name='contents_version_comment' value="{$content->contents_version_comment}" />
-            <input type="hidden" id="id_status" name='contents_version_status' value="{$content->contents_version_status}" />     
+            <input type="hidden" name='contents_latest_rev' value="{$content->contents_latest_rev}" />
+            <input type="hidden" id="id_comment" name='contents_rev_comment' value="{$content->contents_rev_comment}" />
+            <input type="hidden" id="id_status" name='contents_rev_status' value="{$content->contents_rev_status}" />     
             <input type="hidden" id="id_make_preview" name='make_preview'  />  
             <input type="hidden" id="id_make_live" name='make_live'  />   
                
@@ -80,24 +80,22 @@ var ckConfig = {toolbar :
                             <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>                               
                             <span href="#"class="ui-icon ui-icon-stop float-r"></span>
                         </div>     
-                        <br clear="all">
-                        
-                       
+                        <br clear="all">                                              
                          
                         {if $field.type == 'text'}                         
-                            <textarea id="id_body" type="text" name="{$field_name}" rows="25" class="required">{$field.value}</textarea>
+                            <textarea id="id_body" type="text" name="{$field_name}" rows="25" class="required">{$value.$field_name}</textarea>
                         {elseif $field.type == 'bit'}
-                            <input name="{$field_name}" type="checkbox" {if $field.value == 1} selected="selected"{/if} />
+                            <input name="{$field_name}" type="checkbox" {if $value.field_name == 1} selected="selected"{/if} />
                         {elseif $field.form_element == 'select'}                        
                             <select  name="{$field_name}" class="required">
                                {foreach $field.options as $option}
-                                     <option value="{$option->id}" {if {$option->id} == $field.value} selected="selected"{/if} >{$option->title}</option>                            
+                                     <option value="{$option->id}" {if $option->id == $value.$field_name} selected="selected"{/if} >{$option->title}</option>                            
                                {/foreach}
                             </select>                            
                         {elseif $field.type == 'varchar'}
-                            <input type="text" name="{$field_name}" class="required" value="{$field.value}">    
+                            <input type="text" name="{$field_name}" class="required" value="{$value.$field_name}">    
                         {elseif $field.type == 'datetime'}
-                            <input type="text" name="{$field_name}" class="required" value="{$field.value|date_format:$DATETIME_FORMAT}">                                                             
+                            <input type="text" name="{$field_name}" class="required" value="{$value.$field_name|date_format:$DATETIME_FORMAT}">                                                             
                         {/if}
                             
                     </div>    

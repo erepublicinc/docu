@@ -20,7 +20,7 @@ class Article extends Content
         );        
     }
 
-    
+  
     /**
      * returns an array of articles
      * @param string site [default = all sites]
@@ -37,12 +37,12 @@ class Article extends Content
      /**
      * returns the article details
      * @param int $id module id (id of the contents object)
-     * @param int $version [default = 0 gets the live version]
+     * @param int $rev [default = 0 gets the live rev]
      * @param bool $includeAuthor [default false]
      */
-    public static function GetDetails($id, $version = LIVE_VERSION, $includeAuthor = false)   
+    public static function GetDetails($id, $rev = LIVE_REV, $includeAuthor = false)   
     {
-        return Content::getAllData($id, "articles", $version, $includeAuthor);
+        return Content::getAllData($id, "articles", $rev, $includeAuthor);
     }
     
     
@@ -52,7 +52,7 @@ class Article extends Content
      */
     public static function sYaasGetDetails($params)
     {
-        return Content::getAllData($params->id, "articles", intval($params->version))->ToArray();
+        return Content::getAllData($params->id, "articles", intval($params->rev))->ToArray();
     }
     
     public static function sYaasSave($params)

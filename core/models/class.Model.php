@@ -8,20 +8,20 @@ class Model
     
        
     /**
-     * creates a string used for updating a record like:  "body='hello', version=12"
-     * creates a string used for inserting a record like: "(body,version) VALUES('hello', 12) "
+     * creates a string used for updating a record like:  "body='hello', rev=12"
+     * creates a string used for inserting a record like: "(body,rev) VALUES('hello', 12) "
      * typical use:    
      * $str = FormatUpdateString(GetFieldTypes(false), $params);
      * $sql = "UPDATE events SET $str WHERE id = $id";
      * 
      * @param array of field types
      * @param bool  [default =  false] means that we request a string suitable for 
-     *                                 the UPDATE command like: "body='hello', version=12"
+     *                                 the UPDATE command like: "body='hello', rev=12"
      */
     protected  function FormatUpdateString($Fieldsarray, $mode = SQL_UPDATE)
     {
-        $insertStr = '(';         //  (body,version)
-        $newvalues = '';          //  VALUES('hello', 12)  or body='hello', version=12"
+        $insertStr = '(';         //  (body,rev)
+        $newvalues = '';          //  VALUES('hello', 12)  or body='hello', rev=12"
                     
         foreach($Fieldsarray as $field => $Description)
         {

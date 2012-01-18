@@ -51,11 +51,11 @@ class EditArticle extends Controller
     {
         if($_POST['makelive'])
         {
-            Content::setLiveVersion(intval($_POST['id']), intval($_POST['version']));
+            Content::setLiveRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         elseif($_POST['makepreview'])
         {
-             Content::setPreviewVersion(intval($_POST['id']), intval($_POST['version']));
+             Content::setPreviewRevision(intval($_POST['id']), intval($_POST['rev']));
         }
         
         $arts = Article::GetArticles($site,null,50,0,'ALL');
@@ -101,9 +101,9 @@ class EditArticle extends Controller
         } 
         else // edit existing article
         {
-            $version = intval($_GET['version']) > 0 ?  intval($_GET['version']): LATEST_VERSION ;
+            $rev = intval($_GET['rev']) > 0 ?  intval($_GET['rev']): LATEST_REV ;
             $this->mPageTitle = getSiteName($site) . " - Edit Article";
-            $article = Article::GetDetails($id, $version);                        
+            $article = Article::GetDetails($id, $rev);                        
         }
 
         // create the center module
@@ -113,7 +113,7 @@ class EditArticle extends Controller
         $this->mModules['left'] = array(CMS::CreateDummyModule('contentStatusModule.tpl'), 
                                         CMS::CreateDummyModule('contentMediaModule.tpl'), 
                                         CMS::CreateDummyModule('relatedItemsModule.tpl'), 
-                                        CMS::CreateVersionHistoryModule($article, "articles") 
+                                        CMS::CreateRevisionHistoryModule($article, "articles") 
                                         );
                                         
                                         
