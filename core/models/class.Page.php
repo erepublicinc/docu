@@ -40,9 +40,10 @@ class Page extends Model
     /**
      * setting live_rev or preview_rev to 0 , will cause these revisions to be set to the most recent revision
      * update_rev is the revision to update, if set to 0 we will create a new revision if -1 we will not update the text field
-     * @return rev of the page
+     * @param  bool $returnRev [default=false returns the Id] 
+     * @return rev or id of the page
      */
-    public function Save()
+    public function Save($returnRev = false)
     {   
         $this->mFields->pages_rev_users_id = $_SESSION['user_id'];         
         $this->mFields->pages_rev_date     = "NOW()";
@@ -52,7 +53,7 @@ class Page extends Model
         return $this->SaveNew();    
     }
 
-    protected function SaveNew()
+    protected function SaveNew($returnRev = false)
     {   
         $this->mFields->pages_id = '@page_id';       
         $values = $this->FormatUpdateString(self::$mFieldDescriptions, SQL_INSERT); 
@@ -69,11 +70,13 @@ class Page extends Model
         $sql[] = "SELECT LAST_INSERT_ID() as rev, @page_id as id"  ;
                    
         $ret = Query::sTransaction($sql);
-        return $ret->rev;
+        if($returnRev)
+            return $ret->rev;
+        return $ret->id;    
     }
     
     
-    protected function SaveExisting()
+    protected function SaveExisting($returnRev = false)
     {  
         $rev =  intval($this->mFields->pages_rev);
         $id  = intval($this->mFields->pages_id);
@@ -125,7 +128,10 @@ class Page extends Model
         
  // dump($sql);           
         $ret =  Query::sTransaction($sql);
-        return $ret->rev;  // $ret->rev;            
+      
+        if($returnRev)
+            return $ret->rev;
+        return $ret->id;           
     }
     
     
@@ -158,7 +164,7 @@ class Page extends Model
     
     /**
      * Gets all pages default: only live pages for current site
-     * @param char $sitecode  "ALL" for all 
+     * @param char $sitecode  "ALL" for all ,  null for current site
      * @param bool $allPages  // if false, you only get the live pages
      */
     static public function getPages($sitecode = null, $allPages = false)
@@ -215,7 +221,7 @@ class Page extends Model
         foreach($pages as $p)
         {
             $url = trim($p->pages_url, '/ '); // remove the slashes
-            $pageArray[$url] = array('class'=> $p->pages_php_class,'pages_id'=> $p->pages_id, 'pages_id'=> $p->pages_id );        
+            $pageArray[$url] = array('class'=> $p->pages_php_class,'pages_id'=> $p->pages_id, 'pages_rev'=> $p->pages_rev );        
         }
         return $pageArray;
     }

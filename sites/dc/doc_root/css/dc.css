@@ -1,0 +1,69 @@
+
+/* Layout Elements */
+
+
+
+	body {
+	  background: url(../img/dc_bk_gradient.png) repeat-x #e6e6e6;
+	  background-attachment:fixed;
+	  color: #666;
+	  height: auto;
+	  padding-bottom: 20px;} 	
+	
+	.module {
+		 padding: 10px;
+		 margin:0 4px 15px 4px;  }
+	.border {
+		border: 1px solid #dddddd;}
+		
+	.color1 {color: #dddddd;} 	/* Gray */
+	.color2 {color: #790101; } 	/* Dark Red */
+	.color3 {color: #ec8e0c; } 	/* Orange */
+	.color4 {}		
+		
+
+/* Main Layout */
+	#ContentArea {
+		background:#ffffff;
+		margin: 20px auto;
+		border: 1px solid #bababa;}		
+	
+/* Main Navigation */	
+	 #MainNav{	
+		background: url(../img/dc_nav_background.png);
+		height: 50px;
+		margin-left: -20px;
+		margin-right: -6px;}	
+	 #MainNav a{	
+		color: #ffffff;}
+	  ul#MainNav {
+		list-style: none;
+		font-size: 16px;
+		padding-left: 20px;
+		margin-bottom: 5px;}	
+	 ul#MainNav li {
+		margin: 5px 20px;
+		float:left;}	
+	
+/* Right Column */			
+	#RightColumn .module, #RightColumn .module_ad {
+		border: 1px solid #dddddd; 
+		margin:0 4px 15px 4px;}	
+	
+/* Article Lists */		
+
+	.thumbnail { 
+		margin-bottom: 15px;
+		-moz-box-shadow: 0px 3px 5px #bbb;
+		-webkit-box-shadow: 0px 3px 5px #bbb;
+		box-shadow: 0px 3px 5px #bbb;}	
+	ul.listing {
+		list-style:none; margin:0;}	
+	ul.listing li {
+		margin: 0 0 10px 0;}
+	.social {
+		float:right;
+		width: 100px;
+		border: 1px solid #ccc;}		
+	ul.listing .thumbnail {
+		display: none;}

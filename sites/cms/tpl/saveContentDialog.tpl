@@ -19,9 +19,12 @@ function saveContent()
 function saveContentPart2()
 {
     var comment = $('#id_enter_comment').attr('value') 
-	$('#id_comment').attr('value', comment );   //comment
-
-    $('#id_status').attr('value', $('#id_status_dropdown').attr('value') ); // status
+	//$('#id_comment').attr('value', comment );   //comment
+    $('input[name=contents_rev_comment]').attr('value', comment );   //comment
+    
+    //$('#id_status').attr('value', $('#id_status_dropdown').attr('value') ); // status
+    $('input[name=contents_rev_status]').attr('value', $('#id_status_dropdown').attr('value') ); // status
+    
     if($('#id_dlg_make_live').attr('checked')){    //makelive
     		 $('#id_make_live').attr('value',1);
     		 $('#id_status').attr('value','READY');

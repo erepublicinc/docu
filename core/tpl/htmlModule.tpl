@@ -1,6 +1,6 @@
 
 <!-- htmlModule.tpl {$params->title} -->
-<div class="{$params->css_class}" >
+<div {if $params->css_class != ''} class="{$params->css_class}" {/if}>
   {$params->html} 
 </div>
 

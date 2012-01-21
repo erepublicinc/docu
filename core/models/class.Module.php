@@ -123,6 +123,8 @@ class Module extends Content
              $sql = "SELECT * FROM contents JOIN modules ON contents_id = contents_fid
 					WHERE   modules_site_code = '$site_code' 
 					AND contents_rev = contents_latest_rev ";
+        //dump($sql);     
+             
         return new Query($sql);    
     }
 

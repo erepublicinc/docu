@@ -71,10 +71,10 @@ class CMS
         $m = new stdClass();
         
         $m->template = 'targetsModule.tpl';
-        $m->pages    = Page::getPages('ALL'); 
+        $m->pages    = Page::getPages('ALL', true); 
        
         if($id > 0) 
-            $m->targets  = Article::GetTargets($id);
+            $m->targets  = Content::GetTargets($id);
                          
         return $m;         
     }

@@ -76,8 +76,9 @@ class EditContent extends Controller
     
     private function _save($id, $site,$model_name)
     {
-//dump($_POST);        
-        $id = Article::sYaasSave($_POST);                   
+//dump($_POST);  
+        $model   = new $model_name($_POST);      
+        $id      = $model->Save();                   
         $targets = json_decode($_POST['changed_targets']);
    
         foreach($targets as $params)
@@ -124,7 +125,7 @@ class EditContent extends Controller
                                                                  
         $this->mSmarty->assign('form_data',$formData);
         $this->mSmarty->assign('content', $content);
-        $this->mSmarty->assign('value', $content->ToArray());
+        $this->mSmarty->assign('value', $content->ToArray()); // needed in this way for compatibility with formdata
     }
     
     

@@ -18,7 +18,8 @@ class Content extends Model
     // this describes the fields that can be set by the "user"
     // this gets passed into : FormatUpdateString()
     protected static $mContentFieldDescriptions = array(
-          //'contents_id'   we never need this, will be set by autoincrement and never updated
+            'contents_clk_id'          => array('type'=>'int', 'insert_only'=>true),
+            'contents_id'              => array('type'=>'int', 'insert_only'=>true),
             'contents_title'           => array('type'=>'varchar', 'label'=>'Title', 'required'=>true),
             'contents_display_title'   => array('type'=>'varchar', 'label'=>'Display title'),
             'contents_create_date'     => array('type'=>'datetime', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
@@ -27,22 +28,22 @@ class Content extends Model
             'contents_type'            => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
             'contents_summary'         => array('type'=>'varchar', 'label'=>'Summary'),
             'contents_url_name'        => array('type'=>'varchar', 'label'=>'URL Name'),
-            'contents_mod_users_id' => array('type'=>'int', 'required'=>true),   
+            'contents_mod_users_id'    => array('type'=>'int', 'required'=>true),   
             'contents_authors_id'      => array('type'=>'int', 'label'=>'Author', 'form_element' =>'select'),   
             'contents_extra_table'     => array('type'=>'varchar', 'insert_only'=>true, 'required'=>true),
-            'contents_live_rev'    => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newrev
-            'contents_preview_rev' => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newrev
-            'contents_latest_rev'  => array('type'=>'int', 'do_not_validate'=>true)    // could be  @newrev
+            'contents_live_rev'        => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newrev
+            'contents_preview_rev'     => array('type'=>'int', 'do_not_validate'=>true),   // could be  @newrev
+            'contents_latest_rev'      => array('type'=>'int', 'do_not_validate'=>true)    // could be  @newrev
             );
     
             
     // these are the fields that a derived class must have        
     protected static $mStandardFieldDescriptions = array(            
-            'contents_fid'              => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // rev is set with variable @id 
+            'contents_fid'          => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // rev is set with variable @id 
             'contents_rev'          => array('type'=>'int', 'do_not_validate'=>true, 'insert_only'=>true) , // rev is set with variable @newrev
-            'contents_rev_users_id' => array('type'=>'int') , 
-            'contents_rev_date'     => array('type'=>'datetime', 'do_not_validate'=>true) , // set with NOW()
-            'contents_rev_comment'  => array('type'=>'varchar') ,  
+            'contents_rev_users_id' => array('type'=>'int', 'insert_only'=>true) , 
+            'contents_rev_date'     => array('type'=>'datetime', 'do_not_validate'=>true, 'insert_only'=>true) , // set with NOW()
+            'contents_rev_comment'  => array('type'=>'varchar', 'insert_only'=>true) ,  
             'contents_rev_status'   => array('type'=>'varchar')  
     );        
 
@@ -309,7 +310,7 @@ class Content extends Model
         else 
         {
             // use the current page if the page_id is not specified
-            $pages_id = $pages_id > 0 ? $pages_id :  $CONFIG->current_page_id;
+            $pages_id = $pages_id > 0 ? $pages_id :  $CONFIG->current_pages_id;
             
             $sql="SELECT  * FROM contents 
                   JOIN targets  ON targets_contents_id = contents_id 
@@ -377,10 +378,10 @@ class Content extends Model
        global $CONFIG;  
                     
        $liveField = ($CONFIG->mode == 'PREVIEW') ? 'pages_is_preview' : 'pages_is_live';   
-       $sql = "SELECT targets_pages_id, targets_contents_id, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title, pages_site_code
+       $sql = "SELECT distinct targets_pages_id, targets_contents_id, targets_pin_position, targets_live_date, targets_archive_date, targets_dead_date, pages_title, pages_site_code
        			FROM targets  JOIN pages ON pages_id = targets_pages_id AND $liveField = 1	
 		        WHERE targets_contents_id = $contents_id  "; 
-  
+       //dump($sql);
        return new Query($sql); 
     }   
 

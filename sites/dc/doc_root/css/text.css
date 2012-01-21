@@ -1,0 +1,63 @@
+
+/* `Basic HTML  */
+	body {
+	  font: 12px/1.5 'Helvetica Neue', Arial, 'Liberation Sans', FreeSans, sans-serif;}
+	  
+	#RightColumn {}	  
+	
+	pre, code {
+	  font-family: 'DejaVu Sans Mono', Menlo, Consolas, monospace;}
+	
+	hr {
+	  border: 0 #ccc solid;
+	  border-top-width: 1px;
+	  clear: both;
+	  height: 0;}
+
+/* Link Styles  */
+	a {  	color: #790101;
+	  		text-decoration: none;}
+	
+	a:hover {  text-decoration: underline;}
+  
+
+/* `Headings  */
+	h1 {  font-size: 2.25em;  }	
+	h2 {  font-size: 1.35em; text-transform:uppercase; border-bottom:1px solid #dddddd; color: #000000;}	
+	h3 {  font-size: 1.8em;}	
+	h4 {  font-size: 1.5em;}	
+	h5 {  font-size: 1em;}	
+	h6 {  font-size: .9em;}
+
+/* `Spacing  */
+	ol {  list-style: decimal;}
+	ul {   list-style-image: url(../img/ico_smallarrow.png);}
+	li {  margin-left: 30px;}
+	  
+	p,dl,hr,h1,h2,h3,h4,h5,h6,ol,ul,pre,table,address,fieldset,figure { margin-bottom: 10px; }
+	
+	
+	
+/* Text Styles */
+
+
+		
+	.title { 
+		font-size:1.25em; font-weight:bold;}
+	#RightColumn .title { 
+		font-size:1em; font-weight:normal;}	
+	.font_bold {
+		font-weight: bold;}
+	.font_normal {
+		font-weight: normal;}		
+	.font_large {font-size: 15px;}
+	.font_medium {font-size: 12px;}			
+	.font_small {font-size: 11px;}
+	
+	.byline {font-size: 11px; text-transform:uppercase; color: #888888; padding-bottom:10px;}
+	
+	
+	
+	
+	
+	

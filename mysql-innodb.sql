@@ -51,14 +51,20 @@ CREATE TABLE users
     
 CREATE TABLE authors
     (
+        authors_clk_id NUMERIC,
         authors_id INT NOT NULL AUTO_INCREMENT,
         authors_users_id INT NOT NULL,            -- points to the user record
         authors_name VARCHAR(30)  NOT NULL,
         authors_display_name VARCHAR(30)  NOT NULL,
+        authors_role_title VARCHAR(60),
+        authors_summary VARCHAR(255),
         authors_bio TEXT,
         authors_public_email VARCHAR(60) ,
+        authors_twitter_url VARCHAR(100) ,
+        authors_googleplus_url VARCHAR(100) ,
         authors_active BIT DEFAULT 0 NOT NULL,
         CONSTRAINT  FOREIGN KEY (authors_users_id) REFERENCES users (users_id),
+        CONSTRAINT authors_clk_id_unique UNIQUE (authors_clk_id),
         PRIMARY KEY (authors_id)
     ) engine InnoDB ; 
     
@@ -91,6 +97,7 @@ CREATE TABLE roles
 CREATE TABLE
     contents
     (
+        contents_clk_id NUMERIC ,
         contents_id INT NOT NULL AUTO_INCREMENT, 
         contents_live_rev INT NOT NULL,
         contents_preview_rev INT ,    
@@ -109,6 +116,7 @@ CREATE TABLE
         contents_authors_id INT,
          
         PRIMARY KEY (contents_id),
+        CONSTRAINT  contents_clk_id_unique UNIQUE (contents_clk_id),
         FOREIGN KEY (contents_authors_id) REFERENCES authors(authors_id),      
         FOREIGN KEY (contents_mod_users_id) REFERENCES users(users_id)      
     )engine InnoDB;
@@ -201,6 +209,7 @@ CREATE TABLE specs
  -- drop table media;        
 CREATE TABLE  media
     (
+        media_clk_id NUMERIC,
         media_id INT NOT NULL AUTO_INCREMENT,
         media_url VARCHAR(500)   NOT NULL,
         media_title VARCHAR(150)  ,                  --  for internal use
@@ -208,10 +217,12 @@ CREATE TABLE  media
         media_summary VARCHAR(500)  ,
         media_create_date DATETIME,
         media_credit VARCHAR(255)  ,
+        media_size_kb INT,
         media_link VARCHAR(255)  ,                 -- in case this item has to be linked   
         media_new_window BIT DEFAULT 0 NOT NULL,
         media_type VARCHAR(20)   NOT NULL,      -- IMAGE, PDF, VIDEO
-        medi_alt_text VARCHAR(255)  ,                  --  alt text
+        media_alt_text VARCHAR(255)  ,                  --  alt text
+        CONSTRAINT  media_clk_id_unique UNIQUE (media_clk_id),
         PRIMARY KEY (media_id)
     )engine InnoDB;
 
@@ -352,14 +363,17 @@ CREATE TABLE modules__pages
         FOREIGN KEY (mp_pages_rev) REFERENCES pages (pages_rev)   ON DELETE CASCADE 
     )  engine InnoDB ; 
 
-        
+-- list of latest revisions per page        
 CREATE VIEW max_page_revisions as
 (
-SELECT pages_id AS mpr_pages_id, MAX(pages_rev) AS mpr_pages_rev FROM pages GROUP BY pages_id
+	SELECT pages_id AS mpr_pages_id, MAX(pages_rev) AS mpr_pages_rev 
+	FROM pages GROUP BY pages_id
 );
+
+--  a list of the latest pages
 create view current_pages as
 (
- SELECT * FROM pages JOIN max_page_revisions ON mpr_pages_id = pages_id  AND  pages_rev = mpr_pages_rev 
+ 	SELECT * FROM pages JOIN max_page_revisions ON mpr_pages_id = pages_id  AND  pages_rev = mpr_pages_rev 
 );     
 
     

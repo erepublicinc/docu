@@ -44,7 +44,7 @@ var ckConfig = {toolbar :
     <div class="ui-widget-content ui-corner-all bk_color3">
         <div class="grid_6 m-10"> <h3>Article Details</h3>  </div>
                       
-        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$record_type}">
+        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$model_name}">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
@@ -59,12 +59,15 @@ var ckConfig = {toolbar :
     <div class="ui-widget-content ui-corner-all bk_color2">
         <!-- MAIN FORM -->
          <form id="id_details_form"  method="post">
-    
-            <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />                                              
+{*    
+                                                     
             <input type="hidden" name='contents_id' value="{$content->contents_id}" />
             <input type="hidden" name='contents_latest_rev' value="{$content->contents_latest_rev}" />
             <input type="hidden" id="id_comment" name='contents_rev_comment' value="{$content->contents_rev_comment}" />
             <input type="hidden" id="id_status" name='contents_rev_status' value="{$content->contents_rev_status}" />     
+*}
+            {* these fields are not part of the content object , so they ar enot in formdata*}
+            <input type="hidden"id="id_changed_targets" name='changed_targets' value="" />   
             <input type="hidden" id="id_make_preview" name='make_preview'  />  
             <input type="hidden" id="id_make_live" name='make_live'  />   
                
@@ -99,7 +102,8 @@ var ckConfig = {toolbar :
                         {/if}
                             
                     </div>    
-                
+                {else} {*  no label means its a hidden field*}
+                     <input type="hidden" name="{$field_name}" value="{$value.$field_name}" />
                 {/if}
                 
                 {/foreach}

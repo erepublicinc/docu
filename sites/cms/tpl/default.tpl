@@ -18,8 +18,11 @@
  
  <script type="text/javascript" src="/public/ckeditor/ckeditor.js"></script>
  
-{literal} 
+
 <script type="text/javascript">
+    
+var modelName= "{$model_name}";
+{literal} 
 	$(function(){
 
 		// Accordion
@@ -72,7 +75,7 @@
 
 
         $("#id_chooseSite").change(function(){
-            document.location =  "/cms/"+$(this).val();
+            document.location =  "/cms/"+$(this).val() + "/"+modelName;
         });
 		
 	});

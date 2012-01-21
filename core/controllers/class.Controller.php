@@ -71,7 +71,7 @@ abstract class Controller
      * @param Website $website class instance
      * @param Array $args
      */
-    protected function __construct(&$website, &$args)
+    public function __construct(&$website, &$args)
     {
         $this->mWebsite    = $website;
         $this->mArguments  = $args;
@@ -103,7 +103,7 @@ abstract class Controller
         $ccode = 'DETAIL_CENTER_COLUMN';
         $rcode = 'DETAIL_RIGHT_COLUMN';
         
-        if($pageType == 'LISTING')
+        if($pageType == 'LISTING' )
         {
             $lcode = 'LISTING_LEFT_COLUMN';
             $ccode = 'LISTING_CENTER_COLUMN';
@@ -115,19 +115,24 @@ abstract class Controller
         $this->mModules['center'] = array(); 
         
         $modules = Module::GetPageModules();
-       
+//dump($modules);       
         foreach($modules as $m)
-        {              
-            switch($m->placement)
+        {    
+            $class = $m->modules_php_class;
+            if(empty($class))
+                $class = HtmlModule;
+            $module =new $class($m);
+           // dump($module);
+            switch($m->mp_placement)
             {
                 case $lcode:
-                    $this->mModules['left'][] =  new $m->modules_php_class($m);
+                    $this->mModules['left'][] =  $module;   
                     break;
                 case $ccode:
-                    $this->mModules['center'][] =  new $m->modules_php_class($m);
+                    $this->mModules['center'][] =   $module;   
                     break;
                 case $rcode:
-                    $this->mModules['right'][] =  new $m->modules_php_class($m);
+                    $this->mModules['right'][] =   $module;   
             }
         }   
        

@@ -46,7 +46,7 @@ class EditPage extends Controller
     private function _SavePage($site,$record_type)
     {
         $p = new Page($_POST);
-        $rev = $p->Save();
+        $rev = $p->Save(true);
         Module::LinkModules($rev, json_decode($_POST['json_module_data']));
        
         header("LOCATION: /cms/$site/$record_type");

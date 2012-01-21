@@ -17,7 +17,7 @@ var ckConfig = {toolbar :
          $('.show_hide').click(function(){
          $(".slidingDiv").slideToggle();
          });
-         CKEDITOR.replace( '.html_field',ckConfig);        
+         CKEDITOR.replace( 'id_body',ckConfig);        
          
     });
 
@@ -49,7 +49,7 @@ function saveContent()
     <div class="ui-widget-content ui-corner-all bk_color3">
         <div class="grid_6 m-10"> <h3>{$page_title}</h3>  </div>
                       
-        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$record_type}">
+        <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$model_name}">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
         CANCEL</a></h6>
 
@@ -118,8 +118,9 @@ function saveContent()
                     <div class="float-r" style="width: 100px;">                   
                         <a href="#" class="ui-icon-tan ui-icon-info float-r"></a>
                        
-                    </div>                            
-                    <textarea class=".html_field" type="text" name="authors_bio" >{$author->authors_bio}</textarea>
+                    </div>
+                    <br clear="all">                             
+                    <textarea id="id_body" class="" type="text" name="authors_bio" >{$author->authors_bio}</textarea>
                 </div> 
                 
                <div>
@@ -138,25 +139,7 @@ function saveContent()
                  
                                          
             </fieldset>              
-     
-     
-     
-     
-     
-     
- 
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
+        
            </form> 
         <!-- / Main Form -->   
     </div> 

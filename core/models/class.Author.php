@@ -11,13 +11,18 @@ class Author extends Model
     protected $mFields; // the object with all the fields
 
     protected static $mFieldDescriptions = array(
-            'authors_id'              => array('type'=>'pk'),
-            'authors_users_id'        => array('type'=>'int', 'required'=>true ),         
+            'authors_clk_id'          => array('type'=>'int', 'insert_only'=>true),
+            'authors_id'              => array('type'=>'int', 'insert_only'=>true), // autoincrement
+            'authors_users_id'        => array('type'=>'int', 'required'=>true, 'form_element' =>'select' ),         
             'authors_name'            => array('type'=>'varchar', 'required'=>true),
             'authors_display_name'    => array('type'=>'varchar', 'required'=>true), 
+            'authors_role_title'      => array('type'=>'varchar'),
+            'authors_summary'         => array('type'=>'varchar'),
             'authors_bio'             => array('type'=>'varchar'),  
             'authors_active'          => array('type'=>'bit'),  
-            'authors_public_email'    => array('type'=>'varchar','required'=>true ), 
+            'authors_public_email'    => array('type'=>'varchar'),
+            'authors_twitter_url'     => array('type'=>'varchar'),
+            'authors_googleplus_url'  => array('type'=>'varchar')
     );
      
     
@@ -28,6 +33,20 @@ class Author extends Model
             
     	$this->mFields = $params;
     }
+    
+    
+    public function GetFieldDescriptions($includeUsers = false)
+    {
+        $fields = self::$mFieldDescriptions; 
+        if($includeUsers)
+        {
+            $users = User::GetUsers();
+            $users->SetAlias(array('id' => 'users_id','title' => 'users_last_name' ));  // slect lists template uses id and title           
+            $fields['authors_users_id']['options'] = $users;   // set the options for the users select list         
+        }   
+        return $fields;     
+    }
+    
     
     public function Save()
     {   
@@ -87,7 +106,7 @@ class Author extends Model
      */
     public static function GetAuthors()
     {
-        return new Query("SELECT * FROM authors");
+        return new Query("SELECT * FROM authors ORDER BY authors_name");
     }
     
 }

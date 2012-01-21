@@ -154,6 +154,7 @@ var ckConfig = {toolbar :
                                  <option value="COMMON" >COMMON</option>
                                  <option value="GOV" >GOV</option>
                                  <option value="GT" >GT</option>
+                                 <option value="DC" >DC</option>
                                  <option value="EM" >EM</option>
                                  <option value="CV" >CV</option>
                                  <option value="CDG" >CDG/CDE</option>

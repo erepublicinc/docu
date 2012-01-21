@@ -44,8 +44,9 @@ class Model
                     continue;  // this field will never be inserted or updated
                     
                 elseif($Description['type'] == 'varchar' || $Description['type'] == 'text')
+                {   //if ($field == 'modules_body') dump($value);
                     $value = "'". Query::Escape($value) ."'";   
-                
+                }
                 elseif($Description['type'] == 'datetime')
                 {
                     if(strtoupper($value) != "NOW()" )    

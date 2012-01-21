@@ -17,7 +17,9 @@ class Query  implements Iterator
     private static $mConnection = null;
 
     private static $mAdminMode = false;
-       
+    private static $mIgnoreUniqueErrors = false;
+    
+    
     private $mRows = array();   // a copy of the data rows of the current query
     private $mRowIndex = -1;    // index into array above
     private $eof = false;       // all rows of the resutset have been read into  $mRows
@@ -64,14 +66,15 @@ class Query  implements Iterator
             
             // conactenate the queries separated by ;
             foreach ($sql as $q)               
-                $mq .= $q.';';           
-//print_r($mq)   ; die;  
+                $mq .= $q.';';       
+                    
+            //dump($mq)   
         
             $result = self::$mConnection->multi_query($mq);           
             if($result === false)
-                logerror('multi_query error : '. self::$mConnection->error);
-                
-            $this->mResultSet = self::$mConnection->store_result();    
+                $this->SqlError(self::$mConnection->errno, 'multi_query error : '. self::$mConnection->error);
+            else    
+                $this->mResultSet = self::$mConnection->store_result();    
                  
         }
         else
@@ -83,11 +86,12 @@ class Query  implements Iterator
         if($this->mResultSet === false)
         {   
             if( $this->mNumQueries == 1) echo "$sql <br>\n";   else echo "$mq <br>\n";      
-            logerror("Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error );
+            $this->SqlError(self::$mConnection->errno, "Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error );
         }
         elseif ($this->mResultSet !== TRUE)
             $this->next(); // to load the first row
     }
+
 
     
     /**
@@ -107,19 +111,22 @@ class Query  implements Iterator
              self::OpenDb(); 
                          
         self::$mConnection->autocommit(false);
- 
+
         foreach($sql as $query)
         {
             $result = self::$mConnection->query($query);
             if($result === false)
-            {
+            { 
                 $errorString = self::$mConnection->error;
+                $errorNumber = self::$mConnection->errno;
                 self::$mConnection->rollback();
                 self::$mConnection->autocommit(true);
-                logerror("statement: $query <br><br>  $errorString");
+                self::SqlError($errorNumber,"statement: $query <br><br>  $errorString");
+                
                 return false;
             }
         }
+        
         self::$mConnection->commit();
         self::$mConnection->autocommit(true);
 
@@ -129,6 +136,27 @@ class Query  implements Iterator
            return $r;
         }
         return true;
+    }
+
+
+    
+    private static function SqlError($errno, $str)
+    {  
+        if( self::$mIgnoreUniqueErrors && $errno == 1062)  // 1169 
+        {
+            // echo "************ unique error ***************";
+            return;
+        }      
+        logerror("sqlerror: $errno  $str");
+    }
+    
+    
+    /*
+     * call this when you want to ignore unique errors
+     */
+    public static function IgnoreUniqueErrors($ignore = true)
+    {
+        self::$mIgnoreUniqueErrors = $ignore;
     }
     
     /*
