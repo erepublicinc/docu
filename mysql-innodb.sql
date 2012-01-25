@@ -1,4 +1,6 @@
---  
+--  http://gitref.org/   http://progit.org/
+--  git checkout -- mymessedupfile.php , will copy a fresh copy into the working directory
+--  http://blog.jbrumond.me/archives/169
 
 -- table name should be one word without unserscores
 -- pk should be tablename_id
@@ -366,14 +368,14 @@ CREATE TABLE modules__pages
 -- list of latest revisions per page        
 CREATE VIEW max_page_revisions as
 (
-	SELECT pages_id AS mpr_pages_id, MAX(pages_rev) AS mpr_pages_rev 
-	FROM pages GROUP BY pages_id
+    SELECT pages_id AS mpr_pages_id, MAX(pages_rev) AS mpr_pages_rev 
+    FROM pages GROUP BY pages_id
 );
 
 --  a list of the latest pages
 create view current_pages as
 (
- 	SELECT * FROM pages JOIN max_page_revisions ON mpr_pages_id = pages_id  AND  pages_rev = mpr_pages_rev 
+     SELECT * FROM pages JOIN max_page_revisions ON mpr_pages_id = pages_id  AND  pages_rev = mpr_pages_rev 
 );     
 
     

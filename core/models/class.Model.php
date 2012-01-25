@@ -5,6 +5,36 @@
  */
 class Model
 {
+    protected $mFields;
+    protected $mId;
+    
+    protected function __construct($params)
+    {
+        if(is_array($params))
+            $params = (object) $params;
+        
+        if(is_object($params))
+        {
+            $this->mFields =  $params; //echo('create contetn'.$row->title);
+            $this->mId     = ($params->contents_id >0)? $params->contents_id :0;
+        }      
+        elseif( is_integer($params))
+        {
+            $this->mId =$params;
+        }               
+    }
+    
+        
+    public function __get($field)
+    {
+        return $this->mFields->$field;
+    }
+    
+    public function getAllFields()
+    {
+        return $this->mFields;
+    }
+    
     
        
     /**

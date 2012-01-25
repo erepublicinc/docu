@@ -8,8 +8,8 @@
 class Content extends Model
 {
     public    $mTargets;
-    protected $mFields;
-    protected $mId;
+    //protected $mFields;  in model
+    //protected $mId;      in Model
     
        
     protected $mContentType;             // set by derived class in constructor    ex. 'ARTICLE' or 'DOCUMENTATION'   used for content_type field
@@ -58,33 +58,10 @@ class Content extends Model
      */
     protected function __construct($params)
     { //print_r($params); die;
-        $this->mSqlStack = array();
-        
-        if(is_array($params))
-            $params = (object) $params;
-        
-        if(is_object($params))
-        {
-            $this->mFields =  $params; //echo('create contetn'.$row->title);
-            $this->mId     = ($params->contents_id >0)? $params->contents_id :0;
-        }      
-        elseif( is_integer($params))
-        {
-            $this->mId =$params;
-        }
-        
+        parent::__construct($params);
+        $this->mSqlStack = array();        
     }
     
-    
-    public function __get($field)
-    {
-        return $this->mFields->$field;
-    }
-    
-    public function getAllFields()
-    {
-        return $this->mFields;
-    }
 
     public function GetExtraTableName()
     {
