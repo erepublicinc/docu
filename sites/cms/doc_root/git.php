@@ -5,8 +5,6 @@ if(! User::Authorize('SUPER_ADMIN'))
    die('You must be SUPER_ADMIN to run this.'); 
 
 $VARS ;  //these are the vars used for the template   
-   
-
 
 //ob_start();
 
@@ -78,7 +76,7 @@ function change_branch()
     if(! empty($newbranch))
     {
        $newbranch = trim($newbranch);
-       $newbranch = str_replace(' ', '-', $newbranch);
+       $newbranch = str_replace(' ', '_', $newbranch);
        $VARS['action_results'] .= syscall("git branch $newbranch");
     }
     elseif(strpos($_REQUEST['branch'],'*') !== false) // we are already on the branch that is requested
@@ -105,23 +103,36 @@ function commit()
         $VARS['action_results'] .=syscall("git stash apply");
         $VARS['action_results'] .=syscall("git stash clear");
     }
-  return;     
+    
     
     $files ='';
     $msg = $_REQUEST['commit_msg'];
     
-    foreach($_REQUEST as $key=>$value)
-    {
-        $start = substr($key,0,5);   // all files start with "file "
-        if($start == 'file ')
-        {
-            $files .= substr($key,5);
+    // we cannot use the $_REQUEST array for this, it mangels the filenames
+    $pieces = explode('&', $_SERVER['QUERY_STRING']);
+    
+    foreach($pieces as $piece)
+    { 
+        $start = substr($piece,0,5);   // all files start with "file "
+        if($start == 'file_')
+        { 
+            $equal  = strpos($piece, '=');
+            $files .= urldecode( substr($piece, 5, $equal - 5));
             $files .= ' ';
         }
     }
-    echo syscall("git add $files"); 
-    echo "<br><br>\n" ;
-    syscall("git commit -m '$msg' ");
+    
+   
+    if($files != '')
+    {
+        $str = "git add $files";
+        echo syscall($str); 
+        echo "<br><br>\n" ;
+        $str = "git commit -m '$msg' ";
+        echo syscall($str);
+    }
+    else 
+      echo('nothing to commit');
 }
 
 function put_on_proof()
@@ -188,7 +199,10 @@ function syscall_old($str)
 
 function syscall($command) {
     global $CONFIG;
-	$descriptorspec = array(
+    global $VARS;
+    $VARS['commands'][] = $command;
+    
+    $descriptorspec = array(
 		1 => array('pipe', 'w'),
 		2 => array('pipe', 'w'),
 	);
@@ -238,7 +252,7 @@ function syscall($command) {
     <? 
     foreach($VARS['files'] as $file)
     {
-        echo "<input  name='file ". $file["name"] . "' type='checkbox' > ". $file["status"]. " " .$file["name"]."<br>\n" ;
+        echo "<input  name='file_". $file["name"] . "' type='checkbox' > ". $file["status"]. " " .$file["name"]."<br>\n" ;
     }
     ?>
     </p>
