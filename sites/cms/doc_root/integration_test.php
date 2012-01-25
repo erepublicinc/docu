@@ -1,6 +1,6 @@
 <?php
-require_once('inc.basic.php');
-
+require_once('inc.basic.php') ;
+ 
 if(! User::Authorize('EDITOR'))
    die('unauthorized'); 
    
