@@ -259,7 +259,7 @@ function syscall($command) {
     
     <p>
     A commit msg is required. <br>
-    <textarea name="commit_msg" style="width:300px;"></textarea>
+    <textarea name="commit_msg" style="width:300px;" onfocus="this.select()" onclick="this.value='';">Commit Message</textarea>
     </p>
      
     <input type="submit" name="commit" value="commit">
