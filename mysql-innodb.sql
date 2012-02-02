@@ -50,6 +50,21 @@ CREATE TABLE users
         CONSTRAINT users_email_unique UNIQUE (users_email)
     ) engine InnoDB ; 
 
+CREATE TABLE user_logins
+    (
+        users_fid INT NOT NULL ,
+        login_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        login_browser VARCHAR(100),
+        login_http_address VARCHAR(50);
+        login_http_port NUMERIC,
+        PRIMARY KEY (users_fid, login_date),
+        CONSTRAINT  FOREIGN KEY (users_fid) REFERENCES users (users_id)
+    ) engine InnoDB;   
+    
+    
+    
+    
+
     
 CREATE TABLE authors
     (
