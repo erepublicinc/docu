@@ -1,3 +1,5 @@
+--  change in branch2
+
 --  http://gitref.org/   http://progit.org/
 --  git checkout -- mymessedupfile.php , will copy a fresh copy into the working directory
 --  http://blog.jbrumond.me/archives/169

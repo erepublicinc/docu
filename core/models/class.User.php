@@ -178,6 +178,19 @@ class User
         return false;
     }   
     
+    /**
+     * we log all logins in the user_logins table
+     * @param int $users_id
+     */
+    private static function LogLogin($id)
+    {
+        $sql[] = "INSERT INTO user_logins (users_fid, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
+                 values('$email', '  )";
+        
+        return new Query($sql);
+    } 
+    
+    
 }
 
 // initialize upon load
