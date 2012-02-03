@@ -119,19 +119,18 @@ class User
     	$return = Query::sTransaction($sql);
     }
     
-    static function Login($email, $pw)
-    {
-        
-       $sql = "SELECT *
-                 FROM users 
+    static function Login($email, $pw, $remember_me = false,  $method = 'PASSWORD')
+    { 
+       global $CONFIG;
+       
+       $sql = "SELECT *  FROM users 
                  LEFT JOIN roles ON users_id = roles_users_id                 
                  WHERE users_email = '$email'"; 
        
        $userdata = new Query($sql);
-       
-       
+            
        if($userdata && $userdata->users_password == $pw)
-       {    
+       {     
            if($userdata->users_active != 1)
            {
                self::$errorMessage = "user: $email  account is inactive";
@@ -143,13 +142,25 @@ class User
            $_SESSION['user_id'] = $userdata->users_id;
            $_SESSION['user_first_name'] = $userdata->users_first_name;
            $_SESSION['user_last_name']  = $userdata->users_last_name;
-           $_COOKIE['user_email'] = $email;
-           $_COOKIE['password'] = $pw;
+           $_SESSION['user_acccounts_id']  = $userdata->users_accounts_id;
+           
+           if($remember_me)
+           {
+               $_COOKIE['user_email'] = $email;
+               $_COOKIE['password'] = $pw;
+           }
            
            // get permissions and save them in the session object
            foreach($userdata as $u)
                  $permissions[] = $u->roles_code ;
-           $_SESSION['user_permissions'] = $permissions;       
+           $_SESSION['user_permissions'] = $permissions; 
+           
+           // when the user comes from a login screen the site_code was stored in the session
+           $site_code = $CONFIG->site_code;
+           if(empty($site_code))
+               $site_code = $_SESSION['site_code'];
+           $userdata->rewind();
+           UsageReports::LogLogin($userdata->users_id, $userdata->users_accounts_id, $method, $site_code);      
            return true;
        }
        
@@ -157,40 +168,46 @@ class User
        return false;
     }
     
-    static function Authorize($permission = 'LOGGED_IN')
+    /**
+     * This is the only call you have to make when you want to authorize a user
+     * it will also try to log the user in when he is not logged in 
+     * @param string Permission 
+     * @param bool login_screen [default = true , will send user to login screen]
+     * @return bool    true if the user is authorized
+     */
+    static function Authorize($permission = 'LOGGED_IN', $login_screen = true)
     {
- 
-        // try to login using a cookie
+        global $CONFIG;
+                 
+        // If you are not logged in, try to login using a cookie
         if(!isset($_SESSION['user_email']) && !empty($_COOKIE['password']))       
-           Authorization::Login($_COOKIE['user_email'], $_COOKIE['password']);
+           self::Login($_COOKIE['user_email'], $_COOKIE['password'], true, 'COOKIES');
  
-        // still not logged in?  Redirect the user to the login page   
-        if( empty($_SESSION['user_email'])){        
-            header("LOCATION: /common/login.php?redirect=".$_SERVER['REQUEST_URI']);
-            die;
+        // Are you now logged in?   
+        if( empty($_SESSION['user_email'])){
+            if(login_screen)
+            { 
+                $_SESSION['site_code'] = $CONFIG->site_code;       
+                header("LOCATION: /common/login.php?redirect=".$_SERVER['REQUEST_URI'] . "&site_code={$CONFIG->site_code}");
+            }
+            else 
+                self::$errorMessage = "user  is not logged in";    
+            return false;
         }
-        if($permission == 'LOGGED_IN') // we just want to make sure this person is logged in
-            return true;
-                
-        if(in_array($permission, $_SESSION['user_permissions'])  ||  in_array('SUPER_ADMIN', $_SESSION['user_permissions'] ))
-            return true;
+        else { // yes, you are logged in so lets check your permissions
             
+            if($permission == 'LOGGED_IN') // we just want to make sure this person is logged in
+                return true;
+                    
+            if(in_array($permission, $_SESSION['user_permissions'])  ||  in_array('SUPER_ADMIN', $_SESSION['user_permissions'] ))
+                return true;
+        }
+        
+        self::$errorMessage = "user: {$_SESSION['user_email']} does not have the proper permissions";
         return false;
     }   
     
-    /**
-     * we log all logins in the user_logins table
-     * @param int $users_id
-     */
-    private static function LogLogin($id)
-    {
-        $sql[] = "INSERT INTO user_logins (users_fid, users_password, users_first_name, users_last_name, users_active, users_ad_user, users_notes) 
-                 values('$email', '  )";
-        
-        return new Query($sql);
-    } 
-    
-    
+ 
 }
 
 // initialize upon load

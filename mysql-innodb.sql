@@ -46,25 +46,55 @@ CREATE TABLE users
         users_password VARCHAR(40) ,
         users_email VARCHAR(70)   NOT NULL,
         users_ad_user VARCHAR(20) ,
+        users_accounts_id INT NOT NULL,
         users_notes VARCHAR(255) ,
         users_active BIT DEFAULT 0 NOT NULL,
+        users_internal BIT DEFAULT 0 NOT NULL,  -- if this is 0 it requires a subclassed user, like nav_user 
+        users_type  VARCHAR(20)  NOT NULL,   --  EREPUBLIC, NAVIGATOR, BLOGGER
         PRIMARY KEY (users_id),
         CONSTRAINT users_email_unique UNIQUE (users_email)
     ) engine InnoDB ; 
 
-CREATE TABLE user_logins
+CREATE TABLE accounts
     (
-        users_fid INT NOT NULL ,
-        login_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        login_browser VARCHAR(100),
-        login_http_address VARCHAR(50);
-        login_http_port NUMERIC,
+        accounts_id INT NOT NULL AUTO_INCREMENT,
+        accounts_title VARCHAR(40) NOT NULL,
+        accounts_sf_id VARCHAR(40) ,
+        accounts_is_navigator BIT DEFAULT 0 NOT NULL,
+        PRIMARY KEY (accounts_id)
+    ) engine InnoDB ; 
+    
+    
+
+CREATE TABLE logins
+    (
+        logins_users_id INT NOT NULL ,
+        logins_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        logins_site_code VARCHAR(20),
+        logins_accounts_id INT NOT NULL ,
+        logins_method VARCHAR(20),
+        logins_browser VARCHAR(100),
+        logins_http_address VARCHAR(50),
+        logins_http_port NUMERIC,
         PRIMARY KEY (users_fid, login_date),
-        CONSTRAINT  FOREIGN KEY (users_fid) REFERENCES users (users_id)
+        CONSTRAINT  FOREIGN KEY (logins_users_id) REFERENCES users (users_id),
+        CONSTRAINT  FOREIGN KEY (logins_accounts_id) REFERENCES accounts (accounts_id)
     ) engine InnoDB;   
     
-    
-    
+
+CREATE TABLE nav_accounts
+    (
+        nava_accounts_id INT NOT NULL ,
+        nava_site_code VARCHAR(20) NOT NULL,
+		nava_access_level
+		nava_licenses
+		nava_contract_status
+		nava_contract_expiration
+		nava_monthly_bonus_hours
+		nava_account_rep_pk
+        
+        PRIMARY KEY (nava_accounts_id, nava_site_code)
+    ) engine InnoDB ; 
     
 
     
@@ -396,16 +426,17 @@ create view current_pages as
 );     
 
     
-
+--  create an account
+insert into accounts(accounts_title) values('eRepublic');
 
 -- creating the  administrator user and system author
-insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('administrator','','201f00b5ca5d65a1c118e5e32431514c','webmaster@erepublic.com',1);
+insert into users (users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_id) values('administrator','','201f00b5ca5d65a1c118e5e32431514c','webmaster@erepublic.com',1,LAST_INSERT_ID());
 insert into roles(roles_users_id,roles_code) values(LAST_INSERT_ID() ,'ADMIN');
 
 insert into authors(authors_name, authors_display_name, authors_public_email, authors_active, authors_users_id) 
 VALUES('system','system', 'system@erepublic.com',1, (select users_id from users where users_last_name = 'administrator'));
 
-insert into users (users_last_name, users_first_name, users_password, users_email, users_active) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1);
+insert into users (users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_id) values('Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1,1);
 insert into roles(roles_users_id,roles_code) values(LAST_INSERT_ID() ,'SUPER_ADMIN');
 
 -- creating a few pages

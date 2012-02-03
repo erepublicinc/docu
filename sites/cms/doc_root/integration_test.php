@@ -1,6 +1,8 @@
 <?php
 require_once('inc.basic.php') ;
- 
+
+$CONFIG->SetValue('site_code', 'INTEGRATION_TEST'); 
+
 if(! User::Authorize('EDITOR'))
    die('unauthorized'); 
    
@@ -231,12 +233,12 @@ echo"<br> ======================================== create and retrieve a article
 $CONFIG->SetValue('show_sql',0,true);
 
 $data = array(
-    'contents_title' 		=> 'article integration test'.$randomId,
-    'contents_display_title'=>'article_display_title', 
-    'contents_authors_id'    =>$test_user_id,
-    'contents_rev_status' 		=>'DRAFT',
-    'contents_rev_comment'=> ' this is a test',
-    'contents_pub_date' => '2011-12-09 12:12:00',
+    'contents_title' 		 => 'article integration test'.$randomId,
+    'contents_display_title' => 'article_display_title', 
+    'contents_authors_id'    => $auhors_id,
+    'contents_rev_status' 	 => 'DRAFT',
+    'contents_rev_comment'   => ' this is a test',
+    'contents_pub_date'      => '2011-12-09 12:12:00',
 
  	'contents_article_body' 			=>'this is the body',
  	'contents_article_type'		=> 'article type'
@@ -252,7 +254,7 @@ if($id >0 )
 $the_article = Article::GetDetails($id);
 compare_data($data, $the_article);
 
-assert_equal($test_user_id, $the_article->contents_authors_id, __LINE__);
+assert_equal($auhors_id, $the_article->contents_authors_id, __LINE__);
 
 echo" ================================================ change the article <br>";
 $rec = $the_article->ToArray();

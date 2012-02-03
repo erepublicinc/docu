@@ -8,10 +8,6 @@ class CMSRouter extends Router
         $fname = str_replace('/', '#',  $_SERVER['REDIRECT_URL']);
         $fname = rtrim($fname,'# ');
        
-        global $CONFIG;
-        
-        $CONFIG->SetValue('tpl_path', $CONFIG->install_path . '/sites/cms/tpl');
-        $CONFIG->SetValue('site_code', 'CMS');
         parent::__construct();
 
     }
