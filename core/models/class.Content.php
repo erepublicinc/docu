@@ -2,8 +2,22 @@
 /* A core model class 
  *  Content are all items that can be targeted
  * Revisioning:
- * "contents"   doe not have a revision, instead a live_rev fields specifies which revision is live
+ * "contents"   do not have a revision, instead a live_rev fields specifies which revision is live
  * "extra data" does have a  revision
+ * 
+ * id is unique (key) in the contents class
+ * 
+ * option 1
+ * rev is unique in the "extra_table" class
+ * 
+ * 
+ * option 2
+ * (contents_fid, rev) is unique in the "extra_table" class
+ * 
+ * pro- on creating a new article, the rev is 1 , slightly faster , just 2 inserts (no extra update of the content record)
+ * pro- ? easier to see how many revs there are.
+ * 
+ * 
  */
 class Content extends Model
 {
@@ -18,8 +32,8 @@ class Content extends Model
     // this describes the fields that can be set by the "user"
     // this gets passed into : FormatUpdateString()
     protected static $mContentFieldDescriptions = array(
-            'contents_clk_id'          => array('type'=>'int', 'insert_only'=>true),
-            'contents_id'              => array('type'=>'int', 'insert_only'=>true),
+            'contents_clk_id'          => array('type'=>'int', 'insert_only'=>true, 'not_0_only'=>true),
+            'contents_id'              => array('type'=>'int', 'auto_insert'=>true),   
             'contents_title'           => array('type'=>'varchar', 'label'=>'Title', 'required'=>true),
             'contents_display_title'   => array('type'=>'varchar', 'label'=>'Display title'),
             'contents_create_date'     => array('type'=>'datetime', 'insert_only'=>true,'do_not_validate'=>true),  // NOW()
@@ -397,19 +411,19 @@ class Content extends Model
         // merge the Extra with the Standard field descriptions to get all fields of the ExtraTable    
         $fieldDescriptions = array_merge(self::$mStandardFieldDescriptions, $this->mExtraFieldDescriptions);    
           
-        // set the Standard fields of derived class   for which we are resposible        
+        // set the Standard fields of derived class ( this class is responsible for them )        
         $this->mFields->contents_rev_status   = $this->mFields->contents_rev_status == 'READY' || $this->mFields->contents_rev_status == 'REVIEW' ? $this->mFields->contents_rev_status : 'DRAFT';                   
         $this->mFields->contents_rev_date     = "NOW()";
         $this->mFields->contents_rev_users_id = $_SESSION['user_id']; 
      
         if($newContent)  
         { 
-             $this->mFields->contents_rev = 1;
-             $this->mFields->contents_fid = '@id';
-             $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_INSERT);
-             array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
+            $this->mFields->contents_fid = '@id';
+            $this->mFields->contents_rev = 1;
+            $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_INSERT);
+            array_push($this->mSqlStack, "INSERT INTO $this->mExtraTable $newvalues ");
           //   dump($this->mSqlStack);
-             return self::SaveNew();
+            return self::SaveNew();
         }
         else 
         {
@@ -426,11 +440,11 @@ class Content extends Model
             else
             {
                 $rev = intval($this->mFields->contents_rev);
-                dump($this->mFields); 
+                //dump($this->mFields); 
                 $newvalues = $this->FormatUpdateString($fieldDescriptions, SQL_UPDATE);
                 array_push($this->mSqlStack, "UPDATE $this->mExtraTable  SET $newvalues WHERE contents_fid = $fid AND contents_rev = $rev");
             }
-         //   dump($this->mSqlStack); 
+            // dump($this->mSqlStack); 
             return self::SaveExisting();           
         }   
         
@@ -468,13 +482,13 @@ class Content extends Model
         array_unshift($this->mSqlStack, "INSERT INTO contents $newvalues ");
         array_push($this->mSqlStack,    "SELECT @id as id");
         /* now the sqlStack has 4 items in the following order:
-            0. create the content record
-            1. 'SELECT @id:= LAST_INSERT_ID()'
-            2. create the extra table record , which is using @id
-            3. 'SELECT @id as id' , so we can return this
+            1. create the content record
+            2. 'SELECT @id:= LAST_INSERT_ID()'
+            3. create the extra table record , which is using @id
+            4. 'SELECT @id as id' , so we can return this
         */
         
-         //  dump($this->mSqlStack);
+       //    dump($this->mSqlStack);
         $result =  Query::sTransaction($this->mSqlStack);
         if($result != false)
             return $result->id;

@@ -1,5 +1,7 @@
 <?php
 require_once('inc.basic.php');
+// set the site_code before we call authorize,  because when we log the login we need the site_code
+$CONFIG->SetValue('site_code', 'CONTENT_LOADER');
 
 if(! User::Authorize('SUPERADMIN'))
    die('unauthorized'); 

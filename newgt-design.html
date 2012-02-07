@@ -7,7 +7,8 @@
 	<META NAME="AUTHOR" CONTENT="Michael Tel">
 	<META NAME="CREATED" CONTENT="20111118;8185000">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
-	<META NAME="CHANGED" CONTENT="20111205;14534200">
+	<META NAME="CHANGED" CONTENT="20120206;16173700">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
 	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
@@ -122,6 +123,20 @@ and content items that have the 'preview' bit set.</P>
 <P>Versioning of contents means that we keep a history of the changes
 to a content item. It also means that a specific version can be made
 live.</P>
+<P>There are 2 numbers involved with versioning:  ID and REV</P>
+<P>ID is a number that is unique for the content item (it will
+contain all versions of an item)</P>
+<P>     in the contents table the primary key id  ID, REV</P>
+<P>REV is a particular version of a particular item  , it is unique
+in the table (for example the articles table )</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
 <H2 CLASS="western">TODO (a lot)</H2>
 <P>TODO Core</P>
 <UL>
@@ -194,9 +209,8 @@ are stored in the session object. This will save us a SQL call.</P>
 </P>
 <P STYLE="margin-bottom: 0in"><B>Author ( is not a model)</B></P>
 <P STYLE="margin-bottom: 0in">Author is the public profile used for
-the by lines.  A user can have multiple profiles ( for pen-names etc)
-  and we  have “system”  authors   like :  “editorial staff” 
-etc</P>
+the by lines. A user can have multiple profiles ( for pen-names etc)
+and we have “system” authors like : “editorial staff” etc</P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <H2 CLASS="western">Content</H2>

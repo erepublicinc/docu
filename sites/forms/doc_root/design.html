@@ -1,21 +1,120 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>forms design</title>
-</head>
-<body>
-
-
-
-tables:
-forms           form description
-form_fields     description of the field and forms_id
-form_field_masters  templates from where the form_fields are created
-form_all_submissions every submission gets stored here, data in xml fom
-form_submission_{ID}   forms can have special answer table
-
-
-
-</body>
-</html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>forms design</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Michael Tel">
+	<META NAME="CHANGED" CONTENT="20120207;10011300">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1>FORMS</H1>
+<P>tables: 
+</P>
+<TABLE WIDTH=562 CELLPADDING=4 CELLSPACING=3>
+	<COL WIDTH=190>
+	<COL WIDTH=345>
+	<TR VALIGN=TOP>
+		<TD WIDTH=190 STYLE="border-top: 2.60pt double #808080; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in">
+			<P>forms</P>
+		</TD>
+		<TD WIDTH=345 STYLE="border: 2.60pt double #808080; padding: 0.04in">
+			<P>description</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=190 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in">
+			<P>form_fields 
+			</P>
+		</TD>
+		<TD WIDTH=345 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: 2.60pt double #808080; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in">
+			<P>The fields for this form, with captions etc</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=190 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in">
+			<P>form_field_masters</P>
+		</TD>
+		<TD WIDTH=345 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: 2.60pt double #808080; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in">
+			<P>templates from where the form_fields are created 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=190 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in">
+			<P>form_all_submissions</P>
+		</TD>
+		<TD WIDTH=345 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: 2.60pt double #808080; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in">
+			<P>every submission gets stored here, data in xml form 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=190 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in">
+			<P>form_submission_{ID}</P>
+		</TD>
+		<TD WIDTH=345 STYLE="border-top: none; border-bottom: 2.60pt double #808080; border-left: 2.60pt double #808080; border-right: 2.60pt double #808080; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in">
+			<P>forms can have special answer table 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<H1><BR><BR>
+</H1>
+<H1><BR><BR>
+</H1>
+<H1>BESTOF</H1>
+<P>-- this is the sql to get data from the legacy2 database <BR>select
+* from bestof_answers where answer_eventid &gt;75; <BR>select * from
+bestof_categories; <BR>select * from bestof_contests where contest_pk
+&gt;75; <BR>select * from bestof_entries where entry_contestid &gt;75;
+<BR>select * from bestof_players; <BR>select * from bestof_questions
+where question_contestid &gt;75; <BR>select * from bestof_scores
+where score_contestid &gt;75; 
+</P>
+<P>models: 
+</P>
+<P>Survey 
+</P>
+<P>Form 
+</P>
+<P><BR><BR>
+</P>
+<P>tables: 
+</P>
+<P>forms <BR>  forms_pk <BR>  forms_css css file to be used (to math
+the different color schemes) <BR>  forms_controller this translates
+in differnt handling of the form <BR>  forms_field_1 -20 20 fields
+for questions forms_steps processing steps submissions 20 fields for
+answers submissions_pk submissions_forms_fk submissions_person_id //
+for mathing in eloqua -salesforce submissions_field1-20
+bestof_contests bestof_questions bestof_answers bestof_scores
+bestof_categories bestof_entries bestof_players</P>
+<P> -----relationships -------- 
+</P>
+<P>contest - person(judge) m-m <BR>contest - entry 1-m <BR>contest -
+category 1-m <BR>contest - question 1-m <BR>entry - person m-1 <BR>entry
+- answer 1-m <BR>score - person m-1 <BR>score - entry m-1 <BR>category
+- question 1-m <BR><BR><BR>
+</P>
+<P>bestof functionality <BR>- signup (as judge or participant) <BR>-
+login <BR>- forgot password <BR>- submit entry edit entry <BR>- judge
+entry <BR><BR><BR>
+</P>
+<P>models: 
+</P>
+<P>person <BR>  new <BR>  login <BR>  logout 
+</P>
+<P>bestof <BR>  get_entries <BR>  create_entry <BR>  answer_question
+<BR>  get_next_question <BR>  get_score_form <BR>  post_score_form <BR>
+ get_results <BR>  save_contest <BR>  save_question <BR> 
+save_category <BR>  clone_contest</P>
+<P> <BR>controllers: <BR>  person <BR>  bestof <BR>  bestof_manage 
+</P>
+<P>tpls: <BR>  login <BR>  new_user <BR>  list_entries <BR> 
+new_entry <BR>  answer_question <BR>  score_form <BR>  results <BR> 
+manage_list <BR>  manage_edit 
+</P>
+</BODY>
+</HTML>

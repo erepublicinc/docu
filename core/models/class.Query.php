@@ -46,18 +46,15 @@ class Query  implements Iterator
     {
     	global $CONFIG;
         if($CONFIG->show_sql)
-        {
         	show_sql($sql);
-        }
-        
+    
         $this->mAliasArray = array();
         
         $this->mNumQueries = 1;
         
         if(self::$mConnection == null)
              self::OpenDb(); 
-
-             
+            
              
         if(is_array($sql))
         {
@@ -85,7 +82,7 @@ class Query  implements Iterator
         
         if($this->mResultSet === false)
         {   
-            if( $this->mNumQueries == 1) echo "$sql <br>\n";   else echo "$mq <br>\n";      
+            //if( $this->mNumQueries == 1) echo "$sql <br>\n";   else echo "$mq <br>\n";      
             $this->SqlError(self::$mConnection->errno, "Query error in the following statement: <br> $sql <br> error msg:". self::$mConnection->error );
         }
         elseif ($this->mResultSet !== TRUE)
@@ -102,10 +99,9 @@ class Query  implements Iterator
     public static function sTransaction($sql)
     {
         global $CONFIG;
-        if($CONFIG->show_sql)
-        {
+        if($CONFIG->show_sql)     
         	show_sql($sql);
-        }
+        
         
         if(self::$mConnection == null)
              self::OpenDb(); 
@@ -185,27 +181,12 @@ class Query  implements Iterator
        
         return $this->mRows[$this->mRowIndex]->$var;   
     }
-    
+
     /**
-	 * SetValue is usefull for aliasing / renaming fields
-	 * @param String $field
-	 * @param $value
+     * returns the current record as an array
      */
-    public function SetValue($field, $value)
-    {
-        /*
-        if(! $this->mRow)
-           return null;   
-        $this->mRow->$field = $value;  
-        */  
-       if($this->mRowIndex < 0)
-           return null;     
-        $this->mRows[$this->mRowIndex]->$field= $value;
-    }
-       
     public function ToArray()
     {
-       //return array($this->mRow);
        if($this->mRowIndex < 0)
            return null; 
        return (array) $this->mRows[$this->mRowIndex] ;   
@@ -221,10 +202,21 @@ class Query  implements Iterator
         $this->mAliasArray = $alias_array;
        
     }
+
+    /**
+	 * Sets the value of a field in the current record
+	 * @param String $field
+	 * @param $value
+     */
+    public function SetValue($field, $value)
+    {
+       if($this->mRowIndex < 0)
+           return null;     
+        $this->mRows[$this->mRowIndex]->$field= $value;
+    }
     
     /**
-     * for multi queries to move to the next result set
-     * 
+     * for multi queries to move to the next result set 
      */
     public function NextResultSet()
     {
@@ -280,7 +272,6 @@ class Query  implements Iterator
     public static function OpenDb($admin = false)
     {
         global $CONFIG;
-      //  $CONFIG->SetValue('db_dbname','newgt2', true);
                               
         if($admin)
         {   
@@ -303,13 +294,15 @@ class Query  implements Iterator
     }
 
     
-    // these are the iterator functions
-    public function rewind() {
+// ======================== below are the iterator functions ========================
+   
+    public function rewind() 
+    {
         $this->mRowIndex = 0;
     }
 
-    public function current() {
-               
+    public function current() 
+    {            
         if($this->mRowIndex > -1 && $this->mRowIndex < count($this->mRows))
         {
             foreach($this->mAliasArray as $alias => $original) 
@@ -320,33 +313,29 @@ class Query  implements Iterator
         return null;    
     }
 
-    public function key() {
+    public function key() 
+    {
         return $this->mRowIndex;
     }
 
-    public function next() {
-        //$this->mRow = $this->mResultSet->fetch_object();
-        
+    public function next() 
+    {  
         $this->mRowIndex++; 
         if(! $this->eof)
         {
             $o = $this->mResultSet->fetch_object();
-            if($o)
-            {
-                $this->mRows[] = $o; 
-            }
+            if($o)           
+                $this->mRows[] = $o;            
             else
-            {
                 $this->eof =true;
-            }
         }       
     }
 
-    public function valid() {
-        //return  (boolean) $this->mRow ; 
-        return ($this->mRowIndex > -1 && $this->mRowIndex < count($this->mRows) );
+    public function valid() 
+    {
+        return ($this->mRowIndex > -1  &&  $this->mRowIndex < count($this->mRows) );
     }
-    // end of the iterator functions
+// ======================== end of the iterator functions ========================
     
 }
 

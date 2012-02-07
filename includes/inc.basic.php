@@ -22,6 +22,9 @@ define('SQL_UPDATE', 0);
 define('SYSTEM_AUTHOR_ID',1);
 define('SYSTEM_USER_ID',1);
 
+define('YEAR_IN_SECONDS',3600 * 24 * 365);
+
+
 
 
 function __new_autoload($class_name)

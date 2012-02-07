@@ -3,6 +3,8 @@
 // this needs to be run before the user class is initiated
 require_once('class.SessionHandler.php');
 
+
+
 class User
 {
     public static $errorMessage;  // holds the error massage
@@ -122,6 +124,7 @@ class User
     static function Login($email, $pw, $remember_me = false,  $method = 'PASSWORD')
     { 
        global $CONFIG;
+       self::$errorMessage = '';
        
        $sql = "SELECT *  FROM users 
                  LEFT JOIN roles ON users_id = roles_users_id                 
@@ -136,7 +139,8 @@ class User
                self::$errorMessage = "user: $email  account is inactive";
                   return false; 
            }
-                          
+               
+           
            $_SESSION['user_email'] = $userdata->users_email;
            $_SESSION['user_password'] = $pw;
            $_SESSION['user_id'] = $userdata->users_id;
@@ -145,9 +149,11 @@ class User
            $_SESSION['user_acccounts_id']  = $userdata->users_accounts_id;
            
            if($remember_me)
-           {
-               $_COOKIE['user_email'] = $email;
-               $_COOKIE['password'] = $pw;
+           { 
+               setcookie('user_email', $email , time() + YEAR_IN_SECONDS, '/', $_SERVER['HTTP_HOST']);
+               $result = setcookie('password', $pw , time() + YEAR_IN_SECONDS, '/', $_SERVER['HTTP_HOST']);
+               if(! $result)
+                   self::$errorMessage = "could not set cookie";
            }
            
            // get permissions and save them in the session object
@@ -159,11 +165,17 @@ class User
            $site_code = $CONFIG->site_code;
            if(empty($site_code))
                $site_code = $_SESSION['site_code'];
+           $_SESSION['site_code']  = $site_code;
+                           
            $userdata->rewind();
            UsageReports::LogLogin($userdata->users_id, $userdata->users_accounts_id, $method, $site_code);      
+           
+           if(! empty(self::$errorMessage ))
+                die(self::$errorMessage );
            return true;
        }
        
+       UsageReports::LogLogin($userdata->users_id, $userdata->users_accounts_id, "PASSWORD_INVALID", $site_code);      
        self::$errorMessage = "email / password combination not valid"; 
        return false;
     }
@@ -184,17 +196,22 @@ class User
            self::Login($_COOKIE['user_email'], $_COOKIE['password'], true, 'COOKIES');
  
         // Are you now logged in?   
-        if( empty($_SESSION['user_email'])){
+        if( empty($_SESSION['user_email']))
+        {
             if(login_screen)
             { 
-                $_SESSION['site_code'] = $CONFIG->site_code;       
-                header("LOCATION: /common/login.php?redirect=".$_SERVER['REQUEST_URI'] . "&site_code={$CONFIG->site_code}");
+                if(! empty($CONFIG->site_code))
+                    $_SESSION['site_code'] = $CONFIG->site_code;       
+                header("LOCATION: /common/login.php?redirect=".$_SERVER['REQUEST_URI'] );
             }
-            else 
-                self::$errorMessage = "user  is not logged in";    
+            else
+            { 
+                self::$errorMessage = "user  is not logged in";
+            }    
             return false;
         }
-        else { // yes, you are logged in so lets check your permissions
+        else 
+        { // yes, you are logged in so lets check your permissions
             
             if($permission == 'LOGGED_IN') // we just want to make sure this person is logged in
                 return true;

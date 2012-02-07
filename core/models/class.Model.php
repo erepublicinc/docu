@@ -55,6 +55,13 @@ class Model
                     
         foreach($Fieldsarray as $field => $Description)
         {
+            $value = $this->mFields->$field;
+             
+            if($Description['auto_insert'])
+            {  // for the auto_increment fields
+                continue;
+            }
+            
             if(! isset($this->mFields->$field) ) 
             {   
                 if($mode == SQL_INSERT && $Description['required']  )            
@@ -64,9 +71,12 @@ class Model
             
             if($mode == SQL_UPDATE && $Description['insert_only'] )  // these fields cannot be updated
                 continue;  
-           
                 
-            $value = $this->mFields->$field;
+            if($Description['not_0_only'] && empty($value))  // these fields cannot be updated
+                continue;  
+                
+                
+           
                 
             if(! $Description['do_not_validate'] )
             {

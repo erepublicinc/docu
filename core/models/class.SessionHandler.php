@@ -10,25 +10,31 @@ class SessionHandler
         $db = self::$mSessionDB;
         $r = new Query("SELECT * FROM {$db}.sessions WHERE sessions_id = '$key' AND sessions_expires > CURRENT_TIMESTAMP");  
         Query::changeDB(self::$mDefaultDB);  // change it back                      
-        return unserialize($r->sessions_data);
+        return $r->sessions_data ; //unserialize($r->sessions_data);
     }
+    
+    
     public static function sWrite($key, $data)
-    {
-        $db = self::$mSessionDB;
+    { 
+        $db          = self::$mSessionDB;
         $maxlifetime = 1800;  // 30 minutes  
-        $data = serialize($data);
-        $data = Query::Escape($data);
-        $r = new Query("INSERT INTO {$db}.sessions (sessions_id, sessions_data, sessions_expires) 
-                        VALUES('$key', '$data', DATE_ADD(CURRENT_TIMESTAMP, INTERVAL $maxlifetime SECOND))
-        				ON DUPLICATE KEY UPDATE sessions_data = '$data', sessions_expires = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL $maxlifetime SECOND) " );
+        $users_id    = intval($_SESSION['user_id']);
+        $site_code   = $_SESSION['site_code'];
+        $data        = Query::Escape($data);
+        $r = new Query("INSERT INTO {$db}.sessions (sessions_id, sessions_data, sessions_expires, sessions_users_id, sessions_site_code) 
+                        VALUES('$key', '$data', DATE_ADD(CURRENT_TIMESTAMP, INTERVAL $maxlifetime SECOND), $users_id , '$site_code')
+        				ON DUPLICATE KEY UPDATE sessions_data = '$data', sessions_expires = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL $maxlifetime SECOND), sessions_users_id = $users_id, sessions_site_code = '$site_code' " );
         return true;
     }
+    
+    
     public static function sDestroy($key)
     { 
         $db = self::$mSessionDB;
         $r = new Query("DELETE FROM {$db}.sessions WHERE session_key = '$key'"); 
         return true;
     }
+    
     
     public static function sOpen()
     {  
@@ -38,8 +44,10 @@ class SessionHandler
         return TRUE;
     }
     
+    
     public static function sClose()
     { return TRUE;  }  
+    
     
     public static function sGc()
     { 
