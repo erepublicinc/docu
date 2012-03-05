@@ -11,12 +11,14 @@
 <link type="text/css"  href="/css/titan/jquery-ui.css" rel="stylesheet" />	
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
 <!-- <link  href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/> 
  -->
  
- <script type="text/javascript" src="/public/ckeditor/ckeditor.js"></script>
+<script type="text/javascript" src="/public/ckeditor/ckeditor.js"></script>
+ 
+<script type="text/javascript" src="/common/includes/common_utils.js"></script>
  
 
 <script type="text/javascript">

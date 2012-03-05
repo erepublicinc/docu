@@ -1,6 +1,104 @@
 /*
 * Common Functions
+
 */
+
+
+
+var Util = Util || {};    // namespace
+
+//log (message) // Logs a message. Every second, all logged messages are displayed
+//in an alert box. This saves you from having to hit Return a ton
+//of times as your script executes. 
+Util.log= function(message)
+{
+    if (!  Util._log_timeout)
+        Util._log_timeout = window.setTimeout(dump_log, 1000);
+    Util._log_messages.push(message);
+
+    function dump_log()
+    {
+        var message = '';
+        for (var i = 0; i < Util._log_messages.length; i++)
+            message += Util._log_messages[i] + '\n'; alert(message);
+        Util._log_timeout = null;
+        delete Util._log_messages;
+        Util._log_messages = new Array();
+    }
+};
+
+//dump (object)
+//displays values for the properties. The output
+//for this can get very large -- for example, if you are inspecting
+//a DOM element.
+Util.dump = function(obj)
+{
+
+  msg = Util._dumpmore(obj,1);
+  Util.log(msg);
+};
+
+// like dump but goes 2 levels deep
+Util.dump2 = function(obj)
+{
+    msg = Util._dumpmore(obj, 2);
+    Util.log(msg);
+};
+
+//like dump but goes 2 levels deep
+Util.dump3 = function(obj)
+{
+    msg = Util._dumpmore(obj, 3);
+    Util.log(msg);
+};
+
+Util._dumpmore = function(obj, level)
+{
+    if(level < 1)
+    {
+        return ""; //return obj+ '\n';
+    }
+    var message = '';
+    var space = '                                         ';
+    var indent = space.substr(0, 15 -level*3);
+    if (obj) for (var i in obj)
+    {
+
+        if ( (obj[i] == null) /*|| (i.toUpperCase() == i)*/)
+            continue;
+        if(obj[i] instanceof Function)
+        {
+            //message += i + ' -function-' + '\n';
+            continue;
+        }
+        else if (obj[i] instanceof Object)
+        {
+          message += indent + i + ':: ' + obj[i] + '\n';
+          message += Util._dumpmore(obj[i], level-1);
+        }
+        else if (obj[i] instanceof Array)
+        {
+          message += indent + i + 'array: ' + obj[i] + '\n';
+          message += Util._dumpmore(obj[i], level-1);
+        }
+        else
+        {
+            message += indent + i + ': ' + obj[i] + '\n';
+        }
+    }
+    else
+        message = 'Object is null';
+   //Util.log(message);
+   return message;
+};
+
+Util._log_timeout;
+Util._log_messages = new Array();
+
+
+
+
+
 function getBrowserType()
 {
     var u = ""+navigator.userAgent;
@@ -116,7 +214,16 @@ function hideAdZone(elem)
 		elem.style.display = 'none';
 	}
 }
-            
+
+
+function setCookie(c_name, value, exdays)
+{
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+	document.cookie = c_name + "=" + c_value;
+}
+
 function readCookie(c_name)
 {
     if (document.cookie.length>0)
@@ -140,7 +247,7 @@ function readCookie(c_name)
 function setRequestorIP()
 {
 	var randomnumber=Math.floor(Math.random()*1000000);
-	document.write('<scr'+'ipt language="JavaScript" type="text/javascript" src="http://' + window.location.host + '/templates/common_set_ip.js?c=n&ran=' + randomnumber + ' "></scr' + 'ipt>');
+//	document.write('<scr'+'ipt language="JavaScript" type="text/javascript" src="http://' + window.location.host + '/templates/common_set_ip.js?c=n&ran=' + randomnumber + ' "></scr' + 'ipt>');
 }
 
 function display_ad(id, newsletterID, site, zone, position, width, height, debug, iframe_enabled)
@@ -154,9 +261,9 @@ function display_ad(id, newsletterID, site, zone, position, width, height, debug
         id += ";video_id=" + DELVE_ID;
     }
 	
-    if(typeof(cachebuster) == "undefined") {var cachebuster = Math.floor(Math.random()*10000000000)}
-    if(typeof(dcopt) == "undefined") {var dcopt = "dcopt=ist;"} else {var dcopt = ""}
-    if(typeof(tile) == "undefined") {var tile = 1} else {tile++}
+    if(typeof(cachebuster) == "undefined") {var cachebuster = Math.floor(Math.random()*10000000000);}
+    if(typeof(dcopt) == "undefined") {var dcopt = "dcopt=ist;";} else {var dcopt = "";}
+    if(typeof(tile) == "undefined") {var tile = 1;} else {tile++;}
 
     var srcUrl = '<scr'+'ipt src="http://ad.doubleclick.net/adj/'
 	   + site

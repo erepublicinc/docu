@@ -48,10 +48,29 @@ return true;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //           Utility Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function YaasMakeErrorResponse($id, $msg)
+/**
+ * This returns an array with result=>success  and the input values
+ * @param array or single value 
+ * @return array  
+ */
+function YaasMakeResponse($results)
 {
-    
-    return 'erromsg: '. $msg;
+    if(is_array($results))
+    {
+        $retval = $results;
+        $retval['result'] = 'success';
+    }
+    else 
+    {
+        $retval = array('result' => 'success', 'value' => $results);
+    }  
+    return $retval;
+}
+
+
+function YaasMakeErrorResponse($msg = '')
+{
+    if(empty($msg))
+        return array('result' => 'error');
+    return array('result' => 'error','errormsg' => $msg);
 }    

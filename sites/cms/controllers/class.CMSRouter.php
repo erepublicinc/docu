@@ -41,12 +41,14 @@ class CMSRouter extends Router
     
     // the default map, maps from url-segment to Controller and the main Model
     static private $map = array( // for content types , use the table name 
+    //                URL SEGMENT           CONTROLLER       MODEL
         			  'User'       => array('EditUser',     'User'),      			  
         			  'Article'    => array('EditContent',  'Article'),                                          
                       'Module'     => array('EditModule',   'Module'),                    
                       'Page'       => array('EditPage',     'Page'),                     
                       'Placement'  => array('EditPlacement',''),
-                      'Author'     => array('EditAuthor',   'Author')
+                      'Author'     => array('EditAuthor',   'Author'),
+                      'Form'       => array('EditForm',     'Form')
                       
     ) ;    
     
