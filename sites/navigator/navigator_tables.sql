@@ -31,6 +31,7 @@ CREATE TABLE navigator.states
 (
     states_code  VARCHAR(20) NOT NULL,
     states_title VARCHAR(40) NOT NULL,
+    states_pk    INT, CONSTRAINT states_pk_unique UNIQUE (states_pk),
     PRIMARY KEY (states_code)
 ) engine InnoDB ; 
 
@@ -41,6 +42,9 @@ CREATE TABLE navigator.accounts
         accounts_sf_id             VARCHAR(40),
         accounts_sf_deleted        BIT DEFAULT 0 NOT NULL,        
         accounts_is_navigator     BIT DEFAULT 1 NOT NULL,
+        CONSTRAINT accounts_title_unique UNIQUE (accounts_title),
+           accounts_pk    INT, CONSTRAINT accounts_pk_unique UNIQUE (accounts_pk),
+           
         PRIMARY KEY (accounts_id)
     ) engine InnoDB ; 
 insert into navigator.accounts (accounts_id, accounts_title) VALUES(12, 'eRepublic');
@@ -53,11 +57,13 @@ CREATE TABLE navigator.users
         users_password         VARCHAR(60) ,
         users_email         VARCHAR(60)   NOT NULL,
         users_ad_user         VARCHAR(20) ,
-        users_accounts_fid     INT NOT NULL,
+        users_accounts_fid  INT NOT NULL,
         users_notes         VARCHAR(255) ,
         users_active         BIT DEFAULT 1 NOT NULL,
+        users_salesforce_fid VARCHAR(20),
         users_internal         BIT DEFAULT 0 NOT NULL,  -- if this is 0 it requires a subclassed user, like nav_user 
-        users_type          VARCHAR(20)  NOT NULL,   -- ?? do we need this use roles instead?  EREPUBLIC, NAVIGATOR, BLOGGER
+        users_type          VARCHAR(20)  ,   -- ?? do we need this use roles instead?  EREPUBLIC, NAVIGATOR, BLOGGER
+           users_pk    INT, CONSTRAINT users_pk_unique UNIQUE (users_pk),
         PRIMARY KEY (users_id),
         CONSTRAINT  FOREIGN KEY (users_accounts_fid) REFERENCES accounts (accounts_id),
         CONSTRAINT users_email_unique UNIQUE (users_email)
@@ -65,8 +71,9 @@ CREATE TABLE navigator.users
 
 CREATE TABLE navigator.usergroups   
     (
-         usergroups_code         VARCHAR(40) NOT NULL ,
-         usergroups_description     VARCHAR(255) NOT NULL ,
+         usergroups_code    VARCHAR(40) NOT NULL ,
+         usergroups_title   VARCHAR(255) NOT NULL ,
+         usergroups_summary VARCHAR(255) NOT NULL ,
          PRIMARY KEY (usergroups_code)
     ) engine InnoDB ;
 
@@ -169,7 +176,15 @@ CREATE TABLE navigator.orgs
     ) engine InnoDB ; 
 
 
-
+CREATE TABLE navigator.orgs_x_orgs    -- to link orgs
+    (
+        orgs_fid1	INT NOT NULL,  -- 'higher' in hierarchy: FED, STATE, DOE, CONSOLIDATED, COUNTY, CITY, AGENCY, UNIVERSITY, K12 
+        orgs_fid2   INT NOT NULL,
+        orgs_relation_code   VARCHAR(20),  -- do we need this
+        CONSTRAINT FOREIGN KEY (orgs_fid1) REFERENCES orgs (orgs_id),
+        CONSTRAINT FOREIGN KEY (orgs_fid2) REFERENCES orgs (orgs_id),
+        PRIMARY KEY (orgs_fid1,orgs_fid2) 
+     ) engine InnoDB ; 
 
 CREATE TABLE navigator.gov_orgs    -- extra data for "gov" org types
     (    
@@ -420,67 +435,67 @@ CREATE TABLE navigator.tags
 
 CREATE TABLE navigator.taglinks   
     (
-        taglinks_tags_code	VARCHAR(30) NOT NULL ,
-    	taglinks_table		VARCHAR(30) NOT NULL ,
-    	taglinks_fid		INT NOT NULL,
-    	CONSTRAINT FOREIGN KEY (taglinks_tags_code) REFERENCES tags (tags_code),
-    	PRIMARY KEY (taglinks_tags_code, taglinks_table, taglinks_fid)
+        taglinks_tags_code    VARCHAR(30) NOT NULL ,
+        taglinks_table        VARCHAR(30) NOT NULL ,
+        taglinks_fid        INT NOT NULL,
+        CONSTRAINT FOREIGN KEY (taglinks_tags_code) REFERENCES tags (tags_code),
+        PRIMARY KEY (taglinks_tags_code, taglinks_table, taglinks_fid)
     ) engine InnoDB;
     
  CREATE TABLE  navigator.histories
     (
-		histories_users_fid INT NOT NULL,
-		histories_table   	VARCHAR(40) NOT NULL,
-		histories_action  	VARCHAR(20) NOT NULL,
-		histories_timestamp     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT FOREIGN KEY (histories_users_fid) REFERENCES users (users_id) 	
+        histories_users_fid INT NOT NULL,
+        histories_table       VARCHAR(40) NOT NULL,
+        histories_action      VARCHAR(20) NOT NULL,
+        histories_timestamp     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT FOREIGN KEY (histories_users_fid) REFERENCES users (users_id)     
     )engine InnoDB;
 
 CREATE TABLE  navigator.bonus_hour_request
     (
-		bhr_id 				INT NOT NULL AUTO_INCREMENT,
-		dhr_accounts_fid	INT NOT NULL,
-		dhr_requestor_fid	INT NOT NULL COMMENT 'the requesting user',
-		dhr_site_code		SET('GOV','ED','EM') NOT NULL,  -- subtype in the old system
-		bhr_create_date   	DATETIME NOT NULL,
-		bhr_close_date  	DATETIME,
-		bhr_hours_used		INT,
-		bhr_description		VARCHAR(40) NOT NULL,
-		bhr_sf_case_id		VARCHAR(20),
-		bhr_sf_account_id	VARCHAR(20),
-		bhr_sf_contact_id	VARCHAR(20),
+        bhr_id                 INT NOT NULL AUTO_INCREMENT,
+        dhr_accounts_fid    INT NOT NULL,
+        dhr_requestor_fid    INT NOT NULL COMMENT 'the requesting user',
+        dhr_site_code        SET('GOV','ED','EM') NOT NULL,  -- subtype in the old system
+        bhr_create_date       DATETIME NOT NULL,
+        bhr_close_date      DATETIME,
+        bhr_hours_used        INT,
+        bhr_description        VARCHAR(40) NOT NULL,
+        bhr_sf_case_id        VARCHAR(20),
+        bhr_sf_account_id    VARCHAR(20),
+        bhr_sf_contact_id    VARCHAR(20),
         CONSTRAINT FOREIGN KEY (dhr_requestor_fid) REFERENCES users (users_id),   
-        CONSTRAINT FOREIGN KEY (dhr_accounts_fid) REFERENCES accounts (accounts_id),    	
+        CONSTRAINT FOREIGN KEY (dhr_accounts_fid) REFERENCES accounts (accounts_id),        
         PRIMARY KEY (bhr_id)
     )engine InnoDB;
      
 CREATE TABLE  navigator.collaborations
     (
-		collaborations_id 			INT NOT NULL AUTO_INCREMENT,		
-		collaborations_users_fid	INT NOT NULL ,
-		collaborations_name			VARCHAR(40) NOT NULL, 
-		collaborations_email   		VARCHAR(40) NOT NULL, 
-		collaborations_provides  	VARCHAR(100),
-		collaborations_looking_for	VARCHAR(100),
-		collaborations_create_date	DATETIME,
-		collaborations_notes		TEXT,
-        CONSTRAINT FOREIGN KEY (collaborations_users_fid) REFERENCES users (users_id),            	
+        collaborations_id             INT NOT NULL AUTO_INCREMENT,        
+        collaborations_users_fid    INT NOT NULL ,
+        collaborations_name            VARCHAR(40) NOT NULL, 
+        collaborations_email           VARCHAR(40) NOT NULL, 
+        collaborations_provides      VARCHAR(100),
+        collaborations_looking_for    VARCHAR(100),
+        collaborations_create_date    DATETIME,
+        collaborations_notes        TEXT,
+        CONSTRAINT FOREIGN KEY (collaborations_users_fid) REFERENCES users (users_id),                
         PRIMARY KEY (collaborations_id)
     )engine InnoDB;
      
 CREATE TABLE  navigator.interviews
     (
-        interviews_id			INT NOT NULL AUTO_INCREMENT,	
-        interviews_title		VARCHAR(200) NOT NULL, 
-        interviews_contacts_fid	INT , 
-        interviews_summary		VARCHAR(200) NOT NULL, 
-        interviews_mod_date		DATETIME,
-        interviews_subtype		VARCHAR(40) NOT NULL,
-        interviews_published 	BIT,
-        interviews_ext_id		VARCHAR(40) ,
-        interviews_event_date 	DATETIME,
-        interviews_eloqua_url	VARCHAR(200),
-        interviews_site_code	SET('GOV','ED','EM'),
+        interviews_id            INT NOT NULL AUTO_INCREMENT,    
+        interviews_title        VARCHAR(200) NOT NULL, 
+        interviews_contacts_fid    INT , 
+        interviews_summary        VARCHAR(200) NOT NULL, 
+        interviews_mod_date        DATETIME,
+        interviews_subtype        VARCHAR(40) NOT NULL,
+        interviews_published     BIT,
+        interviews_ext_id        VARCHAR(40) ,
+        interviews_event_date     DATETIME,
+        interviews_eloqua_url    VARCHAR(200),
+        interviews_site_code    SET('GOV','ED','EM'),
         CONSTRAINT FOREIGN KEY (interviews_contacts_fid) REFERENCES users (users_id),  
         PRIMARY KEY (interviews_id)
     )engine InnoDB;    
@@ -488,18 +503,18 @@ CREATE TABLE  navigator.interviews
     
 CREATE TABLE  navigator.user_preferences
     (
-        up_users_fid			INT NOT NULL,
-        up_site_code			SET('GOV','ED','EM') NOT NULL, -- VARCHAR(20) NOT NULL, 
-        up_push_hourly			BIT DEFAULT 0,
-        up_push_daily			BIT DEFAULT 0,
-        up_push_weekly			BIT DEFAULT 0,
-        up_push_rfps			BIT DEFAULT 0,
-        up_push_erates			BIT DEFAULT 0,
-        up_push_news			BIT DEFAULT 0,
-        up_all_states			BIT DEFAULT 0,
-        up_all_cats				BIT DEFAULT 0,
-        up_all_levels			BIT DEFAULT 0,
-        up_keywords				VARCHAR(40),
+        up_users_fid            INT NOT NULL,
+        up_site_code            SET('GOV','ED','EM') NOT NULL, -- VARCHAR(20) NOT NULL, 
+        up_push_hourly            BIT DEFAULT 0,
+        up_push_daily            BIT DEFAULT 0,
+        up_push_weekly            BIT DEFAULT 0,
+        up_push_rfps            BIT DEFAULT 0,
+        up_push_erates            BIT DEFAULT 0,
+        up_push_news            BIT DEFAULT 0,
+        up_all_states            BIT DEFAULT 0,
+        up_all_cats                BIT DEFAULT 0,
+        up_all_levels            BIT DEFAULT 0,
+        up_keywords                VARCHAR(40),
         up_hotlisted_clk_items  VARCHAR(1000),
         CONSTRAINT FOREIGN KEY (up_users_fid) REFERENCES users (users_id),  
         PRIMARY KEY (up_users_fid, up_site_code)
@@ -507,14 +522,32 @@ CREATE TABLE  navigator.user_preferences
             
 CREATE TABLE  navigator.searches
     (
-    	searches_id				INT NOT NULL AUTO_INCREMENT,	
-    	searches_contacts_fid	INT , 
-    	searches_uri			VARCHAR(2000) NOT NULL,
-    	searches_title			VARCHAR(40) NOT NULL,
-    	CONSTRAINT FOREIGN KEY (searches_contacts_fid) REFERENCES users (users_id),
-    	PRIMARY KEY (searches_id)
+        searches_id                INT NOT NULL AUTO_INCREMENT,    
+        searches_contacts_fid    INT , 
+        searches_uri            VARCHAR(2000) NOT NULL,
+        searches_title            VARCHAR(40) NOT NULL,
+        CONSTRAINT FOREIGN KEY (searches_contacts_fid) REFERENCES users (users_id),
+        PRIMARY KEY (searches_id)
     ) engine InnoDB;   
      
+
+     
+   
+
+insert into accounts(accounts_id,accounts_title) values(417102,'eRepublic');
+insert into usergroups(usergroups_code, usergroups_title) values('SUPER_ADMIN','Super Admin!');
+insert into usergroups(usergroups_code, usergroups_title) values('ADMIN','Admin');
+
+-- creating the  administrator user 
+insert into users (users_id, users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_fid) 
+        values(1,'administrator','','201f00b5ca5d65a1c118e5e32431514c','webmaster@erepublic.com',1,417102);
+insert into users_x_usergroups(users_fid,usergroups_fcode) values(1,'ADMIN');
+
+insert into users (users_id, users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_fid) 
+        values(3,'Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1,417102);
+insert into users_x_usergroups(users_fid,usergroups_fcode) values(3,'SUPER_ADMIN');
+
+
    
 
 -- articles

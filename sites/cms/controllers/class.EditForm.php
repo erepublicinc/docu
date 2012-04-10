@@ -107,7 +107,7 @@ class EditForm extends Controller
         
         
         $masters = Form::GetFieldMasters($id);
-        
+//dump($masters);        
         // create the left side modules
         $this->mModules['left'] = array( CMS::CreateDummyModule('recentlyModifiedModule.tpl')  );                                       
         $this->mMainTpl = 'editForm.tpl';   

@@ -45,8 +45,8 @@ class Query  implements Iterator
     function __construct($sql, $cacheId = '', $maxeAge = 100)
     {
     	global $CONFIG;
-        if($CONFIG->show_sql)
-        	show_sql($sql);
+ //       if($CONFIG->show_sql)
+ //       	show_sql($sql);
     
         $this->mAliasArray = array();
         
@@ -176,10 +176,10 @@ class Query  implements Iterator
         if($this->mRowIndex < 0)
            return null;    
 
-        if($this->mAliasArray[$var])    // we used an alias for the fieldname  
+        if(isset($this->mAliasArray[$var]))    // we used an alias for the fieldname  
             $var = $this->mAliasArray[$var];
-       
-        return $this->mRows[$this->mRowIndex]->$var;   
+        
+        return isset($this->mRows[$this->mRowIndex]->$var) ?  $this->mRows[$this->mRowIndex]->$var : null; 
     }
 
     /**

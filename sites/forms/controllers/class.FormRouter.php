@@ -1,6 +1,9 @@
 <?php
 class FormRouter extends Router
-{    
+{   
+
+    public $theForm; 
+    
     function __construct()
     { 
         // Check if this page already exists in our cache of complete pages
@@ -37,54 +40,22 @@ class FormRouter extends Router
         strtolower($path);
         $pathSegments   = explode("/", $path);
         
-        $this->_mClassArguments = $pathSegments;        
-        $this->_mClassName = 'Bestof'; 
-        return true;
-/*        
-        $numOfSegments  = count($pathSegments);
-        $site           = 'ALL'; 
-        $this->_mClassName = 'CmsHome'; // default
-        
-        if($pathSegments[0] == 'preview')
-            array_shift($pathSegments);
-            
-        if($pathSegments[0] == 'cms')
-            array_shift($pathSegments);
-        
-        if(in_array($pathSegments[0], array('gt','gov','em','cv','all','er','cdg','cde','dc')))
-        {
-            $site = strtoupper($pathSegments[0]);
-            $CONFIG->SetValue('cms_site_code',$site);
-            array_shift($pathSegments);
-        }
+        $this->_mClassArguments = $pathSegments;    
 
-        // the default map
-        $map = array( 'users'       => 'EditUser',      			  
-        			  'articles'    => 'EditArticle',                                          
-                      'modules'     => 'EditModule',                     
-                      'pages'       => 'EditPage',                      
-                      'placement'	=> 'EditPlacement',
-                      'authors'     => 'EditAuthor'
-        ) ;
-        
-        // allow overwrite of the default map according to the website
-        switch($site)
-        {          
-            case 'EM' :
-                $map['articles'] = 'EditArticle' ;
-            break;       
-        }
-            
-        if(count($pathSegments) > 0 && $map && isset($map[$pathSegments[0]]))
+        $formRecord = Form::GetDetailsByName($pathSegments[1]);
+        if($formRecord)
         {
-            $this->_mClassName = $map[$pathSegments[0]] ;
+            // check if this form requires a special class
+            if(! empty($formRecord->forms_php_class ))
+               $this->_mClassName = $formRecord->forms_php_class ;
+            else 
+               $this->_mClassName = 'DefaultFormController';               
+             
+            $this->theForm = $formRecord;  // store it so the controller can grab it     
         }
-      
-        $this->_mClassArguments = $pathSegments;
-//die  ("page class ".$this->_mClassName);       
+        else 
+           die('unknown form'); 
         return true;
-        
- */
 
     }
       

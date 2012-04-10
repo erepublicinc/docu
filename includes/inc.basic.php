@@ -7,7 +7,9 @@ require_once('Smarty.class.php'); // !!! needs to be loaded before registering o
 $SITENAMES = array( 'GT'=>'Government Technology','GOV'=>'Governing', 'ALL'=> 'All eRepublic sites', 
                     'EM'=>'Emergency Management Magazine', 'CV'=>'Converge Magazine', 'ER'=>'eRepublic',
                     'CDG'=>'Center for Digital Government', 'CDE'=>'Center for Digital Education',
-                    'DC'=>'Digital Communities');
+                    'DC'=>'Digital Communities', 'DGN' =>'Digital Government Navigator', 
+                    'DEN'=>'Digital Education Navigator', 'EMN'=> 'Emergency Management Navigator' ,
+                    'NAV'=>'Navigator' );
 $CONFIG;
 
 define('LATEST_VERSION', -1);
@@ -22,8 +24,9 @@ define('SQL_UPDATE', 0);
 define('SYSTEM_AUTHOR_ID',1);
 define('SYSTEM_USER_ID',1);
 
+define('DAY_IN_SECONDS', 3600 * 24);
 define('YEAR_IN_SECONDS',3600 * 24 * 365);
-
+define('THIRTY_MINUTES', 1800);
 
 
 
@@ -116,7 +119,11 @@ function getSiteName($code)
     return $SITENAMES[$code];
 }
 
-
+/**
+ * dumps any varibale or the stack
+ * @param $var  ( if empty the stack is dumped)
+ * @param $die  [default=true]
+ */
 function dump($v, $die = true)
 {
 	global $CONFIG;
@@ -124,13 +131,26 @@ function dump($v, $die = true)
     if(is_object($v) &&  $v instanceof Query)
         $v = $v->ToArray();
 
-    $frames = debug_backtrace();    
-    $f= $frames[0];    
-    echo ("dump() called from: ".$f['file'].' line: '. $f['line']);
-    
-    echo("<pre>"); 
-    //var_dump($v);
-    print_r($v);
+    $frames = debug_backtrace(); 
+
+    if(empty($v))
+    { 
+        echo "CALL STACK:<br>\n";    
+        foreach($frames as $f) 
+        {
+            //$f= $frames[0];    
+            echo ($f['file'].' line: '. $f['line'] . "<br>\n");
+        }
+    }
+    else 
+    {
+        $f= $frames[0];    
+        echo ("dump() called from: ".$f['file'].' line: '. $f['line']);
+        
+        echo("<pre>"); 
+        //var_dump($v);
+        print_r($v);
+    }
     if($die )
     {
      flush();   die;

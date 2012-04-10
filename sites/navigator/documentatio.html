@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Navigator rebuild</title>
+</head>
+<body>
+
+<h2>Navigator Rebuild</h2>
+
+current assumptions:
+
+- rebuild navigator
+- move user admin form sf into the navigator , upload some data to sf
+
+- use php
+- use mysql
+- host at rack space
+- don't use nmi
+- move away from ext towards html(5) and jquery and jqueryui
+- use mvc model
+- use Smarty3  for templates
+- use memcache
+- no versioning of data is required
+
+
+
+
+Here is a preliminary list of tasks in the order that they will be started. since the whole process will be very iterative,
+most tasks will not be totally completed until very late in the cycle.  
+For simplicity I omited ''design'.  all tasks will have their own design phase 
+
+
+
+
+tasks:
+
+1- create infra structure 
+  error handling
+  folder structure
+  naming convention
+  documentation convention
+  develop test harness and test convention
+  GIT repo
+  find a test server
+   
+2- create data model
+3- fill data model with data  through migration scripts
+ 
+4- build model classes
+  
+5- build page-controllers to connect the templates with the model
+   - copy the old templates
+   
+5a- redo the search module
+
+(while doing this the data-model will be refined, and the model, and migration scripts have to be adjusted)
+
+At this point we have something that resembles a bare bones version of the navigator, since all the 
+retrieval queries are in place, we can see how the new datamodel performs
+
+6- add caching,  template caching and memcache 
+
+7-redo all forms, move away from ext towards jqueryui and html
+
+8-redo the data-entry scripts and forms
+9-build a brand new user-admin panel, with an update script to load data into sf
+
+10-return to the migration scripts, and add data cleaning , add entity-id to the orgs
+
+11-redo the erate loader
+
+12-adjust the bidpush script
+
+13- test test test
+14- move code to rackspace, setup automatic backup etc.
+
+15- do stress test
+
+16- final migration
+
+17-cut-over  (DNS changes)
+
+As mentioned before, given the complexity we will have to follow an iterative approach. 
+
+
+
+<h2>models:</h2><pre>
+Bid
+Organization
+User
+Account
+Interview
+Contact
+BonusHourRequest
+Deal
+UsageData
+
+-- lightweight models -- 
+Media ??
+UserGroup
+Tag
+
+</pre><h2>controllers</h2><pre>
+
+statePage
+countypage
+jurisdictionPage
+bidsPage
+dealwatchPage
+interviewsPage
+knowledgCenterPage
+CollaborationPage
+TrainingPage
+mynavigatorPage
+searchPage
+</pre>
+</body>
+</html>

@@ -27,7 +27,7 @@ function saveForm()
     <!-- / PAGE TITLE -->  
 
     <div class="ui-widget-content ui-corner-all bk_color3">
-        <div class="grid_6 m-10"> <h3>Article Details</h3>  </div>
+        <div class="grid_6 m-10"> <h3>Form Details</h3>  </div>
                       
         <h6><a class="ui-state-red ui-corner-all float-r m-5 pr-10 pl-10 pt-5 pb-5" href="/cms/{$site_code}/{$model_name}">
         <span class="ui-icon ui-icon-cancel float-l mr-5"></span>
@@ -56,8 +56,11 @@ function saveForm()
                         <label class="grid_12">Title</label>                   
                         <input type="text" name="forms_title" class="required" value="{$form->forms_title}">    
                         
+                        <label class="grid_12">Display Title</label>                   
+                        <input type="text" name="forms_display_title" class="required" value="{$form->forms_display_title}">    
+
                         <label class="grid_12">Template</label>                   
-                        <input type="text" name="forms_tpl" class="required" value="{$form->forms_tpl}">    
+                        <input type="text" name="forms_tpl"  value="{$form->forms_tpl}">    
 
                         <label class="grid_12">URL Name</label>                   
                         <input type="text" name="forms_url_name" class="required" value="{$form->forms_url_name}">    
@@ -72,7 +75,7 @@ function saveForm()
                         <input type="text" name="forms_end_date" class="required" value="{$form->forms_end_date|date_format:$DATETIME_FORMAT}">                                                             
                          
                         <label class="grid_12">CSS File</label>                   
-                        <input type="text" name="forms_css" class="required" value="{$form->forms_css}">    
+                        <input type="text" name="forms_css"  value="{$form->forms_css}">    
 
                         <label class="grid_12">Eloqua Form ID</label>                   
                         <input type="text" name="forms_eloqua_formid" class="required" value="{$form->forms_eloqua_formid}">    
@@ -163,7 +166,7 @@ function saveForm()
                 // create a random id
                 var tmp_id = 'id_'+new Date().getTime();
     
-                fieldData[tmp_id] = {'field_masters_id': dragged_fid, 'fields_title': ui.draggable.text(), 'fields_locked':1};  
+                fieldData[tmp_id] = {'field_masters_id': dragged_fid, 'fields_label': ui.draggable.text(), 'fields_locked':1};  
                     
                 if(dragged_fn.indexOf('xtra_field') == 1)
                 {
@@ -188,7 +191,7 @@ function saveForm()
         function storeFieldtitle(ev)
         { 
             var tmpId =  $(this).parent().attr('id');
-            fieldData[tmpId].fields_title = $(this).text();   
+            fieldData[tmpId].fields_label = $(this).text();   
         }
         
         function configExtraField(tmp_id)
@@ -205,7 +208,7 @@ function saveForm()
                 $(this).find('li').each(function(index){
                     var tmp_id = $(this).attr('id');
                     fieldData[tmp_id].fields_order = ++linkOrder;
-                    //alert(fieldData[tmp_id].fields_title);                    
+                    //alert(fieldData[tmp_id].fields_label);                    
                     dta.push(fieldData[tmp_id]);         
                 });
         		
@@ -230,7 +233,7 @@ function saveForm()
                     <div class="ui-widget-content">
                         <ul>
                         {foreach $masters as $m}                 
-                           <li fid="{$m->field_masters_id}" fn="{$m->fields_form_name}" >{$m->fields_title}</li>                
+                           <li fid="{$m->field_masters_id}" fn="{$m->fields_html_name}" >{$m->fields_label}</li>                
                         {/foreach}           
                         </ul>
                     </div>                
@@ -243,7 +246,7 @@ function saveForm()
                     <ol>
                         {foreach $form_fields as $m} 
                             {assign "tmpid" value = 12345 + $m@index }                           
-                            <li id="{$tmpid}"><span class='contenteditable' contenteditable='true' >{$m->fields_title}</span> [{$m->fields_form_name}]</li>                            
+                            <li id="{$tmpid}"><span class='contenteditable' contenteditable='true' >{$m->fields_label}</span> [{$m->fields_html_name}]</li>                            
                         {/foreach}
                     </ol>
                 </div>

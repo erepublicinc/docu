@@ -1,0 +1,67 @@
+@import url('/COMMON/js/ext-2.2/resources/css/ext-all.css');
+@import url('/COMMON/themes/2009/xtheme-navigator.css');
+
+@import url('/COMMON/themes/2009/common/reset-min.css');
+@import url('/COMMON/themes/2009/common/navigator_main.css');
+@import url('/COMMON/themes/2009/common/admin.css');
+
+@import url('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
+@import url('/COMMON/themes/2009/common/search_mod.css');
+
+#switch-menu
+{
+    width: 187px;
+    background:url(/COMMON/images/emn/emn_hdr_link3.jpg) bottom;
+    vertical-align:top;
+    padding: 5px 0 5px 40px;
+    float:right;
+    margin-left:160px;
+    position:absolute;
+    overflow:hidden;
+    top: 0;
+    text-indent: 0px !important;
+}
+
+#switch-menu .submenu
+{
+    position: relative !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+#switch-menu a
+{
+    text-decoration: none !important;
+    display:block !important;
+}
+
+#switch-menu .submenu a:hover
+{
+    background-image:url("/COMMON/themes/2009/common/images/ico_arrow_dn.gif");
+    background-repeat: no-repeat;
+    background-position: 5px 50%;
+    background-color: transparent !important;
+}
+
+/* CUSTOM MENU STYLING */
+
+.menu {
+    color: #FFFFFF;
+    text-indent: 10px;
+    background-image:url("/COMMON/themes/2009/common/images/ico_arrow_dn.gif");
+    background-repeat: no-repeat;
+    background-position: 5px 50%;
+}
+
+.submenu {
+    display: none;
+    position:absolute;
+    z-index: 99;
+    border: 1px solid #666666;
+}
+
+#sddm a {text-align:left !important; text-decoration: none !important;}
+
+#excel-download {float:left; text-align: left;padding:0px!important; }
+#excel-download a {color: #339900;}
+#excel-download img {margin: -1px 0 0 40px;}

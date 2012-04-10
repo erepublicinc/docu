@@ -15,8 +15,8 @@ class UsageReports
         $browser = Query::Escape($_SERVER['HTTP_USER_AGENT']); 
         $http    = Query::Escape($_SERVER['REMOTE_ADDR']);
         $port    = intval($_SERVER['REMOTE_PORT']); 
-        $sql     = "INSERT INTO logins (logins_users_id, logins_accounts_id, logins_site_code, logins_method, logins_browser, logins_http_address, logins_http_port) 
-                    VALUES($id, $acc_id, '$site_code', '$method', '$browser', '$http', $port)";
+        $sql     = "INSERT INTO logins (logins_users_fid,  logins_site_code, logins_method, logins_browser, logins_http_address, logins_http_port) 
+                    VALUES($id,  '$site_code', '$method', '$browser', '$http', $port)";
         
         return new Query($sql); 
     } 

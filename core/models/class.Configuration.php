@@ -9,8 +9,10 @@ class Configuration
     private static $_mInstance = null; // the only instance
    
     public function __get($k)
-    {   //echo("CONFIG __get $k <br>");
-        return $this->_mFields[$k];
+    { 
+       if(isset($this->_mFields[$k]))
+            return $this->_mFields[$k];
+       return false;     
     }
     
     public function __set($k,$v)

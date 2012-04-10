@@ -1,0 +1,262 @@
+
+
+/*** BODY ***/  
+            body.emn {
+                background: url(/images/emn/emn_bkground.jpg) repeat-x;
+                background-color:#d2d0c4;
+                margin: 0px 2px 0px 2px;
+                }
+
+/*** HEADER ***/    
+
+            .emn #Header .column1 {
+                display:block;
+                width:582px;
+                height:78px;
+                background:url(/images/emn/emn_hdr_1.jpg);
+                float:left;
+                }
+            .emn #Header .column2 {
+                display:block;
+                width:398px;
+                height:78px;
+                background:url(/images/emn/emn_hdr_2.jpg);
+                float:left;
+                 }
+        
+/*** SEARCH CONTAINTER ***/
+
+        .emn .searchcontainer {
+                margin-left: 10px;
+                margin-right: 10px; 
+                margin-bottom: 10px;                
+                background: #6d1b1b;
+                width: 243px;       
+                }
+    
+        .emn .searchcontainer2 {
+                margin-left: 10px;
+                margin-right: 10px; 
+                margin-bottom: 10px;                
+                width: 243px;       
+                }                   
+
+/*** HEADER ACCOUNT LINKS ***/
+
+            .emn #Header .welcomeuser {
+                width: 410px;
+                height: 14px;
+                float:right;
+                text-align:right;
+                padding: 10px 15px 0 0;
+                margin-left: -30px;
+                color:#ffffff;
+                font-size:12px; 
+                margin-top:23px;
+                }
+            .emn #Header .supportlinks {
+                width: 410px;
+                height: 14px;
+                float:right;
+                text-align:right;
+                margin-left: -30px;
+                padding: 5px 10px 0 0;
+                font-size: 12px;
+                color: #ffffff
+                }
+            .emn #Header .supportlinks a {
+                color:#efeeeb;
+                margin: 0 5px 0 5px;
+                }
+            .emn #Header .supportlinks a:hover {
+                color:#f4e6b1;
+                text-decoration:underline;
+                }   
+
+/*** TOP NAVIGATION ***/
+    
+            .emn #topnav .navspace {
+                width:978px;
+                height:31px;
+                background-color:#240303;
+                float:left;
+                border-right: solid #a79f9f 1px;
+                border-left: solid #a79f9f 1px;
+                z-index:99;
+                }
+            .emn #nav li:hover ul, .emn #nav li.sfhover ul {
+                width: 250px;
+                background: url(/images/emn/emn_topnav_dropdown.gif) repeat-x top;
+                left: auto;
+                z-index:140;
+                padding-top:15px;
+                }
+                
+                .emn    #sddm { 
+        z-index: 30;
+        width:978px;
+        display:block;
+        background:#02213e;
+        float:left;
+        border-left:1px solid #666666;
+        border-right:1px solid #666666; }           
+            .emn #sddm li.menu a
+            {
+                border-left: 1px solid #444444;
+            }    
+
+            .emn .submenu a:hover {background-color: #336699;}
+            .emn .submenu {background: none repeat scroll 0 0 #154166;}
+/*** FOOTER ***/    
+
+            .emn #Footercontainer {
+                background: url(/images/emn/emn_footer.jpg);
+                height:35px;
+                width:100%;
+                float:left;
+                border-top: solid #a79f9f 1px;
+                  }
+
+/*** BASE LINK STYLES ***/
+
+            .emn a {
+                color:#145a95;
+                text-decoration:none;
+                }
+            .emn a:hover {
+                color:#00214D;
+                text-decoration:underline;
+                }
+
+
+/*** H2 HEADER STYLES ***/
+            .emn h2 {
+                min-height:45px;        
+                }
+        
+            .emn h2 a {
+                color:#f4e6b1;
+                font-weight:bold;
+                line-height:22px;
+                text-decoration:none;
+                }
+            .emn h2 a:hover {
+                color:#d2d0c4;
+                text-decoration:underline;
+                }
+            .emn .contentblock h2 {
+                background: url(/images/emn/emn_contenthead_tan.jpg) bottom left;
+                border-right:solid #dfdfdf 1px;
+                padding-left: 10px;
+                padding-top: 10px;
+                font-size:20px;
+                color:#f4e6b1;
+                vertical-align:middle;
+                margin-top: 1px;
+                margin-left: 1px;   
+                }
+            .emn .contentblock_white h2 {
+                background: url(/images/emn/emn_contenthead.jpg) bottom left;
+                border-right:solid #dfdfdf 1px;
+                padding-left: 10px;
+                padding-top: 10px;
+                font-size:20px;
+                color:#f4e6b1;
+                vertical-align:middle;
+                margin-top: 1px;
+                margin-left: 1px;   
+                }
+    
+/*** H2 SUBHEAD STYLES ***/
+        
+            .emn h2 .subhead {
+                color:#FFFFFF;
+                font-weight:normal;
+                line-height:16px;
+                padding-bottom: 18px;
+                font-size:12px;
+                height: 18px;
+                display:block;
+                
+                
+                }
+            .emn h2 .subhead a{
+                font-weight:normal;
+                text-decoration:underline;  
+                font-weight: bold;  
+                      
+                }
+        
+    
+    /*** H2 - NO ARROW ***/ 
+    
+        .emn h2.noarrow {
+            background: url(/images/emn/emn_contenthead.jpg) left;
+            border-right:solid #dfdfdf 1px;
+            padding-left: 10px;
+            padding-top: 10px;
+            font-size:20px;
+            color:#f4e6b1;
+            vertical-align:middle;
+            margin-top: 1px;
+            margin-left: 1px;
+            margin-bottom:0px;  
+            clear:both;
+            padding-bottom:5px; 
+            height:30px;
+             }
+        .emn h2.noarrow .subhead {
+            color:#FFFFFF;
+            font-weight:normal;
+            line-height:18px;
+            padding-bottom: 3px;
+            font-size:12px; 
+            float:left;
+            height:18px;
+            }   
+    
+    /*** H2 - NO ARROW - WITH STATE SEAL ***/   
+        .emn h2.noarrow_seal {
+            background: url(/images/emn/emn_contenthead.jpg) left;
+            border-right:solid #dfdfdf 1px;
+            padding-left: 83px;
+            padding-top: 10px;
+            font-size:20px;
+            color:#f4e6b1;
+            vertical-align:middle;
+            margin-top: 1px;
+            margin-left: 1px;
+            height: 45px;                   
+            }
+        .emn h2.noarrow_seal a{
+            color:#f4e6b1;
+            text-decoration:none;
+            font-weight:bold;
+            }
+        .emn h2.noarrow_seal a:hover{
+            font-weight:bold;
+            }   
+        .emn h2.noarrow_seal .subhead a{
+            color:#d2d0c4;
+            font-weight:normal;
+            text-decoration:underline;      
+            font-weight: bold;                              
+            }
+        .emn h2.noarrow_seal .subhead {
+            color:#FFFFFF;
+            font-weight:normal;
+            line-height:14px;
+            padding-bottom: 12px;
+            font-size:12px;
+            }
+            
+            
+            
+        .loginbox_dgn {
+            width:300px;
+            background:#FFFFFF; 
+            border: #990000 solid 1px;
+            } 
+        .loginbox_dgn .login {
+            background-image: url(/images/emn/emn_contenthead.jpg);
+            }   

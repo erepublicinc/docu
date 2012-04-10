@@ -1,0 +1,268 @@
+@CHARSET "ISO-8859-1";
+
+
+
+/*** BODY ***/  
+		    body.dgn {
+		        background: url(/images/dgn/dgn_bkground.jpg) repeat-x;
+		        background-color:#d2d0c4;
+		        margin: 0px 2px 0px 2px;
+		    	}
+
+/*** HEADER ***/    
+
+		    .dgn #Header .column1 {
+		        display:block;
+		        width:532px;
+		        height:78px;
+		        background:url(/images/dgn/dgn_hdr_1.jpg);
+		        float:left;
+		    	}
+		    .dgn #Header .column2 {
+		        display:block;
+		        width:448px;
+		        height:78px;
+		        background:url(/images/dgn/dgn_hdr_2.jpg);
+		        float:left;
+		   		 }
+		    .dgn #Header a.toptab {
+		        width: 187px;
+		        height: 23px;
+		        background:url(/images/dgn/dgn_hdr_denlink1.jpg);
+		        vertical-align:top;
+		        padding: 3px 0 0 40px;
+		        float:right;
+		        margin-right: 10px;
+		        line-height: 16px;
+		    	}
+		    .dgn #Header a.toptab:hover {
+		        background:url(/images/dgn/dgn_hdr_denlink2.jpg);
+		    	}
+	    
+/*** SEARCH CONTAINTER ***/
+
+	    .dgn .searchcontainer {
+	            margin-left: 10px;
+	            margin-right: 10px; 
+	            margin-bottom: 10px;                
+	            background: #6d1b1b;
+	            width: 243px;       
+	        	}
+	
+	    .dgn .searchcontainer2 {
+	            margin-left: 10px;
+	            margin-right: 10px; 
+	            margin-bottom: 10px;                
+	            width: 243px;       
+	        	}                   
+
+/*** HEADER ACCOUNT LINKS ***/
+
+		    .dgn #Header .welcomeuser {
+		        width: 410px;
+		        height: 14px;
+		        float:right;
+		        text-align:right;
+		        margin-top: 23px;
+		        padding: 10px 15px 0 0;
+		        color:#ffffff;
+		        font-size:12px; 
+		    	}
+		    .dgn #Header .supportlinks {
+		        width: 410px;
+		        height: 14px;
+		        float:right;
+		        text-align:right;
+		        padding: 5px 10px 0 0;
+		        font-size: 12px;
+		        color: #ffffff
+		    	}
+		    .dgn #Header .supportlinks a {
+		        color:#efeeeb;
+		        margin: 0 5px 0 5px;
+		    	}
+		    .dgn #Header .supportlinks a:hover {
+		        color:#f4e6b1;
+		        text-decoration:underline;
+		   		}   
+
+/*** TOP NAVIGATION ***/
+    
+		    .dgn #topnav .navspace {
+		        width:978px;
+		        height:31px;
+		        background-color:#240303;
+		        float:left;
+		        border-right: solid #a79f9f 1px;
+		        border-left: solid #a79f9f 1px;
+		        z-index:99;
+		    	}
+		    .dgn #nav li:hover ul, .dgn #nav li.sfhover ul {
+				width: 250px;
+		        background: url(/images/dgn/dgn_topnav_dropdown.gif) repeat-x top;
+		       	left: auto;
+				z-index:140;
+				padding-top:15px;
+				
+		    	}
+
+            .dgn #switch-menu 
+            {
+                margin-left:210px;
+            }
+            
+            .dgn .submenu a:hover {background-color: #7E2217 !important;}
+            .dgn .submenu {background: none repeat scroll 0 0 #3C0907;}
+/*** FOOTER ***/    
+
+		    .dgn #Footercontainer {
+		        background: url(/images/dgn/dgn_footer.jpg);
+		        height:35px;
+		        width:100%;
+		        float:left;
+		        border-top: solid #a79f9f 1px;
+		  		  }
+
+/*** BASE LINK STYLES ***/
+
+		    .dgn a {
+		        color:#641310;
+		        text-decoration:none;
+		    	}
+		    .dgn a:hover {
+		        color:#993300;
+		        text-decoration:underline;
+		    	}
+
+
+/*** H2 HEADER STYLES ***/
+			.dgn h2 {
+		        min-height:45px;        
+				}
+		
+		    .dgn h2 a {
+		        color:#f4e6b1;
+		        font-weight:bold;
+		        line-height:22px;
+		        text-decoration:none;
+		    	}
+		    .dgn h2 a:hover {
+		        color:#d2d0c4;
+		        text-decoration:underline;
+		    	}
+		    .dgn .contentblock h2 {
+		        background: url(/images/dgn/dgn_contenthead_tan.jpg) bottom left;
+		        border-right:solid #dfdfdf 1px;
+		        padding-left: 10px;
+		        padding-top: 10px;
+		        font-size:20px;
+		        color:#f4e6b1;
+		        vertical-align:middle;
+		        margin-top: 1px;
+		        margin-left: 1px;   
+		    	}
+		    .dgn .contentblock_white h2 {
+		        background: url(/images/dgn/dgn_contenthead.jpg) bottom left;
+		        border-right:solid #dfdfdf 1px;
+		        padding-left: 10px;
+		        padding-top: 10px;
+		        font-size:20px;
+		        color:#f4e6b1;
+		        vertical-align:middle;
+		        margin-top: 1px;
+		        margin-left: 1px;   
+		    	}
+    
+/*** H2 SUBHEAD STYLES ***/
+        
+	        .dgn h2 .subhead {
+	            color:#FFFFFF;
+	            font-weight:normal;
+	            line-height:16px;
+	            padding-bottom: 18px;
+	            font-size:12px;
+	            height: 18px;
+	            display:block;
+	            
+	            
+	        	}
+	        .dgn h2 .subhead a{
+	            font-weight:normal;
+	            text-decoration:underline;  
+	            font-weight: bold;  
+                      
+	        	}
+        
+    
+    /*** H2 - NO ARROW ***/ 
+    
+        .dgn h2.noarrow {
+            background: url(/images/dgn/dgn_contenthead.jpg) left;
+			border-right:solid #dfdfdf 1px;
+			padding-left: 10px;
+			padding-top: 10px;
+			font-size:20px;
+			color:#f4e6b1;
+			vertical-align:middle;
+			margin-top: 1px;
+			margin-left: 1px;
+			margin-bottom:0px;	
+			clear:both;
+			padding-bottom:5px;	
+			height:30px;
+       		 }
+        .dgn h2.noarrow .subhead {
+			color:#FFFFFF;
+			font-weight:normal;
+			line-height:18px;
+			padding-bottom: 3px;
+			font-size:12px;	
+			float:left;
+			height:18px;
+       	 	}   
+    
+    /*** H2 - NO ARROW - WITH STATE SEAL ***/   
+        .dgn h2.noarrow_seal {
+            background: url(/images/dgn/dgn_contenthead.jpg) left;
+            border-right:solid #dfdfdf 1px;
+            padding-left: 83px;
+            padding-top: 10px;
+            font-size:20px;
+            color:#f4e6b1;
+            vertical-align:middle;
+            margin-top: 1px;
+            margin-left: 1px;
+            height: 45px;                   
+        	}
+        .dgn h2.noarrow_seal a{
+            color:#f4e6b1;
+            text-decoration:none;
+            font-weight:bold;
+        	}
+        .dgn h2.noarrow_seal a:hover{
+            font-weight:bold;
+        	}   
+        .dgn h2.noarrow_seal .subhead a{
+            color:#d2d0c4;
+            font-weight:normal;
+            text-decoration:underline;      
+            font-weight: bold;                              
+        	}
+        .dgn h2.noarrow_seal .subhead {
+            color:#FFFFFF;
+            font-weight:normal;
+            line-height:14px;
+            padding-bottom: 12px;
+            font-size:12px;
+        	}
+        	
+        	
+        	
+		.loginbox_dgn {
+			width:300px;
+			background:#FFFFFF; 
+			border: #990000 solid 1px;
+			} 
+    	.loginbox_dgn .login {
+    		background-image: url(images/dgn_contenthead.jpg);
+    		}

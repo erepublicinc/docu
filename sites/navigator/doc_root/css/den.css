@@ -1,0 +1,261 @@
+@CHARSET "ISO-8859-1";
+
+
+
+/*** BODY ***/	
+	
+		body.den {
+			background: url(/images/den/den_bkground.jpg) repeat-x;
+			background-color:#d2d0c4;
+			margin: 0px 2px 0px 2px;
+		}
+
+/*** HEADER ***/	
+	
+		.den #Header .column1 {
+			display:block;
+			width:532px;
+			height:78px;
+			background:url(/images/den/den_hdr_1.jpg);
+			float:left;
+		}
+		.den #Header .column2 {
+			display:block;
+			width:448px;
+			height:78px;
+			background:url(/images/den/den_hdr_2.jpg);
+			float:left;
+		}
+		.den #Header a.toptab {
+			width: 187px;
+			height: 23px;
+			background:url(/images/den/den_hdr_dgnlink1.jpg);
+			vertical-align:top;
+			padding: 3px 0 0 40px;
+			float:right;
+			margin-right: 10px;
+			line-height: 16px;
+		}
+		.den #Header a.toptab:hover {
+			background:url(/images/den/den_hdr_dgnlink2.jpg);
+		}
+		
+		.den #switch-menu 
+        {
+                margin-left:210px;
+        }
+		
+		.submenu a:hover {background-color: #254117 !important;}
+		
+/*** SEARCH CONTAINTER ***/
+	
+		.den .searchcontainer {
+				margin-left: 10px;
+				margin-right: 10px;	
+				margin-bottom: 10px;				
+				background: #6f8b63;
+				width: 243px;		
+			}
+	
+/*** HEADER ACCOUNT LINKS ***/
+	
+		.den #Header .welcomeuser {
+			width: 410px;
+			height: 14px;
+			float:right;
+			text-align:right;
+			margin-top: 23px;
+			padding: 10px 15px 0 0;
+			color:#ffffff;
+			font-size:12px; 
+		}
+		.den #Header .supportlinks {
+			width: 410px;
+			height: 14px;
+			float:right;
+			text-align:right;
+			padding: 5px 10px 0 0;
+			font-size: 12px;
+			color: #ffffff
+		}
+		.den #Header .supportlinks a {
+			color:#FFFFFF;
+			margin: 0 5px 0 5px;
+		}
+		.den #Header .supportlinks a:hover {
+			color:#fff1ca;
+			text-decoration:underline;
+		}	
+	
+
+	
+/*** FOOTER ***/	
+
+		.den #Footercontainer {
+			background: url(/images/den/den_footer.jpg);
+			height:35px;
+			width:100%;
+			float:left;
+			border-top: solid #a79f9f 1px;
+		}
+		
+		.den #Footercontainer .welcomeuser {
+			float: none;
+		}
+		
+
+/*** BASE LINK STYLES ***/
+
+		.den a {
+			color:#517249;
+			text-decoration:none;
+		}
+		.den a:hover {
+			color:#993300;
+			text-decoration:underline;
+		}
+
+	
+/*** H2 HEADER STYLES ***/
+	
+		.den h2 {
+			min-height:45px;
+		}
+
+		.den h2 a {
+			color:#f4e6b1;
+			font-weight:bold;
+			line-height:22px;
+			text-decoration:none;
+		}
+		.den h2 a:hover {
+			color:#d2d0c4;
+			text-decoration:underline;
+		}
+		.den .contentblock h2 {
+			background: url(/images/den/den_contenthead_tan.jpg) bottom left;
+			border-right:solid #dfdfdf 1px;
+			padding-left: 10px;
+			padding-top: 10px;
+			font-size:20px;
+			color:#f4e6b1;
+			vertical-align:middle;
+			margin-top: 1px;
+			margin-left: 1px;	
+		}
+		.den .contentblock_white h2 {
+			background: url(/images/den/den_contenthead.jpg) bottom left;
+			border-right:solid #dfdfdf 1px;
+			padding-left: 10px;
+			padding-top: 10px;
+			font-size:20px;
+			color:#f4e6b1;
+			vertical-align:middle;
+			margin-top: 1px;
+			margin-left: 1px;	
+		}
+		
+/*** H2 SUBHEAD STYLES ***/
+			
+		.den h2 .subhead {
+				color:#FFFFFF;
+				font-weight:normal;
+				line-height:16px;
+				padding-bottom: 22px;
+				font-size:12px;			
+			}
+		.den h2 .subhead a{
+				font-weight:normal;
+				text-decoration:underline;				
+				font-weight: bold;						
+			}
+/*** H2 - NO ARROW ***/	
+		.den h2.noarrow {
+				background: url(/images/den/den_contenthead.jpg) left;
+				border-right:solid #dfdfdf 1px;
+				padding-left: 10px;
+				padding-top: 10px;
+				font-size:20px;
+				color:#f4e6b1;
+				vertical-align:middle;
+				margin-top: 1px;
+				margin-left: 1px;
+				margin-bottom:0px;	
+				clear:left;
+				padding-bottom:5px;
+				height:30px;		
+			}
+		.den h2.noarrow .subhead {
+				color:#FFFFFF;
+				font-weight:normal;
+				line-height:18px;
+				padding-bottom: 3px;
+				font-size:12px;	
+				float:left;
+			}	
+		
+		/*** H2 - NO ARROW - WITH STATE SEAL ***/	
+		.den h2.noarrow_seal {
+				background: url(/images/den/den_contenthead.jpg) left;
+				border-right:solid #dfdfdf 1px;
+				padding-left: 83px;
+				padding-top: 10px;
+				font-size:14px;
+				color:#f4e6b1;
+				vertical-align:middle;
+				margin-top: 1px;
+				margin-left: 1px;
+			}
+		.den h2.noarrow_seal a{
+				color:#f4e6b1;
+				text-decoration:none;
+				font-weight:bold;
+				font-size: 20px;
+			}
+		.den h2.noarrow_seal a:hover{
+				font-weight:bold;
+				text-decoration: underline;
+			}	
+		.den h2.noarrow_seal .subhead a{
+				color:#d2d0c4;
+				font-weight:normal;
+				text-decoration:none;
+				font-size: 12px;
+			}
+		.den  h2.noarrow_seal  .subhead  a:hover{
+				color:#d2d0c4;
+				font-weight:normal;
+				text-decoration:underline;				
+			}
+		.den h2.noarrow_seal .subhead {
+				color:#FFFFFF;
+				font-weight:normal;
+				line-height:14px;
+				padding-bottom: 6px;
+				font-size:12px;
+			}	
+		.den    h2.noarrow_seal    a.city   {
+				font-size: 16px;
+			}
+			
+			
+		.loginbox_den {
+			width:300px;
+			background:#FFFFFF; 
+			border: #990000 solid 1px;
+			} 
+    	.loginbox_den .login {
+    		background-image: url(/images/den/den_contenthead.jpg);
+    		}			
+			
+			
+		.den #topnav .navspace 
+        {
+           width:978px;
+           height:31px;
+           background-color:#324026;
+           float:left;
+           border-right: solid #a79f9f 1px;
+           border-left: solid #a79f9f 1px;
+           z-index:99;
+        }	

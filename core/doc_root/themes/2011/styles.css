@@ -1,0 +1,17 @@
+body {
+    text-align: center;
+    background: #cccccc;    
+}
+#Shell
+{
+    text-align: center;    
+}
+
+#Main {
+    margin: 0px auto;
+    width: 500px;
+    text-align: left;
+    border: 1px solid #999999;
+    background: #FFFFFF;
+    padding: 10px;
+}

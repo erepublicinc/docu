@@ -19,4 +19,5 @@ prepare_dir cms
 prepare_dir gt
 prepare_dir dc
 prepare_dir forms
+prepare_dir navigator
 

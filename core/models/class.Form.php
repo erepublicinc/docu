@@ -9,7 +9,8 @@ class Form extends Model
     protected static $mFieldDescriptions = array(
             'forms_id'          => array('type'=>'int', 'auto_insert'=>true), // autoincrement
             'forms_tpl'         => array('type'=>'varchar'), 
-            'forms_title'       => array('type'=>'varchar', 'required'=>true ),         
+            'forms_title'       => array('type'=>'varchar', 'required'=>true ), 
+            'forms_display_title' => array('type'=>'varchar', 'required'=>true ),        
             'forms_url_name'    => array('type'=>'varchar'),
             'forms_https'       => array('type'=>'bit'), 
             'forms_start_date'  => array('type'=>'date'),
@@ -79,6 +80,29 @@ class Form extends Model
         return false;
     }
     
+    /**
+     * makes a copy of a form
+     * @param int  form_id
+     * @return int id of a copy , or false
+     */
+    public static function Copy($id)
+    {   
+        if($id <= 0)
+          return false;
+        
+        if(! User::Authorize("EDITOR"))
+           return YaasMakeErrorResponse("You don't have the proper rights");
+        
+        $original = self::GetDetails($id);   
+        $original = $original->ToArrray();
+        $original['id'] = 0;
+        $original['title'] .= ' (copy)';
+        
+        $clone    = new Form($original); 
+        return $clone->Save();
+    }
+    
+    
     
     public static function SaveField($parms)
     {
@@ -97,18 +121,18 @@ class Form extends Model
     { 
        
         $fields_id = intval($parms->fields_id);   
-        $title     = Query::Escape($parms->fields_title);
+        $title     = Query::Escape($parms->fields_label);
         $order     = intval($parms->fields_order);
         
         if($parms->fields_locked > 0)
         {
-            $sql = "UPDATE forms.fields SET  fields_title = '$title', 
+            $sql = "UPDATE forms.fields SET  fields_label = '$title', 
                                              fields_order = $order
                     WHERE fields_id = $fields_id";
         }
         else 
         {
-             $sql = "UPDATE forms.fields SET  fields_title = '$title', 
+             $sql = "UPDATE forms.fields SET  fields_label = '$title', 
                                              fields_order = $order
                     WHERE fields_id = $fields_id";
         }
@@ -129,8 +153,8 @@ class Form extends Model
         $order             = intval($parms->fields_order);
         
         $sql = array();
-        $sql[] ="INSERT INTO forms.fields (forms_fid, fields_title, fields_form_name, fields_tpl, fields_type, fields_class, fields_validation,fields_required,fields_eloqua_name, fields_values, fields_locked, fields_order) 
-              SELECT '$forms_id' as forms_fid, fields_title, fields_form_name, fields_tpl, fields_type, fields_class, fields_validation,fields_required,fields_eloqua_name, fields_values, fields_locked, '$order' as fields_order
+        $sql[] ="INSERT INTO forms.fields (forms_fid, fields_label, fields_html_name, fields_tpl, fields_type, fields_class, fields_validation,fields_required,fields_eloqua_name, fields_values, fields_locked, fields_order) 
+              SELECT '$forms_id' as forms_fid, fields_label, fields_html_name, fields_tpl, fields_type, fields_class, fields_validation,fields_required,fields_eloqua_name, fields_values, fields_locked, '$order' as fields_order
               FROM forms.field_masters fm 
               WHERE fm.field_masters_id = $field_masters_id";
         $sql[]  = "SELECT LAST_INSERT_ID() as id";
@@ -168,9 +192,18 @@ class Form extends Model
         return new Query("SELECT * FROM forms.forms WHERE forms_id = $id");
     }
 
-    
     /**
      *  GetDetails
+     *  @param string forms_url_name
+     *  @return form record
+     */
+    public static function GetDetailsByName($name)
+    {
+        return new Query("SELECT * FROM forms.forms WHERE forms_url_name = '$name'");
+    }
+    
+    /**
+     *  GetFields
      *  @param int forms_id
      *  @return array of field records
      */
