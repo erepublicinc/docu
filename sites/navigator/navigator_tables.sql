@@ -29,8 +29,10 @@ grant select, insert, update, delete on navigator.* to 'web_sites_admin'@'%';
 
 CREATE TABLE navigator.states
 (
-    states_code  VARCHAR(20) NOT NULL,
+    states_code  CHAR(2) NOT NULL,
     states_title VARCHAR(40) NOT NULL,
+    states_fips_code CHAR(2),
+    states_territories BIT DEFAULT 0,
     states_pk    INT, CONSTRAINT states_pk_unique UNIQUE (states_pk),
     PRIMARY KEY (states_code)
 ) engine InnoDB ; 
@@ -47,13 +49,14 @@ CREATE TABLE navigator.accounts
            
         PRIMARY KEY (accounts_id)
     ) engine InnoDB ; 
-insert into navigator.accounts (accounts_id, accounts_title) VALUES(12, 'eRepublic');
+
   
 CREATE TABLE navigator.users
     (
         users_id             INT NOT NULL AUTO_INCREMENT,
         users_last_name     VARCHAR(20) ,
         users_first_name     VARCHAR(20),
+        users_job_title     VARCHAR(50),
         users_password         VARCHAR(60) ,
         users_email         VARCHAR(60)   NOT NULL,
         users_ad_user         VARCHAR(20) ,
@@ -92,7 +95,7 @@ CREATE TABLE navigator.logins
     (
         logins_users_fid     INT NOT NULL ,
         logins_timestamp    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        logins_site_code     SET('GOV','ED','EM') NOT NULL,
+        logins_site_code     SET('DGN','DEN','EMN') NOT NULL,
         logins_method         VARCHAR(20) COMMENT 'values: PASSWORD, COOKIE',
         logins_browser         VARCHAR(100) COMMENT 'the user agent string',
         logins_http_address VARCHAR(50),
@@ -102,19 +105,19 @@ CREATE TABLE navigator.logins
     ) engine InnoDB;   
     
 
-CREATE TABLE navigator.nav_accounts
+CREATE TABLE navigator.licenses //used to be nav-accounts   nava_
     (
-        nava_accounts_fid         INT NOT NULL ,
-        nava_site_code            SET('GOV','ED','EM') NOT NULL,
-        nava_access_level         VARCHAR(20) NOT NULL,
-        nava_licenses             INT NOT NULL,
-        nava_contract_status      VARCHAR(20) NOT NULL,
-        nava_contract_expiration DATETIME NOT NULL,
-        nava_monthly_bonus_hours INT NOT NULL,
-        nava_account_rep_id      INT NOT NULL,
-        CONSTRAINT  FOREIGN KEY (nava_account_rep_id) REFERENCES users (users_id), 
-        CONSTRAINT  FOREIGN KEY (nava_accounts_fid)   REFERENCES accounts (accounts_id),  
-        PRIMARY KEY (nava_accounts_fid, nava_site_code)
+        licenses_accounts_fid       INT NOT NULL ,
+        licenses_site_code          SET('DGN','DEN','EMN') NOT NULL,
+        licenses_access_level       SET('STANDARD','PREMIUM') NOT NULL,     
+        licenses_number_of_users    INT NOT NULL,
+        licenses_status      		SET('EXPIRED','RENEWAL','ACTIVE','CANCELED','TRIAL') NOT NULL,
+        licenses_expiration 		DATETIME NOT NULL,
+        licenses_monthly_bonus_hours INT NOT NULL,
+        licenses_account_rep_fid     INT NOT NULL,
+        CONSTRAINT  FOREIGN KEY (licenses_account_rep_fid) REFERENCES users (users_id), 
+        CONSTRAINT  FOREIGN KEY (licenses_accounts_fid)   REFERENCES accounts (accounts_id),  
+        PRIMARY KEY (licenses_accounts_fid, licenses_site_code)
     ) engine InnoDB;  --  a navigator account will have multiple of these linked to it, one for each navigator
     
 
@@ -122,11 +125,12 @@ CREATE TABLE navigator.org_functional_types           -- formally known as agenc
 (    
     oft_code        VARCHAR(40)  NOT NULL ,
     oft_description VARCHAR(40)  NOT NULL ,
-    oft_den            BIT,
-    oft_dgn            BIT,
-    oft_emn            BIT,
+    oft_den         BIT,
+    oft_dgn         BIT,
+    oft_emn         BIT,
     oft_cms_only    BIT,
-    CONSTRAINT oft_description_unique UNIQUE (oft_description),
+    oft_pk            INT, CONSTRAINT oft_pk_unique UNIQUE (oft_pk),
+    CONSTRAINT oft_description_unique UNIQUE (oft_description),  
     PRIMARY KEY (oft_code)   
 ) engine InnoDB ;
 
@@ -147,17 +151,19 @@ CREATE TABLE navigator.orgs
     (    
         orgs_id                     INT NOT NULL AUTO_INCREMENT,
         orgs_title                     VARCHAR(100) NOT NULL,
+        orgs_canonical_title           VARCHAR(100) NOT NULL, --  used for matching with fips table and other temp. use
         orgs_abbreviation             VARCHAR(20),
         orgs_type_code                VARCHAR(40) NOT NULL  COMMENT 'CITY, COUNTY, CONSOLIDATED etc.. found in org_types',          
+        orgs_subtype                VARCHAR(100)  COMMENT 'for K12 subtypes',          
         orgs_functional_type_code     VARCHAR(40) COMMENT 'used to be agency type',
         orgs_group                  VARCHAR(40),         -- GOV ED (do we need this)
         orgs_state_code                VARCHAR(20) NOT NULL,   -- state abbrev + FEDERAL, MULTIPLE, ...
-        orgs_fips                   VARCHAR(40),        -- federal id
+        orgs_fips_code                 VARCHAR(40),        -- federal id
         orgs_entity_id               VARCHAR(40) COMMENT 'for e-rates', 
         orgs_parent                 INT COMMENT 'foreign key into orgs table. it is the parent organization',
                      
         orgs_fiscal_year_begins        INT COMMENT 'the month,  mostly 1 or 7',     
-        orgs_budget_cycle           VARCHAR(20) COMMENT 'values: ANNUAL, BIENNIAL',  
+        orgs_budget_cycle           SET('ANNUAL', 'BIENNIAL','')  DEFAULT '',
         orgs_upcoming_budget_status      VARCHAR(20) COMMENT 'values: APPROVED',  
         orgs_url                     VARCHAR(100) , 
         orgs_address                 VARCHAR(100) , 
@@ -167,8 +173,10 @@ CREATE TABLE navigator.orgs
         orgs_zip                     VARCHAR(20) , 
         orgs_phone                     VARCHAR(20) , 
         orgs_fax                     VARCHAR(20) ,
-        CONSTRAINT unique_fips UNIQUE (orgs_fips ), 
-        CONSTRAINT unique_entity_id UNIQUE (orgs_entity_id ),
+        orgs_pk                            INT, CONSTRAINT unique_orgs_pk UNIQUE (orgs_pk ),
+        CONSTRAINT orgs_unique_fips UNIQUE (orgs_fips_code ), 
+        CONSTRAINT orgs_unique_entity_id UNIQUE (orgs_entity_id ),
+        CONSTRAINT orgs_unique_title UNIQUE (orgs_title, orgs_parent),
         CONSTRAINT FOREIGN KEY (orgs_state_code) REFERENCES navigator.states (states_code),
         CONSTRAINT FOREIGN KEY (orgs_type_code) REFERENCES org_types (ot_code),
         CONSTRAINT FOREIGN KEY (orgs_functional_type_code) REFERENCES org_functional_types (oft_code),
@@ -178,7 +186,7 @@ CREATE TABLE navigator.orgs
 
 CREATE TABLE navigator.orgs_x_orgs    -- to link orgs
     (
-        orgs_fid1	INT NOT NULL,  -- 'higher' in hierarchy: FED, STATE, DOE, CONSOLIDATED, COUNTY, CITY, AGENCY, UNIVERSITY, K12 
+        orgs_fid1    INT NOT NULL,  -- 'higher' in hierarchy: FED, STATE, DOE, CONSOLIDATED, COUNTY, CITY, AGENCY, UNIVERSITY, K12 
         orgs_fid2   INT NOT NULL,
         orgs_relation_code   VARCHAR(20),  -- do we need this
         CONSTRAINT FOREIGN KEY (orgs_fid1) REFERENCES orgs (orgs_id),
@@ -186,26 +194,25 @@ CREATE TABLE navigator.orgs_x_orgs    -- to link orgs
         PRIMARY KEY (orgs_fid1,orgs_fid2) 
      ) engine InnoDB ; 
 
-CREATE TABLE navigator.gov_orgs    -- extra data for "gov" org types
+CREATE TABLE navigator.gov_org_properties    -- extra data for "gov" org types
     (    
-       gov_orgs_id  INT NOT NULL AUTO_INCREMENT,
+       gov_properties_id  INT NOT NULL AUTO_INCREMENT,
        orgs_fid     INT NOT NULL,   --foreign key into orgs
        population    INT,
        government_employees     INT,
        executive_departments     INT,
-       boards_and_commisions    INT,
+       boards_and_commissions    INT,
        judicial_departments        INT,
-       budget_cycle                INT,
        legislative_departments    INT,
-       funding_tier                INT,
+       funding_tier                INT,  -- for uasi
        
        CONSTRAINT FOREIGN KEY (orgs_fid) REFERENCES orgs (orgs_id),
-       PRIMARY KEY(gov_orgs_id) 
+       PRIMARY KEY(gov_properties_id) 
     ) engine InnoDB ; 
 
-CREATE TABLE navigator.ed_orgs
+CREATE TABLE navigator.ed_org_properties
     (    
-       ed_orgs_id             INT NOT NULL AUTO_INCREMENT,
+       ed_properties_id             INT NOT NULL AUTO_INCREMENT,
        orgs_fid             INT NOT NULL,   --foreign key into orgs
        total_k12_spending    INT,
        enrollment            INT,
@@ -213,9 +220,8 @@ CREATE TABLE navigator.ed_orgs
        spending_per_student INT,
        students_per_computer_ratio INT,
        school_districts        INT,
-       fiscal_year_begins   INT,
        CONSTRAINT FOREIGN KEY (orgs_fid) REFERENCES orgs (orgs_id),
-       PRIMARY KEY(ed_orgs_id) 
+       PRIMARY KEY(ed_properties_id) 
     ) engine InnoDB ; 
 
 CREATE TABLE navigator.budgets
@@ -254,13 +260,16 @@ CREATE TABLE navigator.bids
        bids_conference_date         DATETIME,
        
        bids_preferred_contact_method VARCHAR(10),     
-       bids_using_org                 VARCHAR(200) NOT NULL,
-       bids_using_org_type          VARCHAR(40) ,    --     org_functional_types.oft_code  
+       
+       bids_using_org_fid            INT,					-- ???? do we always have a real using org ?
+       bids_using_org_title			 VARCHAR(200) NOT NULL,
+       bids_using_org_type           VARCHAR(40) ,    --     org_functional_types.oft_code  
+       
        bids_issuing_org_fid          INT NOT NULL,
        
        bids_pdf                     VARCHAR(250),
        bids_url                     VARCHAR(250),
-       bids_subtype                 VARCHAR(40),
+       bids_subtype                 SET('PRE-RFP','RFP','AWARDED','ERATE','SOLE_SOURCE'),
        bids_fiscal_year             INT,
        
            
@@ -279,6 +288,7 @@ CREATE TABLE navigator.bids
        bids_zip                      VARCHAR(20) , 
        bids_phone                     VARCHAR(20) , 
        bids_fax                       VARCHAR(20),
+       CONSTRAINT  FOREIGN KEY (bids_using_org_type) REFERENCES org_functional_types (oft_code),
        CONSTRAINT  FOREIGN KEY (bids_issuing_org_fid) REFERENCES orgs (orgs_id),  
        CONSTRAINT  FOREIGN KEY (bids_users_fid) REFERENCES users (users_id),  
        PRIMARY KEY (bids_id)        
@@ -287,12 +297,12 @@ CREATE TABLE navigator.bids
     
 CREATE TABLE navigator.bidcats
 (     
-        bidcats_id        INT NOT NULL AUTO_INCREMENT,
-        bidcats_title    VARCHAR(40) NOT NULL, 
+        bidcats_id      INT NOT NULL AUTO_INCREMENT,
+        bidcats_title	VARCHAR(40) NOT NULL, 
         bidcats_subtype VARCHAR(40) NOT NULL, 
-        bidcats_em        BIT,
-        bidcats_ed        BIT,
-        bidcats_gov        BIT,    
+        bidcats_em      BIT,
+        bidcats_ed      BIT,
+        bidcats_gov     BIT,    
         PRIMARY KEY (bidcats_id)          
 ) engine InnoDB  COMMENT 'bid categories';    
 
@@ -324,13 +334,15 @@ CREATE TABLE navigator.divisions
         divisions_title VARCHAR(40),   
         PRIMARY KEY (divisions_code)
     ) engine InnoDB ; 
+
     
-CREATE TABLE navigator.roletypes
-    (    
-        roletypes_code  VARCHAR(40) NOT NULL, -- HEAD, DEPUTY, SPECIALIST, MEMBER
-        roletypes_title VARCHAR(40),   
-        PRIMARY KEY (roletypes_code)
-    ) engine InnoDB ; 
+    
+-- CREATE TABLE navigator.roletypes
+--     (    
+--         roletypes_code  VARCHAR(40) NOT NULL, -- HEAD, DEPUTY, SPECIALIST, MEMBER
+--         roletypes_title VARCHAR(40),   
+--         PRIMARY KEY (roletypes_code)
+--     ) engine InnoDB ; 
  
     
 
@@ -341,7 +353,7 @@ CREATE TABLE navigator.contact_roles     -- a link table between org and contact
     (    
        roles_contacts_fid   INT NOT NULL,
        roles_orgs_fid        INT NOT NULL,
-       roles_roletypes_code VARCHAR(40) NOT NULL,  -- HEAD 
+       roles_position       SET('HEAD','DEPUTY','SPECIALIST') NOT NULL,   
        roles_divisions_code VARCHAR(40) NOT NULL,  -- IT, ENTIRE agency
        roles_title            VARCHAR(100) NOT NULL,
        roles_active         BIT,
@@ -356,7 +368,6 @@ CREATE TABLE navigator.contact_roles     -- a link table between org and contact
        roles_fax             VARCHAR(20),
        CONSTRAINT FOREIGN KEY (roles_contacts_fid) REFERENCES contacts (contacts_id),
        CONSTRAINT FOREIGN KEY (roles_orgs_fid) REFERENCES orgs (orgs_id),
-       CONSTRAINT FOREIGN KEY (roles_roletypes_code) REFERENCES roletypes (roletypes_code),
        CONSTRAINT FOREIGN KEY (roles_divisions_code) REFERENCES divisions (divisions_code),
        PRIMARY KEY (roles_contacts_fid, roles_orgs_fid)
     ) engine InnoDB ; 
@@ -456,7 +467,7 @@ CREATE TABLE  navigator.bonus_hour_request
         bhr_id                 INT NOT NULL AUTO_INCREMENT,
         dhr_accounts_fid    INT NOT NULL,
         dhr_requestor_fid    INT NOT NULL COMMENT 'the requesting user',
-        dhr_site_code        SET('GOV','ED','EM') NOT NULL,  -- subtype in the old system
+        dhr_site_code        SET('DGN','DEN','EMN') NOT NULL,  -- subtype in the old system
         bhr_create_date       DATETIME NOT NULL,
         bhr_close_date      DATETIME,
         bhr_hours_used        INT,
@@ -495,7 +506,7 @@ CREATE TABLE  navigator.interviews
         interviews_ext_id        VARCHAR(40) ,
         interviews_event_date     DATETIME,
         interviews_eloqua_url    VARCHAR(200),
-        interviews_site_code    SET('GOV','ED','EM'),
+        interviews_site_code    SET('DGN','DEN','EMN'),
         CONSTRAINT FOREIGN KEY (interviews_contacts_fid) REFERENCES users (users_id),  
         PRIMARY KEY (interviews_id)
     )engine InnoDB;    
@@ -504,7 +515,7 @@ CREATE TABLE  navigator.interviews
 CREATE TABLE  navigator.user_preferences
     (
         up_users_fid            INT NOT NULL,
-        up_site_code            SET('GOV','ED','EM') NOT NULL, -- VARCHAR(20) NOT NULL, 
+        up_site_code            SET('DGN','DEN','EMN') NOT NULL, -- VARCHAR(20) NOT NULL, 
         up_push_hourly            BIT DEFAULT 0,
         up_push_daily            BIT DEFAULT 0,
         up_push_weekly            BIT DEFAULT 0,
@@ -534,20 +545,38 @@ CREATE TABLE  navigator.searches
      
    
 
-insert into accounts(accounts_id,accounts_title) values(417102,'eRepublic');
-insert into usergroups(usergroups_code, usergroups_title) values('SUPER_ADMIN','Super Admin!');
-insert into usergroups(usergroups_code, usergroups_title) values('ADMIN','Admin');
+insert into accounts(accounts_id,accounts_pk,accounts_title,accounts_sf_id) values(1,417102,'eRepublic','0013000000LtZ3U');
+
+
+insert into usergroups(usergroups_code, usergroups_title, usergroups_summary) values('SUPER_ADMIN','Super Admin!','like a god');
+insert into usergroups(usergroups_code, usergroups_title,usergroups_summary) values('ADMIN','Admin','Administrator');
 
 -- creating the  administrator user 
 insert into users (users_id, users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_fid) 
-        values(1,'administrator','','201f00b5ca5d65a1c118e5e32431514c','webmaster@erepublic.com',1,417102);
+        values(1,'administrator','','201f00b5ca5d65a1c118e5e32431514c','webmaster@erepublic.com',1,1);
 insert into users_x_usergroups(users_fid,usergroups_fcode) values(1,'ADMIN');
 
 insert into users (users_id, users_last_name, users_first_name, users_password, users_email, users_active, users_accounts_fid) 
-        values(3,'Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1,417102);
+        values(3,'Tel','Michael','201f00b5ca5d65a1c118e5e32431514c','mtel@erepublic.com',1,1);
 insert into users_x_usergroups(users_fid,usergroups_fcode) values(3,'SUPER_ADMIN');
 
+INSERT INTO licenses (licenses_accounts_fid, licenses_site_code, licenses_access_level,licenses_number_of_users,licenses_status,licenses_expiration,licenses_monthly_bonus_hours,licenses_account_rep_fid) 
+                      VALUES(1,'DGN','STANDARD',3,'ACTIVE','2013-03-31',1,1 );        
+INSERT INTO licenses (licenses_accounts_fid, licenses_site_code, licenses_access_level,licenses_number_of_users,licenses_status,licenses_expiration,licenses_monthly_bonus_hours,licenses_account_rep_fid) 
+                      VALUES(1,'EMN','STANDARD',3,'ACTIVE','2013-03-31',1,1 ) ;       
+INSERT INTO licenses (licenses_accounts_fid, licenses_site_code, licenses_access_level,licenses_number_of_users,licenses_status,licenses_expiration,licenses_monthly_bonus_hours,licenses_account_rep_fid) 
+                      VALUES(1,'DEN','STANDARD',3,'ACTIVE','2013-03-31',1,1 ) ;       
 
+
+
+INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('AS','American Samoa', 10001,60,1); 
+INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('GU','Guam', 10002,66,1); 
+INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('PR','Puerto Rico', 10003,72,1); 
+INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('VI','Virgin Islands', 10004,78,1); 
+INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('MP','Northern Marianas', 10005,69,1); 
+--  other fips codes:  Bureau of Indian Education: 59 , DOD (Domestic): 61  , DOD (Overseas): 58
+
+ 
    
 
 -- articles

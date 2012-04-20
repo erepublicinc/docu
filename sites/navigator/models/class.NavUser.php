@@ -157,7 +157,7 @@ class NavUser
        $sql =  "SELECT *  FROM users 
                 LEFT JOIN users_x_usergroups ON users_id = users_fid    
                 LEFT JOIN accounts ON accounts_id = users_accounts_fid
-                LEFT JOIN nav_accounts ON  nava_accounts_fid = users_accounts_fid and nava_site_code = '$site_code'
+                LEFT JOIN licenses ON  licenses_accounts_fid = users_accounts_fid and licenses_site_code = '$site_code'
                 WHERE users_email = '$email' ";
                  
        $userdata = new Query($sql);
@@ -178,9 +178,9 @@ class NavUser
        }
 
        //check account status   
-       if( ! in_array( $userdata->nava_contract_status, array('ACTIVE','RENEWAL','TRIAL')) )
+       if( ! in_array( $userdata->licenses_status, array('ACTIVE','RENEWAL','TRIAL')) )
        {  
-          self::$errorMessage = "account status: $userdata->nava_contract_status";       
+          self::$errorMessage = "account status: $userdata->licenses_status";       
           return false;       
        }
        
