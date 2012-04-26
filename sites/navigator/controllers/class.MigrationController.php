@@ -21,6 +21,10 @@ migration   decisions:
 	
 - add phone number to org
 
+- functional org types:      for city, county, state , univ, k12, (all but regional)   = ADMIN
+  for REGIONAL   : TRANPORTATION,  UTILITIES OR something else
+
+
 */
 
 
@@ -46,6 +50,8 @@ class MigrationController
 {
     private $oldDB ;
     private $batch = array(); // we write the records in batches
+    private $numResults;
+    private $result;
     
     function __construct()
     {
@@ -77,6 +83,7 @@ class MigrationController
     function migrateStates()
     {
         echo "migrating states <br><br>";
+       
         
         $this->loadRows('select * from states');
         while(true)
@@ -94,8 +101,8 @@ class MigrationController
         $this->finish();
         
         $sql="update states ,reference.k12_districts 
-			set states_fips_code = substr(state_fipscode,1,2) 
-			where states_code = state_code";
+			set states_fips_code = substr(state_fips,1,2) 
+			where states_code = mail_state";
 
         $this->save($sql);
         $this->finish();
@@ -105,7 +112,7 @@ class MigrationController
  function migrateAccounts()
  {
      echo "migrate Accounts <br><br>";
-        
+            
         $this->loadRows("select  * from accounts  ");
         
         $sql=array();
@@ -129,7 +136,8 @@ class MigrationController
                 
            echo "<br>$num $r->title ";  
            
-                   
+           if($r->pk   ==  417102 )  // skip erepublic
+              continue;       
            
            $title = trim($r->title);  
            $etitle = Query::Escape($title);
@@ -161,7 +169,7 @@ class MigrationController
            {
                $time =  strtotime( $r->emn_contract_expiration);
                $date =  date("Y-m-d" ,$time);
-               $sql[] = "INSERT INTO licenses (licenses_accounts_fid, licenses_site_code, licenses_access_level,licenses_number_of_users,licenses_status,licenses_expiration,licenses_monthly_bonus_hours,licenses_account_rep_fid) 
+               $sql[] = "INSERT  INTO licenses (licenses_accounts_fid, licenses_site_code, licenses_access_level,licenses_number_of_users,licenses_status,licenses_expiration,licenses_monthly_bonus_hours,licenses_account_rep_fid) 
                                      VALUES(@acc_id,'EMN','$r->emn_access_level',$r->emn_licenses,'$r->emn_contract_status','$date',$r->emn_monthly_bonus_hours,1 )";      
                echo"EMN ";
                $found = true;
@@ -218,12 +226,17 @@ echo "migrate Users <br><br>";
         if($r === false)
             break;
        echo "$r->code <br>";  
-         
+
+       
        $lastname   = Query::Escape($r->last_name);
        $firstname  = Query::Escape($r->first_name);
        $jobtitle   = Query::Escape($r->job_title);
        $email      = Query::Escape($r->email);
        $account_id = $accounts[$r->fk1];
+       
+       if($r->pk == 3)  // skip mtel
+           continue;
+       
        if($account_id > 0)
        {
            $sql = "INSERT INTO users (users_pk,users_last_name,users_first_name,users_job_title,users_salesforce_fid,users_password,users_email,users_ad_user,users_accounts_fid,users_active) 
@@ -267,8 +280,8 @@ function migrateOrgs_part1()
 {
     
    
-    $this->save("delete from  navigator.ed_org_properties");
-    $this->save("delete from  navigator.gov_org_properties");
+    $this->save("delete from navigator.ed_org_properties");
+    $this->save("delete from   navigator.gov_org_properties");
     $this->save("delete from  navigator.orgs");
      $this->save("delete from  navigator.org_types");
     $this->save("delete from  navigator.org_functional_types");
@@ -349,8 +362,8 @@ function migrateOrgs_part2()
        $population = intval($r->population);
       // if($r->statecode =='LA')echo "$title  <---> $stitle  $r->statecode<br>"; 
        
-       $sql = "INSERT INTO orgs (orgs_canonical_title, orgs_title, orgs_abbreviation, orgs_type_code, orgs_state_code,orgs_fiscal_year_begins,orgs_budget_cycle,orgs_url,orgs_pk)
-       					 VALUES('$stitle','$title','$r->abbreviation','$r->subtype','$r->statecode',  $year_begins, '$r->budget_cycle','$r->url',$r->pk)";
+       $sql = "INSERT INTO orgs (orgs_canonical_title, orgs_title, orgs_abbreviation, orgs_type_code, orgs_functional_type_code, orgs_state_code,orgs_fiscal_year_begins,orgs_budget_cycle,orgs_url,orgs_pk)
+       					 VALUES('$stitle','$title','$r->abbreviation','$r->subtype','ADMIN','$r->statecode',  $year_begins, '$r->budget_cycle','$r->url',$r->pk)";
        //echo($sql." <br>\n") ;
        $this->save($sql);
        
@@ -362,8 +375,9 @@ function migrateOrgs_part2()
                  VALUES(@orgs_id, $population, $r->government_employees, $r->executive_departments, $r->boards_and_commisions, $r->judicial_departments, $r->legislative_departments, $tier)";
            $this->save($sql);
        }
+        $this->finish();
     } 
-    $this->finish();
+   
     
     
    
@@ -434,7 +448,8 @@ function migrateOrgs_part3()
             join jurisdictions#states js  
             join states s on s.pk = js.fk2
             on js.fk1 = j.pk          
-            where subtype in  ('STATE', 'CITY','REGIONAL' ) 
+            --where subtype in  ('STATE', 'CITY','REGIONAL' ) 
+            where NOT  subtype IN ('COUNTY','CONSOLIDATED')
             and j.pk not in 
             (   -- exclude stand-alone libraries
                 select i.pk   
@@ -455,6 +470,13 @@ function migrateOrgs_part3()
         if($r === false)
             break;
        
+        $s = trim($r->subtype)  ;  
+        if(empty($s))
+        {
+            echo "skip $r->title   empty subtype";
+            continue;
+        }    
+            
         $title = Query::Escape($r->title);
 
         $tier = intval($r->funding_tier);
@@ -470,11 +492,49 @@ function migrateOrgs_part3()
            echo"=== Considered to be a library:  $r->title <br>";
            continue;     // we take the libray info from the agency     $org_type = 'LIBRARY';   
         }  
-           
+
+        $function_code = 'ADMIN';
+        if($org_type == 'REGIONAL')
+        {
+                        
+            if(stripos($r->title,'transport') !== FALSE )     $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'aviation') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'transit') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'airport') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'airport') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,' toll ') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,' tolway ') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'turnpike') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif(stripos($r->title,'railroad') !== FALSE )  $function_code = 'TRANSPORTATION';
+             
+            elseif(stripos($r->title,' port ') !== FALSE )  $function_code = 'TRANSPORTATION';
+            elseif (stripos($r->title,'water quality') !== FALSE )    $function_code = 'ENVIRONMENT';
+            elseif (stripos($r->title,'water reclamation') !== FALSE )    $function_code = 'ENVIRONMENT';
+            elseif (stripos($r->title,'water') !== FALSE )    $function_code = 'UTILITIES';
+            elseif (stripos($r->title,'sewer') !== FALSE )    $function_code = 'UTILITIES';   
+            elseif (stripos($r->title,'utilit') !== FALSE )   $function_code = 'UTILITIES'; 
+            elseif (stripos($r->title,'power') !== FALSE )    $function_code = 'UTILITIES';      
+            elseif (stripos($r->title,'gas') !== FALSE )    $function_code = 'UTILITIES';      
+            elseif (stripos($r->title,'correction')!== FALSE) $function_code = 'CORRECTIONS';      
+            elseif (stripos($r->title,'jail')!== FALSE) $function_code = 'CORRECTIONS';      
+            elseif (stripos($r->title,'parks') !== FALSE )    $function_code = 'ENVIRONMENT';      
+            elseif (stripos($r->title,'park ') !== FALSE )    $function_code = 'ENVIRONMENT';      
+            elseif (stripos($r->title,'housing') !== FALSE )  $function_code = 'PLANNING';      
+            elseif (stripos($r->title,'planning') !== FALSE )    $function_code = 'PLANNING';      
+            elseif (stripos($r->title,'development') !== FALSE ) $function_code = 'CORRECTIONS';      
+            elseif (stripos($r->title,'health') !== FALSE ) $function_code = 'HEALTH';      
+            elseif (stripos($r->title,'hospital') !== FALSE ) $function_code = 'HEALTH';      
+            elseif (stripos($r->title,'medical') !== FALSE ) $function_code = 'HEALTH';      
+            elseif (stripos($r->title,'librar') !== FALSE ) $function_code = 'LIBRARIES';      
+            elseif (stripos($r->title,'fire') !== FALSE ) $function_code = 'FIRE';      
+            elseif (stripos($r->title,'police') !== FALSE ) $function_code = 'POLICE';      
+            elseif (stripos($r->title,'sheriff') !== FALSE ) $function_code = 'POLICE';      
+            
+        }
         $counter++;    
         echo "$counter $r->title <br>";  flush(); 
-        $sql = "INSERT INTO orgs ( orgs_title, orgs_abbreviation, orgs_type_code, orgs_state_code,orgs_fiscal_year_begins,orgs_budget_cycle,orgs_url,orgs_pk)
-       					 VALUES('$title','$r->abbreviation','$org_type','$r->statecode',  $year_begins, '$r->budget_cycle','$r->url',$r->pk)";
+        $sql = "INSERT INTO orgs ( orgs_title, orgs_abbreviation, orgs_type_code, orgs_functional_type_code, orgs_state_code,orgs_fiscal_year_begins,orgs_budget_cycle,orgs_url,orgs_pk)
+       					 VALUES('$title','$r->abbreviation','$org_type','$function_code','$r->statecode',  $year_begins, '$r->budget_cycle','$r->url',$r->pk)";
         //echo($sql." <br>\n") ;
         $this->save($sql);
         
@@ -487,8 +547,9 @@ function migrateOrgs_part3()
              VALUES(@orgs_id, $population, $r->government_employees, $r->executive_departments, $r->boards_and_commisions, $r->judicial_departments, $r->legislative_departments, $tier)";
            $this->save($sql);
         }
+        $this->finish();
     } 
-    $this->finish();
+   
     
 }
  
@@ -539,10 +600,10 @@ function migrateOrgs_part4()
         $districts = intval($r->school_districts);
         
         $org_type = $r->subtype;
-        if(stripos($r->title,'Library') >0 )
+        if(stripos($r->title,'Library') !== FALSE )
            continue;     // we take the libray info from the agency     $org_type = 'LIBRARY';
         
-        if(strpos($r->title,'Lib') >0 )
+        if(strpos($r->title,'Lib') !== FALSE )
         {
            echo"=== Considered to be a library:  $r->title <br>";
            continue;     // we take the libray info from the agency     $org_type = 'LIBRARY';   
@@ -563,18 +624,85 @@ function migrateOrgs_part4()
                       VALUES(@orgs_id, $spending, $enrollment, $teachers, $spending_student, $ratio, $districts)";
             $this->save($sql);
         }
+        $this->finish();
     } 
-    $this->finish();
+    
 }
     
-
-
-// load the school districts from the nces table
+// load our 1000 active k12  with the nces number 
 function migrateOrgs_part5()
 {
-       echo "<h2>create K12 districts from nces reference table </h2>"; flush();
+    echo("Load the about 1000 k12's that have non erate bids attached to them, and add nces and entity_id's to them");
+ 
+    echo" not ready yet ";
+    $sql="  select i.pk, i.title, i.abbreviation, i.subtype, i.url, i.enrollment, i.total_k12_spending, i.classroom_teachers, 
+             i.spending_per_student, i.students_per_computer_ratio, i.budget_cycle, i.school_districts, 
+             i.fiscal_year_begins,s.code as statecode 
+            from institutions i 
+            join institutions#states ist
+                 join states s on s.pk = ist.fk2
+            on i.pk = ist.fk1     
+            join  agencies#institutions ai
+               join agencies#bids ab
+                   join bids b on b.pk = ab.fk2
+               on ai.fk1 = ab.fk1
+            ON i.pk = ai.fk2           
+            where  i.subtype = 'K12'
+            and NOT b.subtype  = 'ERATE' 
+            order by i.pk ";
     
-    //$this->save("delete from  navigator.orgs");
+        $this->loadRows($sql);
+        
+    $currentPk = 0;
+    while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+       
+        // the query returns many duplicates  so we have to skip those    
+        if($currentPk == $r->pk )
+            continue;         
+        $currentPk = $r->pk ;       
+
+        
+        $title = Query::Escape($r->title);   
+        $year_begins = intval($r->fiscal_year_begins);
+        $ratio = intval($r->students_per_computer_ratio);
+        $spending = intval($r->total_k12_spending);
+        $enrollment =intval($r->enrollment);
+        $teachers =intval($r->classroom_teachers);
+        $spending_student = intval($r->spending_per_student);
+        $districts = intval($r->school_districts);
+        
+        $org_type = $r->subtype;
+           
+        $counter++;    
+        echo "$counter $r->title <br>";  flush(); 
+        $sql = "INSERT INTO orgs ( orgs_title, orgs_abbreviation, orgs_type_code, orgs_state_code,orgs_fiscal_year_begins,orgs_budget_cycle,orgs_url,orgs_pk)
+       					 VALUES('$title','$r->abbreviation','$org_type','$r->statecode',  $year_begins, '$r->budget_cycle','$r->url',$r->pk)";
+        //echo($sql." <br>\n") ;
+        $this->save($sql);
+        
+        if($ratio + $spending + $enrollment + $teachers + $spending_student + $districts  > 1 )
+        {
+            $this->save("SELECT @orgs_id:= LAST_INSERT_ID()");
+           
+            $sql = "INSERT INTO ed_org_properties(orgs_fid,total_k12_spending,enrollment,classroom_teachers,spending_per_student,students_per_computer_ratio,school_districts) 
+                      VALUES(@orgs_id, $spending, $enrollment, $teachers, $spending_student, $ratio, $districts)";
+            $this->save($sql);
+        }
+        $this->finish();
+    } 
+   
+}
+
+// load the school districts from the nces table.  if  k12 already exist, update the address 
+function migrateOrgs_part6()
+{  
+       echo "<h2>create K12 districts from nces reference table </h2>
+             if  k12 already exist, update the address "; flush();
+    
     $counter =0;
     //   exclude   dod overseas  fipscode : 58
     $sql = "select * from reference.k12_districts where NOT substr(state_fips,1,2) = '58' AND NOT mail_state ='AP' ";
@@ -583,7 +711,14 @@ function migrateOrgs_part5()
     foreach($results as $r)
     {
        
-        $title = ucwords(strtolower(Query::Escape($r->name)));   
+        $title = ucwords(strtolower(Query::Escape($r->name)));
+        $title .= ' ';   
+        $title = str_replace(" Isd ", " Independent School District ", $title);
+        $title = str_replace(" Co ", " County ", $title);
+        $title = str_replace(" Schs ", " Schools ", $title);
+        $title = str_replace(" Pblc ", " Public ", $title);
+        $title = str_replace(" Sd ", " School District ", $title);
+              
         $city  = ucwords(strtolower($r->mail_city));
         $address = ucwords(strtolower(Query::Escape($r->mail_adress)));
         //$year_begins = intval($r->fiscal_year_begins);
@@ -600,90 +735,248 @@ function migrateOrgs_part5()
         echo "$counter $title <br>";  flush(); 
         
         // NOTE: we store the county fips in the url (temporary)
-        $sql = "INSERT INTO orgs ( orgs_title, orgs_type_code, orgs_state_code, orgs_nces_code,orgs_address,orgs_city,orgs_state,orgs_zip,orgs_phone,orgs_subtype,orgs_url)
-       					 VALUES('$title','K12','$r->mail_state','$r->ncescode','$address','$city','$r->mail_state','$r->mail_zip','$r->phone','$r->district_type','$r->county_fips')";
+        $sql = "INSERT INTO orgs ( orgs_title, orgs_type_code, orgs_state_code, orgs_nces_code,orgs_address,orgs_city,orgs_state,orgs_zip,orgs_phone,orgs_subtype,orgs_tmp_county_fips)
+       					 VALUES('$title','K12','$r->mail_state','$r->ncescode','$address','$city','$r->mail_state','$r->mail_zip','$r->phone','$r->district_type','$r->county_fips')
+                ON DUPLICATE KEY UPDATE  orgs_address = '$address' ,orgs_city = '$city' , orgs_zip = '$r->mail_zip', orgs_phone = '$r->phone', orgs_tmp_county_fips = '$r->county_fips' ";
         //echo($sql." <br>\n") ;
         $this->save($sql);
         
-        if($ratio + $spending + $enrollment + $teachers + $spending_student + $districts  > 1 )
-        {
-            $this->save("SELECT @orgs_id:= LAST_INSERT_ID()");
-           
-            $sql = "INSERT INTO ed_org_properties(orgs_fid,total_k12_spending,enrollment,classroom_teachers,spending_per_student,students_per_computer_ratio,school_districts) 
-                      VALUES(@orgs_id, $spending, $enrollment, $teachers, $spending_student, $spending_student, $districts)";
-            $this->save($sql);
-        }
-        
        
-        
+        $this->save("SELECT @orgs_id:= LAST_INSERT_ID()");
+       
+        // this will fail silently if the previous operation was an update
+        $sql = "INSERT IGNORE INTO ed_org_properties(orgs_fid,total_k12_spending,enrollment,classroom_teachers,spending_per_student,students_per_computer_ratio,school_districts) 
+                  VALUES(@orgs_id, $spending, $enrollment, $teachers, $spending_student, $spending_student, $districts)";
+        $this->save($sql);
+
+        $this->finish();
+             
     } 
-    $this->finish();
+    
     
      // now we link the records up to the county through the fips number
 
     $sql = "UPDATE orgs o1, orgs o2
 			SET o1.orgs_parent = o2.orgs_id
-			WHERE o1.orgs_url = o2.orgs_fips_code";
+			WHERE o1.orgs_tmp_county_fips = o2.orgs_fips_code";
     $this->save($sql);   
 
-    $sql = "UPDATE orgs 
-            SET orgs_url = '' 
-            WHERE orgs_type_code = 'K12' ";
-    $this->save($sql);
+   
     
     $this->finish();
     
 }
  
-function bids1()
-{
-    $sqlx = "SELECT topx  *, b.pk as b_pk, ac.pk as agency_contact a.title as a_title, aj.fk2 as j_pk
-            FROM bids b          
-            JOIN agencies#bids ab
-              JOIN agencies a ON a.pk =ab.fk1
-              JOIN agencies#agency_types aat
-                  JOIN agency_types att ON att.pk = aat.fk2
-              ON ab.fk1 = aat.fk1 
-              JOIN agencies#jurisdictions aj ON aj.fk1 = ab.fk1
-              LEFT JOIN agencies#contacts ac ON ac.fk1 = ab.fk1 -- if the agency has a contact, its a real agency
-            ON b.pk = ab.fk2                
-            
-            JOIN bids#contacts bc       
-              JOIN contacts c ON c.pk = bc.fk2
-            ON bc.fk1 = b.pk      
-            WHERE NOT b.subtype = 'ERATE'
-            ORDER BY b.pk";
-     
-    $sql = str_replace('topx', 'top 1000', $sqlx) ;
 
-    $this->loadRows($sql);
+
+function agencies ()
+{
     
+    
+     $this->save("delete from orgs where orgs_type_code = 'AGENCY'");
+     $this->finish();
+    
+    echo "creates the agencies that have at least 1 person connected to them <br>";
+    /* these are agencies that we didnot bring over
+     select * from agencies a
+   join agencies#agency_types aat
+     join agency_types att on att.pk = aat.fk2
+  on a.pk = aat.fk1
+where is_jurisdiction_agency = 1
+and not a.pk in ( select fk1 from agencies#contacts )
+order by att.pk
+    
+     */
+    
+    
+    // question : do we merge the EXECUTIVE agencies into the org ? (instead of making a separate agency)
+    
+    
+    // only get agencies with a contact // or the uasi agencies marked as jurisdiction agency
+    $sql = "select  att.code as func_code, coalesce(aj.fk2, ai.fk2) as orgs_pk , a.title as a_title, a.pk as a_pk , aj.fk2 as j_pk, j.subtype , coalesce(j.title, i.title ) as jurinst_title
+            from agencies a
+               join agencies#agency_types aat
+                 join agency_types att on att.pk = aat.fk2
+               on a.pk = aat.fk1
+              
+              left join agencies#jurisdictions aj 
+                 join jurisdictions j on j.pk =aj.fk2
+              ON a.pk = aj.fk1
+                 
+              left join agencies#institutions ai 
+                  join institutions i on i.pk =ai.fk2
+              ON a.pk = ai.fk1
+              
+            where is_jurisdiction_agency = 1
+            and  (  a.pk in ( select fk1 from agencies#contacts )
+                   or j.subtype in('UASI','FUSION_CENTER')
+                 )     ";
+     $this->loadRows($sql);   
     while(true)
     {
         
         $r = $this->nextRow();
         if($r === false)
             break;
-    
-        // if agency_contact > 0   we have to create this agency
-        // otherwise we link it to the org 
-    
-        if($r->agency_contact > 0)
-        {
-            $title = Query::Escape($r->a_title);
-            $sql = "INSERT INTO orgs (orgs_title, orgs_parent)
-            	VALUES('$title', select orgs_id from orgs where orgs_pk = $r->j_pk )";
+
+      //  if($r->subtype == 'K12')
+      //     continue;    
             
-            $this->save($sql);
-            $this->save("SELECT @orgs_id:= LAST_INSERT_ID()");
-        }   
-        else 
-        {
-            $this->save("SELECT @orgs_id:= $r->j_pk");
-        } 
             
+        $pk = $r->orgs_pk;
+           
+        $o = new Query("select * from orgs where orgs_pk = $r->orgs_pk");    
+        if($pk != $o->orgs_pk)
+        {
+          echo " **** NOT FOUND ***  $r->orgs_pk  $r->jurinst_title  -- FOR AGENCY -- $r->a_pk, $r->a_title <br>";
+          continue;
+        }
+ //      else            echo "FOUND $o->orgs_title  for  $r->a_title <br>"   ;
+        
+    
+        $address = Query::Escape($r->address);
+        $address2 = Query::Escape($r->address2);
+        $city = Query::Escape($r->city);
+ 
+        $title = Query::Escape($r->a_title);
+        $sql = "INSERT INTO orgs (orgs_type_code,orgs_functional_type_code,orgs_title, orgs_parent, orgs_url, orgs_address, orgs_address2, orgs_city,orgs_state,orgs_state_code,orgs_zip, orgs_pk )
+        	VALUES('AGENCY','$r->func_code','$title', $o->orgs_id , '$r->orgs_url', '$address', '$address2','$city','$r->state','$o->orgs_state_code', '$r->zip', $r->a_pk)";
+        
+        $this->save($sql);
+       
+    
+    }  
+      $this->finish();
+}
+
+function bids1()
+{
+    $this->save("delete from bids");
+    $this->finish();
+    // get the non-ereate bids   1000 at a time
+    $sqlx = "SELECT top 1000  * ,  a.title as a_title, a.pk as a_pk, a.address as a_adress, a.address2 as a_address2, a.city as a_city, a.zip as a_zip, a.state as a_state,  
+                             coalesce(aj.fk2, ai.fk2) as j_pk  ,att.code as using_ag_type, 
+                              b.pk as b_pk, b.title as b_title, b.subtype as bidtype
+            FROM bids b          
+            join agency_types att on att.pk = b.agency_type_pk 
+            JOIN agencies#bids ab
+              JOIN agencies a ON a.pk =ab.fk1
+              LEFT JOIN agencies#institutions ai ON ai.fk1 = ab.fk1
+              LEFT JOIN agencies#jurisdictions aj ON aj.fk1 = ab.fk1
+            ON b.pk = ab.fk2                
+            
+            JOIN bids#contacts bc       
+              JOIN contacts c ON c.pk = bc.fk2
+            ON bc.fk1 = b.pk      
+            WHERE NOT b.subtype = 'ERATE'
+            AND  convert(varchar,due_date,12) > '100101' -- only bids from the last 3 years
+            and b.pk > startpk
+            ORDER BY b.pk asc";
+
+    
+    $startPk = 21730;
+    $counter =0;
+    while(true)
+    {
+        
+        $sql = str_replace('startpk', $startPk, $sqlx) ;
+    
+        $this->loadRows($sql);
+        
+        if($this->numResults == 0)
+           break;
+        
+        while(true)
+        {
+            $r = $this->nextRow();
+            if($r === false)
+                break;
+            if($startPk == $r->b_pk)
+            {
+                echo("************************************ $r->b_pk   bid with multiple agencies <br>");  
+                continue; // linked to multiple agencies
+            }   
+            $startPk = $r->b_pk;
+            $this->addBid($r);
+        }    
+        $this->finish();
+        
+        $counter ++;
+        echo "$counter last pk = $startPk --------<br>"; flush();
     }
+}
+
+function addBid($r)
+{
+     // if agency exists, we will link the bid to this agency
+        // otherwise we link it to the org
+                   
+        // Notice that the 'order by org_type_code' will give the agency link preference
+        
+         if(empty($r->j_pk))
+         {
+             echo("<br> ************************************ $r->b_pk  $r->b_title  bid without jurisdiction or agency <br><br>");
+         die;    return;
+         }
+         
     
+        $sql = "SELECT * FROM orgs WHERE orgs_pk = $r->a_pk  OR  orgs_pk = $r->j_pk ORDER BY orgs_type_code";
+        //dump($sql, false);
+        $org = new Query($sql);    
+         
+         $parent = $org->orgs_id;  
+         if(empty($parent))
+         {
+             echo("<br> ************************************ $r->b_pk  $r->b_title  bid without parent <br><br>");
+             return;
+         }
+         
+         
+         
+         $description =  Query::Escape($r->description);
+         $title = Query::Escape($r->b_title);
+         
+         $conf_location = Query::Escape($r->conference_location);
+         $name =     Query::Escape( "$r->first_name $r->last_name");
+         $address =   Query::Escape($r->a_address );
+         $address2 =   Query::Escape( $r->a_address2);
+         $city =   Query::Escape( $r->a_city);
+         $bid_url = Query::Escape( $r->bid_url);
+         $using_org = Query::Escape( $r->using_agency);
+         $email = Query::Escape( $r->email);
+         $pcode = Query::Escape( $r->project_code);
+         
+      //   echo "  ($org->orgs_title)  ??  ($using_org) ";
+         if(strcasecmp($org->orgs_title, $using_org) == 0)
+         {
+           $using_org_fid = $parent;  //echo(" --MATCH-- <br>");
+         }
+         else
+         { 
+           $using_org_fid = 'null';  //echo(" NO <br>");
+         }
+         
+         $due_date =  date("Y-m-d" ,strtotime( $r->due_date));
+         $pub_date =  date("Y-m-d" ,strtotime( $r->pub_date));
+         $mod_date =  date("Y-m-d" ,strtotime( $r->mod_date));
+         $award_date = date("Y-m-d" ,strtotime( $r->award_date));
+         $conf_date=  date("Y-m-d" ,strtotime( $r->conference_date));
+         $fiscal_year = $r->fiscal_year > 0 ? $r->fiscal_year: 'null';
+  //       echo "$title <br>";
+         
+         $sql = "INSERT INTO bids (bids_title, bids_project_code, bids_description, bids_contract_value, bids_contract_value_estimated,
+                 bids_due_date, bids_pub_date, bids_mod_date, bids_create_date, bids_award_date, bids_conference, bids_conference_mandatory, bids_conference_location,bids_conference_date,
+                 bids_preferred_contact_method, bids_using_org_title, bids_using_org_type, bids_using_org_fid, bids_issuing_org_fid, bids_pdf, bids_url, bids_type,
+                 bids_fiscal_year,bids_published, bids_pushed_hourly, bids_pushed_dayly, bids_pushed_weekly, bids_contact_name, bids_contact_email,
+                 bids_address, bids_address2, bids_city, bids_state, bids_zip, bids_phone, bids_fax, bids_pk)
+                 VALUES('$title','$pcode', '$description','$r->contract_value',$r->contract_value_estimated, 
+                 '$due_date',  '$pub_date',   '$mod_date',   NOW(),'$award_date',              $r->conference,    $r->conference_mandatory,'$conf_location', '$conf_date',
+				 '$r->preferred_contact_method', '$using_org','$r->using_ag_type',$using_org_fid,    $parent,      '$r->pdf','$bid_url','$r->bidtype',
+				 $fiscal_year,$r->published,  1,1,1, '$name', '$email', 
+				 '$address', '$address2','$city', '$r->a_state', '$r->a_zip', '$r->phone', '$r->fax',$r->b_pk  )";
+				 
+          $this->save($sql);
+         // echo($sql);  
 }
 
 
@@ -702,13 +995,15 @@ function bids1()
             $err = mssql_get_last_message();
             logerror("SQL ERROR: $err <hr> $sql");
         }
+        $this->numResults =  mssql_num_rows($this->result);
     }
+    
+   
     
     private function nextRow()
     {
         return mssql_fetch_object($this->result);
-    }
-   
+    }  
     
     private function save($sql)
     {
@@ -721,8 +1016,8 @@ function bids1()
     
     private function finish()
     {
-       // dump($this->batch,false);
-        $r = Query::sTransaction($this->batch);
+       if(count($this->batch) > 0)
+          $r = Query::sTransaction($this->batch);
        
         $this->batch = array();
     }

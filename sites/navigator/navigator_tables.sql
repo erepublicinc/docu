@@ -19,6 +19,13 @@
 --  =========== QUESTIONS
 --  do we want to keep the old pk, it looks messy, but since pks are unique, it will give the updatescript more robustness through the relational constraints
 
+-- backup and restore the database as root:
+-- $ mysqldump -u root -p  --opt navigator > dump.sql
+-- $ mysql -u root -p  --database=navigator < dump.sql
+
+--  to create this database
+-- mysql -u root -p  --database=navigator < navigator_tables.sql
+
 
 drop database navigator;
 create schema navigator;
@@ -58,7 +65,7 @@ CREATE TABLE navigator.users
         users_first_name     VARCHAR(20),
         users_job_title     VARCHAR(50),
         users_password         VARCHAR(60) ,
-        users_email         VARCHAR(60)   NOT NULL,
+        users_email         VARCHAR(70)   NOT NULL,
         users_ad_user         VARCHAR(20) ,
         users_accounts_fid  INT NOT NULL,
         users_notes         VARCHAR(255) ,
@@ -105,14 +112,14 @@ CREATE TABLE navigator.logins
     ) engine InnoDB;   
     
 
-CREATE TABLE navigator.licenses //used to be nav-accounts   nava_
+CREATE TABLE navigator.licenses -- used to be nav-accounts   nava_
     (
         licenses_accounts_fid       INT NOT NULL ,
         licenses_site_code          SET('DGN','DEN','EMN') NOT NULL,
         licenses_access_level       SET('STANDARD','PREMIUM') NOT NULL,     
         licenses_number_of_users    INT NOT NULL,
-        licenses_status      		SET('EXPIRED','RENEWAL','ACTIVE','CANCELED','TRIAL') NOT NULL,
-        licenses_expiration 		DATETIME NOT NULL,
+        licenses_status              SET('EXPIRED','RENEWAL','ACTIVE','CANCELED','TRIAL') NOT NULL,
+        licenses_expiration         DATETIME NOT NULL,
         licenses_monthly_bonus_hours INT NOT NULL,
         licenses_account_rep_fid     INT NOT NULL,
         CONSTRAINT  FOREIGN KEY (licenses_account_rep_fid) REFERENCES users (users_id), 
@@ -156,11 +163,12 @@ CREATE TABLE navigator.orgs
         orgs_type_code                VARCHAR(40) NOT NULL  COMMENT 'CITY, COUNTY, CONSOLIDATED etc.. found in org_types',          
         orgs_subtype                VARCHAR(100)  COMMENT 'for K12 subtypes',          
         orgs_functional_type_code     VARCHAR(40) COMMENT 'used to be agency type',
-        orgs_group                  VARCHAR(40),         -- GOV ED (do we need this)
+     --    orgs_group                  VARCHAR(40),         -- GOV ED (do we need this)
         orgs_state_code                VARCHAR(20) NOT NULL,   -- state abbrev + FEDERAL, MULTIPLE, ...
         orgs_fips_code                 VARCHAR(40),        -- federal id
         orgs_entity_id               VARCHAR(40) COMMENT 'for e-rates', 
-        orgs_parent                 INT COMMENT 'foreign key into orgs table. it is the parent organization',
+        orgs_nces_code               VARCHAR(40), 
+        orgs_parent                 INT COMMENT 'foreign key into orgs table. ',
                      
         orgs_fiscal_year_begins        INT COMMENT 'the month,  mostly 1 or 7',     
         orgs_budget_cycle           SET('ANNUAL', 'BIENNIAL','')  DEFAULT '',
@@ -173,10 +181,12 @@ CREATE TABLE navigator.orgs
         orgs_zip                     VARCHAR(20) , 
         orgs_phone                     VARCHAR(20) , 
         orgs_fax                     VARCHAR(20) ,
+        orgs_tmp_county_fips         VARCHAR(20) , --  temp field can be removed after k12  migration
         orgs_pk                            INT, CONSTRAINT unique_orgs_pk UNIQUE (orgs_pk ),
         CONSTRAINT orgs_unique_fips UNIQUE (orgs_fips_code ), 
         CONSTRAINT orgs_unique_entity_id UNIQUE (orgs_entity_id ),
-        CONSTRAINT orgs_unique_title UNIQUE (orgs_title, orgs_parent),
+        CONSTRAINT orgs_unique_entity_id UNIQUE (orgs_nces_code),
+        CONSTRAINT orgs_unique_title UNIQUE (orgs_title, orgs_parent, orgs_nces_code),
         CONSTRAINT FOREIGN KEY (orgs_state_code) REFERENCES navigator.states (states_code),
         CONSTRAINT FOREIGN KEY (orgs_type_code) REFERENCES org_types (ot_code),
         CONSTRAINT FOREIGN KEY (orgs_functional_type_code) REFERENCES org_functional_types (oft_code),
@@ -196,38 +206,35 @@ CREATE TABLE navigator.orgs_x_orgs    -- to link orgs
 
 CREATE TABLE navigator.gov_org_properties    -- extra data for "gov" org types
     (    
-       gov_properties_id  INT NOT NULL AUTO_INCREMENT,
-       orgs_fid     INT NOT NULL,   --foreign key into orgs
-       population    INT,
+       orgs_fid                 INT NOT NULL, 
+       population                INT,
        government_employees     INT,
-       executive_departments     INT,
-       boards_and_commissions    INT,
-       judicial_departments        INT,
-       legislative_departments    INT,
-       funding_tier                INT,  -- for uasi
-       
+       executive_departments    INT,
+       boards_and_commissions   INT,
+       judicial_departments     INT,
+       legislative_departments  INT,
+       funding_tier             INT,  -- for uasi
        CONSTRAINT FOREIGN KEY (orgs_fid) REFERENCES orgs (orgs_id),
-       PRIMARY KEY(gov_properties_id) 
+       PRIMARY KEY(orgs_fid) 
     ) engine InnoDB ; 
 
 CREATE TABLE navigator.ed_org_properties
     (    
-       ed_properties_id             INT NOT NULL AUTO_INCREMENT,
-       orgs_fid             INT NOT NULL,   --foreign key into orgs
-       total_k12_spending    INT,
-       enrollment            INT,
-       classroom_teachers    INT,
-       spending_per_student INT,
-       students_per_computer_ratio INT,
-       school_districts        INT,
+       orgs_fid                      INT NOT NULL,   
+       total_k12_spending            INT,
+       enrollment                    INT,
+       classroom_teachers            INT,
+       spending_per_student         INT,
+       students_per_computer_ratio     INT,
+       school_districts                INT,
        CONSTRAINT FOREIGN KEY (orgs_fid) REFERENCES orgs (orgs_id),
-       PRIMARY KEY(ed_properties_id) 
+       PRIMARY KEY(orgs_fid) 
     ) engine InnoDB ; 
 
 CREATE TABLE navigator.budgets
     (    
        budgets_id             INT NOT NULL AUTO_INCREMENT,
-       budgets_orgs_fid     INT NOT NULL,   --foreign key into orgs
+       budgets_orgs_fid     INT NOT NULL,   -- foreign key into orgs
        budgets_amount        BIGINT,
        budgets_it_amount    BIGINT,
        budgets_type            VARCHAR(40) NOT NULL,   -- 
@@ -241,7 +248,7 @@ CREATE TABLE navigator.budgets
 
 CREATE TABLE navigator.bids
     (  
-       bids_id                     INT NOT NULL ,
+       bids_id                     INT NOT NULL AUTO_INCREMENT,
        bids_title                  VARCHAR(200) NOT NULL,
        bids_project_code          VARCHAR(40) NOT NULL,       
        bids_description          TEXT NOT NULL,
@@ -261,25 +268,24 @@ CREATE TABLE navigator.bids
        
        bids_preferred_contact_method VARCHAR(10),     
        
-       bids_using_org_fid            INT,					-- ???? do we always have a real using org ?
-       bids_using_org_title			 VARCHAR(200) NOT NULL,
+       bids_using_org_fid            INT,                    -- ???? do we always have a real using org ?
+       bids_using_org_title          VARCHAR(200) NOT NULL,
        bids_using_org_type           VARCHAR(40) ,    --     org_functional_types.oft_code  
        
        bids_issuing_org_fid          INT NOT NULL,
        
        bids_pdf                     VARCHAR(250),
        bids_url                     VARCHAR(250),
-       bids_subtype                 SET('PRE-RFP','RFP','AWARDED','ERATE','SOLE_SOURCE'),
+       bids_type                    SET('PRE-RFP','RFP','AWARDED','ERATE','SOLE_SOURCE'),
        bids_fiscal_year             INT,
        
-           
-       bids_users_fid                INT NOT NULL COMMENT 'the author, that last touched it',
        bids_published                  BIT NOT NULL,
-       bids_push_hourly             BIT NOT NULL,
-       bids_push_dayly                 BIT NOT NULL,
-       bids_push_weekly             BIT NOT NULL,
+       bids_pushed_hourly             BIT NOT NULL,
+       bids_pushed_dayly                 BIT NOT NULL,
+       bids_pushed_weekly             BIT NOT NULL,
        
        bids_contact_name             VARCHAR(60) , 
+       bids_contact_title             VARCHAR(60) , 
        bids_contact_email             VARCHAR(60) , 
        bids_address                 VARCHAR(100) , 
        bids_address2                 VARCHAR(100) , 
@@ -288,9 +294,11 @@ CREATE TABLE navigator.bids
        bids_zip                      VARCHAR(20) , 
        bids_phone                     VARCHAR(20) , 
        bids_fax                       VARCHAR(20),
+       bids_pk                        INT CONSTRAINT unique_bids_pk UNIQUE (bids_pk ),
        CONSTRAINT  FOREIGN KEY (bids_using_org_type) REFERENCES org_functional_types (oft_code),
-       CONSTRAINT  FOREIGN KEY (bids_issuing_org_fid) REFERENCES orgs (orgs_id),  
-       CONSTRAINT  FOREIGN KEY (bids_users_fid) REFERENCES users (users_id),  
+       CONSTRAINT  FOREIGN KEY (bids_issuing_org_fid) REFERENCES orgs (orgs_id), 
+       CONSTRAINT  FOREIGN KEY (bids_using_org_fid) REFERENCES orgs (orgs_id),   
+      
        PRIMARY KEY (bids_id)        
     ) engine InnoDB ; 
 
@@ -298,7 +306,7 @@ CREATE TABLE navigator.bids
 CREATE TABLE navigator.bidcats
 (     
         bidcats_id      INT NOT NULL AUTO_INCREMENT,
-        bidcats_title	VARCHAR(40) NOT NULL, 
+        bidcats_title    VARCHAR(40) NOT NULL, 
         bidcats_subtype VARCHAR(40) NOT NULL, 
         bidcats_em      BIT,
         bidcats_ed      BIT,
@@ -347,7 +355,7 @@ CREATE TABLE navigator.divisions
     
 
 
---drop table navigator.contact_roles ;
+-- drop table navigator.contact_roles ;
 --  question : how to deal with retired people?  unlink them from the role ?   add an 'inactive' field to role
 CREATE TABLE navigator.contact_roles     -- a link table between org and contact
     (    
@@ -410,7 +418,7 @@ CREATE TABLE navigator.hotlists
         hotlists_item_fid INT NOT NULL,
         hotlists_item_table VARCHAR(60) NOT NULL,
         CONSTRAINT FOREIGN KEY (hotlists_users_fid) REFERENCES users (users_id),
-        --CONSTRAINT FOREIGN KEY (hotlists_item_table) REFERENCES information_schema.TABLES (TABLE_NAME),
+        -- CONSTRAINT FOREIGN KEY (hotlists_item_table) REFERENCES information_schema.TABLES (TABLE_NAME),
         PRIMARY KEY (hotlists_users_fid, hotlists_item_fid, hotlists_item_table)
     )  engine InnoDB; 
 
@@ -459,6 +467,7 @@ CREATE TABLE navigator.taglinks
         histories_table       VARCHAR(40) NOT NULL,
         histories_action      VARCHAR(20) NOT NULL,
         histories_timestamp     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        histories_record_fid  INT NOT NULL,
         CONSTRAINT FOREIGN KEY (histories_users_fid) REFERENCES users (users_id)     
     )engine InnoDB;
 
@@ -501,7 +510,7 @@ CREATE TABLE  navigator.interviews
         interviews_contacts_fid    INT , 
         interviews_summary        VARCHAR(200) NOT NULL, 
         interviews_mod_date        DATETIME,
-        interviews_subtype        VARCHAR(40) NOT NULL,
+        interviews_type        VARCHAR(40) NOT NULL,
         interviews_published     BIT,
         interviews_ext_id        VARCHAR(40) ,
         interviews_event_date     DATETIME,
