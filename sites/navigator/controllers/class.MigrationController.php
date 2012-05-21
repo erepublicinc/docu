@@ -684,17 +684,25 @@ function migrateOrgs_part5()
         //echo($sql." <br>\n") ;
         $this->save($sql);
         
-        if($ratio + $spending + $enrollment + $teachers + $spending_student + $districts  > 1 )
-        {
+   //     if($ratio + $spending + $enrollment + $teachers + $spending_student + $districts  > 1 )
+   //     {
             $this->save("SELECT @orgs_id:= LAST_INSERT_ID()");
            
             $sql = "INSERT INTO ed_org_properties(orgs_fid,total_k12_spending,enrollment,classroom_teachers,spending_per_student,students_per_computer_ratio,school_districts) 
                       VALUES(@orgs_id, $spending, $enrollment, $teachers, $spending_student, $ratio, $districts)";
             $this->save($sql);
-        }
+   //     }
         $this->finish();
     } 
    
+ /*   
+    //now we have to add the nces number 
+    $sql = "UPDATE orgs o , reference.k12_pk_nces r
+    		SET o.orgs_nces_code = r.nces, o.orgs_entity_id = r.entity_id
+    		WHERE o.orgs_pk = r.pk "
+    
+    $results  =  new Query($sql);
+ */  
 }
 
 // load the school districts from the nces table.  if  k12 already exist, update the address 
@@ -734,6 +742,7 @@ function migrateOrgs_part6()
         $counter++;    
         echo "$counter $title <br>";  flush(); 
         
+        // the unique nces will trigger the update mode if the k12 already exists
         // NOTE: we store the county fips in the url (temporary)
         $sql = "INSERT INTO orgs ( orgs_title, orgs_type_code, orgs_state_code, orgs_nces_code,orgs_address,orgs_city,orgs_state,orgs_zip,orgs_phone,orgs_subtype,orgs_tmp_county_fips)
        					 VALUES('$title','K12','$r->mail_state','$r->ncescode','$address','$city','$r->mail_state','$r->mail_zip','$r->phone','$r->district_type','$r->county_fips')
@@ -767,6 +776,45 @@ function migrateOrgs_part6()
     
 }
  
+
+function migrateBudgets()
+{
+    echo("<h2>Adding budgets</h2>");
+    $this->save("DELETE FROM budgets");
+    $this->finish();
+    
+    $this->loadRows("SELECT *, coalesce( ab.fk1, bj.fk2, bi.fk2) as org_pk 
+					FROM budgets b
+                    LEFT JOIN agencies#budgets ab ON b.pk = ab.fk2
+                    LEFT JOIN budgets#jurisdictions bj ON b.pk = bj.fk1
+                    LEFT JOIN budgets#institutions bi ON b.pk = bi.fk1 ");
+                        
+    if($this->numResults == 0)
+       break;
+    
+    $oa =array();   
+    $orgs = new Query("select orgs_pk, orgs_id from orgs");
+    foreach($orgs as $o)
+    {
+      
+       $oa[$o->orgs_pk] = $o->orgs_id;    
+    }  
+       
+    while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+                
+        if(isset($oa[$r->org_pk]))
+        {   
+            $id =  $oa[$r->org_pk];
+            $this->save("INSERT INTO budgets (budgets_orgs_fid, budgets_amount,  budgets_it_amount, budgets_type, budgets_fiscal_year,budgets_status)
+                                   VALUES($id,$r->total_budget, $r->it_budget, '$r->subtype', $r->fiscal_year, '$r->budget_status')" );
+        }                                        
+    }
+    $this->finish();
+}
 
 
 function agencies ()
@@ -807,11 +855,10 @@ order by att.pk
                   join institutions i on i.pk =ai.fk2
               ON a.pk = ai.fk1
               
-            where is_jurisdiction_agency = 1
-            and  (  a.pk in ( select fk1 from agencies#contacts )
-                   or j.subtype in('UASI','FUSION_CENTER')
-                 )     ";
-     $this->loadRows($sql);   
+              WHERE a.pk in ( select fk1 from agencies#contacts ) 
+              OR   j.subtype in('UASI','FUSION_CENTER') ";
+    
+    $this->loadRows($sql);   
     while(true)
     {
         
@@ -848,6 +895,91 @@ order by att.pk
     }  
       $this->finish();
 }
+
+
+function migrateOrgsDocs()
+{
+/*       
+    echo "<h2>Adding org documents  through URLS </h2>\n";
+     
+    $sql = "select m.*, t.code as doctype , jm.fk1 as orgs_pk 
+              from media m
+              join jurisdictions#media jm on m.pk = jm.fk2
+              left join media#tags mt
+                   join tags t ON t.pk = mt.fk2
+              on mt.fk1 = m.pk     
+            union
+            select m.*, t.code as doctype ,im.fk1 as orgs_pk 
+              from media m
+              join institutions#media im on m.pk = im.fk2
+              left join media#tags mt
+                   join tags t ON t.pk = mt.fk2
+              on mt.fk1 = m.pk    ";
+     
+        $this->loadRows($sql);
+        
+        
+        while(true)
+        {
+            $r = $this->nextRow();
+            if($r === false)
+                break;
+
+            $url   = Query::Escape($r->url);
+            $title = Query::Escape($r->title);
+            
+               
+           // echo " $r->bidpk, '$url', '$title', 'BID_DOC' <br>";
+            $sql = "call add_org_link($r->orgs_pk, '$url', '$title', '$r->doctype', NULL)";
+            $this->save($sql);
+            
+        }    
+        $this->finish();
+*/
+        
+     echo "<h2>Adding  docs  and their links</h2>\n";
+     
+     $sql="select a.*, t.code as doctype , ja.fk1 as orgs_pk 
+            from articles a
+            join jurisdictions#articles ja on a.pk = ja.fk2
+            left join articles#tags tt
+               join tags t ON t.pk = tt.fk2
+            on tt.fk1 = a.pk  ";   
+      $this->loadRows($sql);
+      $this->createOrgDocs(); 
+
+      $sql="select a.*, t.code as doctype , ja.fk1 as orgs_pk 
+            from articles a
+            join institutions#articles ja on a.pk = ja.fk2
+            left join articles#tags tt
+               join tags t ON t.pk = tt.fk2
+            on tt.fk1 = a.pk  ";   
+      $this->loadRows($sql);
+      $this->createOrgDocs(); 
+      
+                
+}
+
+
+private function createOrgDocs()
+{
+    while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+
+        $txt   = Query::Escape($r->body);
+        $title = Query::Escape($r->title);
+        $mod_date =  date("Y-m-d" ,strtotime( $r->mod_date));
+                    
+        $sql = "call add_org_doc($r->orgs_pk, '$txt', '$title', '$r->doctype', '$mod_date')";
+        $this->save($sql);
+        
+    }    
+    $this->finish();   
+}
+
 
 function bids1()
 {
@@ -906,7 +1038,9 @@ function bids1()
     }
 }
 
-function addBid($r)
+
+
+private function addBid($r)
 {
      // if agency exists, we will link the bid to this agency
         // otherwise we link it to the org
@@ -916,7 +1050,7 @@ function addBid($r)
          if(empty($r->j_pk))
          {
              echo("<br> ************************************ $r->b_pk  $r->b_title  bid without jurisdiction or agency <br><br>");
-         die;    return;
+             return;
          }
          
     
@@ -980,6 +1114,255 @@ function addBid($r)
 }
 
 
+// add the bid categories
+function bids2()
+{
+    $this->save("delete from bids_x_bidcats");
+    $this->save("delete from bidcats");
+    $this->finish();
+    
+    $this->addBidCats();
+    
+    echo "<h2>Adding bid categories  links</h2>\n";
+     
+    // get the non-ereate bids   1000 at a time
+    $sqlx = "SELECT top 3000  b.pk, 
+              CAST((Select ',' + c.code  
+                From bid_categories c 
+                 join bids#bid_categories bc  on c.pk = bc.fk2  AND   b.pk = bc.fk1                
+                For XML Path('')) AS TEXT) as codes
+    
+            FROM bids b          
+            
+            WHERE NOT b.subtype = 'ERATE'
+            AND  convert(varchar,due_date,12) > '100101' 
+            and b.pk > startpk
+            ORDER BY b.pk asc";
+
+    
+    $startPk = 21730;
+    $counter =0;
+    while(true)
+    {      
+        $sql = str_replace('startpk', $startPk, $sqlx) ;
+    
+        $this->loadRows($sql);
+        
+        if($this->numResults == 0)
+           break;
+        
+        while(true)
+        {
+            $r = $this->nextRow();
+            if($r === false)
+                break;
+           
+            $startPk = $r->pk;    
+            $cats = explode(',',$r->codes);
+            foreach($cats as $c)
+            {
+                if(!empty($c))
+                   $this->save("call add_bidcatlink($r->pk,'$c')");
+            }
+        }    
+        $this->finish();
+        
+        $counter ++;
+        echo "Batch number $counter .  Last pk = $startPk --------<br>"; flush();
+       
+    }
+    
+}
+
+
+private function addBidCats()
+{
+    echo "<h2>Adding bid categories</h2>";
+    $this->loadRows("select * from bid_categories");
+    while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+        $title = Query::Escape($r->title)    ;
+        $this->save("INSERT INTO bidcats (bidcats_title, bidcats_subtype, bidcats_code)
+         VALUES('$title', '$r->subtype' ,'$r->code' )");    
+    }
+    $this->finish();
+}
+
+
+
+
+
+// add bid documents
+function bids3()
+{
+    $this->save("delete from bid_links");
+    $this->finish();
+       
+    echo "<h2>Adding bid documents  links</h2>\n";
+     
+    // get the non-ereate bids   1000 at a time
+    $sqlx = "SELECT top 3000  b.pk as bidpk, m.* 
+            FROM bids b          
+            JOIN bids#media bm 
+            	JOIN media m ON m.pk = bm.fk2
+            ON b.pk = bm.fk1	
+            WHERE NOT b.subtype = 'ERATE'
+            AND m.subtype = 'DOCUMENT'
+            AND  convert(varchar,due_date,12) > '100101' 
+            and b.pk > startpk
+            ORDER BY b.pk asc";
+
+    
+    $startPk = 21730;
+    $counter =0;
+    while(true)
+    {      
+        $sql = str_replace('startpk', $startPk, $sqlx) ;
+    
+        $this->loadRows($sql);
+        
+        if($this->numResults == 0)
+           break;
+        
+        while(true)
+        {
+            $r = $this->nextRow();
+            if($r === false)
+                break;
+           
+            $startPk = $r->bidpk;   
+
+            $url   = Query::Escape($r->url);
+            $title = Query::Escape($r->title);
+            
+            if(stripos($title, 'award') !== false)
+                $subtype = "AWARD_DOC";
+            else     
+                 $subtype = "BID_DOC";
+           // echo " $r->bidpk, '$url', '$title', 'BID_DOC' <br>";
+            $sql = "call add_bid_doc($r->bidpk, '$url', '$title', '$subtype')";
+            $this->save($sql);
+            
+        }    
+        $this->finish();
+       
+        $counter ++;
+        echo "$counter last pk = $startPk --------<br>"; flush();
+    }
+        
+}
+
+
+
+
+function migrateContacts()
+{
+    echo "<h2>migrating contacts</h2><br>";
+    
+    $this->save("delete from contact_roles");
+    $this->save("delete from contacts");
+    $this->save("delete from divisions");
+    $this->finish();
+    
+    // load divisions
+    $this->loadRows('select * from division_types');
+      while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+        $this->save("INSERT INTO divisions (divisions_code, divisions_title) VALUES('$r->code', '$r->title')");    
+    }
+    $this->finish();
+    
+    
+    
+    $sql ="SELECT c.* , ac.fk1 as org_pk, dt.code as division_code, m.url as media_url, gm.role_type as group_role, agm.fk1 as group_pk
+            FROM contacts c 
+             JOIN agencies#contacts ac ON c.pk =ac.fk2  
+             JOIN contacts#division_types cd
+                    JOIN division_types dt ON dt.pk = cd.fk2
+             ON c.pk =cd.fk1
+             LEFT JOIN  contacts#media cm
+                     JOIN media m ON m.pk = cm.fk2
+             ON c.pk =cm.fk1
+             
+             LEFT JOIN contacts#group_members cgm
+                     JOIN group_members gm on gm.pk = cgm.fk2
+                     JOIN agencies#group_members agm ON  agm.fk2 = cgm.fk2
+             ON c.pk =  cgm.fk1        
+            WHERE published =1 ";
+     $this->loadRows($sql);
+
+     $counter = 0;
+     $doubles = 0;
+    while(true)
+    {
+        $r = $this->nextRow();
+        if($r === false)
+            break;
+
+        // check for duplicates    
+        $savedName = "$r->first_name $r->last_name $r->org_pk";    
+        if(  strcmp($savedName, $oldSavedName) == 0  )    
+        {
+            echo " ================================================ duplicate person $savedName <br>";
+            $doubles++;
+            continue;
+        }  
+        $oldSavedName = $savedName;
+        
+        $fname = Query::Escape("$r->first_name $r->middle_name");
+        $lname = Query::Escape($r->last_name);
+        $bio   = Query::Escape($r->biography);
+        $pic_url   = Query::Escape($r->media_url);
+        
+        $jobtitle = Query::Escape($r->job_title);
+        $address  = Query::Escape($r->address);
+        $address2 = Query::Escape($r->address2);
+        $city     = Query::Escape($r->city);
+        $email    = Query::Escape($r->email);
+        $url      = trim(Query::Escape($r->url));
+        $zip      = trim($r->zip);
+        $phone    = trim($r->phone);
+        $fax      = trim($r->fax);
+        $org_pk   = $r->org_pk;
+        
+        $counter++;
+       // echo "$counter $r->org_pk $r->group_pk $fname $lname <br>"; flush();
+         
+        $res = new Query("SELECT  orgs_id from orgs where orgs_pk = $r->org_pk ");
+        if( intval($res->orgs_id) == 0)
+        {
+           echo "=================== NO ORG found <br>"; 
+           continue;
+        }
+        $this->save("INSERT INTO contacts(contacts_first_name, contacts_last_name, contacts_biographie, contacts_photo_url)
+                VALUES('$fname', '$lname', '$bio', '$pic_url')");
+        $this->save("SELECT @id:= LAST_INSERT_ID()");
+        $this->save("INSERT INTO contact_roles (roles_contacts_fid,roles_orgs_fid,roles_position,roles_divisions_code, roles_title,
+        							roles_active,roles_use_org_address, roles_email, roles_address,roles_address2,
+        							roles_city,roles_state,  roles_zip,roles_phone,roles_fax,roles_url) 
+        			 VALUES(@id, $res->orgs_id, '$r->role_type','$r->division_code', '$jobtitle',
+        			 			   $r->published, $r->use_contact_address, '$email', '$address',  '$address2',	
+        			 			    '$city', '$r->state' , '$zip', '$phone', '$fax', '$url')");
+        if($r->group_pk >0 && $r->org_pk != $r->group_pk)
+             $this->save("INSERT INTO contact_roles (roles_contacts_fid,roles_orgs_fid,roles_position,roles_divisions_code, roles_title,
+        							roles_active,roles_use_org_address, roles_email, roles_address,roles_address2,
+        							roles_city,roles_state,  roles_zip,roles_phone,roles_fax,roles_url) 
+        			 VALUES(@id, (select orgs_id from orgs where orgs_pk = $r->group_pk), '$r->role_type','$r->division_code', '$jobtitle',
+        			 			   $r->published, $r->use_contact_address, '$email', '$address',  '$address2',	
+        			 			    '$city', '$r->state' , '$zip', '$phone', '$fax', '$url')");
+        //dump($this->batch);
+        $this->finish();
+    }    
+
+    echo "<br>added $counter contacts,  rejected $doubles duplicates<br>";
+}
+
 ///////////////////////// utility functions ////////////////////////////////////    
     
     /**
@@ -1008,7 +1391,7 @@ function addBid($r)
     private function save($sql)
     {
         $this->batch[] = $sql;
-        if(count($this->batch) >= 10)
+        if(count($this->batch) >= 20)
         {
             $this->finish();
         }

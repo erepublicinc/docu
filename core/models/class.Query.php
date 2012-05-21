@@ -19,6 +19,7 @@ class Query  implements Iterator
     private static $mAdminMode = false;
     private static $mIgnoreUniqueErrors = false;
     
+    public static $echo_sql = false;    
     
     private $mRows = array();   // a copy of the data rows of the current query
     private $mRowIndex = -1;    // index into array above
@@ -28,6 +29,8 @@ class Query  implements Iterator
     private $mNumQueries;      // number of queries  default =1
 
     public $mAliasArray;  // array of alternative fieldnames
+    
+
     
     public static function Escape($str)
     {
@@ -99,9 +102,12 @@ class Query  implements Iterator
     public static function sTransaction($sql)
     {
         global $CONFIG;
-        if($CONFIG->show_sql)     
-        	show_sql($sql);
         
+        if(! is_array($sql))
+            logerror("Query::sTransaction called with non array param ");
+        
+        if(count($sql) == 0)
+            logerror("Query::sTransaction called with empty array ");
         
         if(self::$mConnection == null)
              self::OpenDb(); 
@@ -110,6 +116,9 @@ class Query  implements Iterator
 
         foreach($sql as $query)
         {
+            if(self::$echo_sql)
+               echo("$query <br>");
+               
             $result = self::$mConnection->query($query);
             if($result === false)
             { 

@@ -31,7 +31,7 @@ drop database navigator;
 create schema navigator;
 use navigator;
 grant select on navigator.* to 'web_sites'@'%';
-grant select, insert, update, delete on navigator.* to 'web_sites_admin'@'%';
+grant select, insert, update, delete ,execute on navigator.* to 'web_sites_admin'@'%';
 
 
 CREATE TABLE navigator.states
@@ -185,7 +185,7 @@ CREATE TABLE navigator.orgs
         orgs_pk                            INT, CONSTRAINT unique_orgs_pk UNIQUE (orgs_pk ),
         CONSTRAINT orgs_unique_fips UNIQUE (orgs_fips_code ), 
         CONSTRAINT orgs_unique_entity_id UNIQUE (orgs_entity_id ),
-        CONSTRAINT orgs_unique_entity_id UNIQUE (orgs_nces_code),
+        CONSTRAINT orgs_unique_nces_id UNIQUE (orgs_nces_code),
         CONSTRAINT orgs_unique_title UNIQUE (orgs_title, orgs_parent, orgs_nces_code),
         CONSTRAINT FOREIGN KEY (orgs_state_code) REFERENCES navigator.states (states_code),
         CONSTRAINT FOREIGN KEY (orgs_type_code) REFERENCES org_types (ot_code),
@@ -294,7 +294,8 @@ CREATE TABLE navigator.bids
        bids_zip                      VARCHAR(20) , 
        bids_phone                     VARCHAR(20) , 
        bids_fax                       VARCHAR(20),
-       bids_pk                        INT CONSTRAINT unique_bids_pk UNIQUE (bids_pk ),
+       bids_pk                        INT, 
+       CONSTRAINT unique_bids_pk UNIQUE (bids_pk),
        CONSTRAINT  FOREIGN KEY (bids_using_org_type) REFERENCES org_functional_types (oft_code),
        CONSTRAINT  FOREIGN KEY (bids_issuing_org_fid) REFERENCES orgs (orgs_id), 
        CONSTRAINT  FOREIGN KEY (bids_using_org_fid) REFERENCES orgs (orgs_id),   
@@ -305,25 +306,63 @@ CREATE TABLE navigator.bids
     
 CREATE TABLE navigator.bidcats
 (     
-        bidcats_id      INT NOT NULL AUTO_INCREMENT,
-        bidcats_title    VARCHAR(40) NOT NULL, 
+        bidcats_code    VARCHAR(40) NOT NULL,
+        bidcats_title   VARCHAR(40) NOT NULL,
         bidcats_subtype VARCHAR(40) NOT NULL, 
-        bidcats_em      BIT,
-        bidcats_ed      BIT,
-        bidcats_gov     BIT,    
-        PRIMARY KEY (bidcats_id)          
+        bidcats_dgn     BIT,
+        bidcats_den     BIT,
+        bidcats_emn     BIT,  
+        PRIMARY KEY (bidcats_code)          
 ) engine InnoDB  COMMENT 'bid categories';    
 
 CREATE TABLE navigator.bids_x_bidcats
 (
-          bids_fid    INT NOT NULL ,
-          bidcats_fid    INT NOT NULL ,
-        CONSTRAINT  FOREIGN KEY (bids_fid)    REFERENCES bids (bids_id),  
-        CONSTRAINT  FOREIGN KEY (bidcats_fid) REFERENCES bidcats (bidcats_id),           
-        PRIMARY KEY (bidcats_fid, bids_fid)            
+        bids_fid     INT NOT NULL ,
+        bidcats_code VARCHAR(40) NOT NULL,
+        bids_pk                        INT,
+        CONSTRAINT   FOREIGN KEY (bids_fid)    REFERENCES bids (bids_id),  
+        CONSTRAINT   FOREIGN KEY (bidcats_code) REFERENCES bidcats (bidcats_code),           
+        PRIMARY KEY (bidcats_code, bids_fid, bids_pk )            
 ) engine InnoDB ;  
 
-    
+
+
+CREATE TABLE navigator.docs
+(     
+        docs_id       INT NOT NULL AUTO_INCREMENT,
+        docs_type     VARCHAR(40) NOT NULL,
+        docs_title    VARCHAR(100),
+        docs_summary  VARCHAR(500) , 
+        docs_mod_date DATETIME,
+        docs_text     TEXT,
+        PRIMARY KEY (docs_id)
+) engine InnoDB ;
+
+
+
+CREATE TABLE navigator.bid_links
+(     
+        bid_links_fid          INT NOT NULL,
+        bid_links_title     VARCHAR(100) NOT NULL,
+        bid_links_url        VARCHAR(750) ,
+        bid_links_docs_fid    INT,
+        bid_links_type        VARCHAR(40) NOT NULL, -- BID_DOCUMENT, WINNING_PROPOSAL
+        CONSTRAINT   FOREIGN KEY (bid_links_fid)    REFERENCES bids (bids_id),
+        PRIMARY KEY (bid_links_fid,bid_links_docs_fid,bid_links_url )
+) engine InnoDB COMMENT 'mostly used for bid documents ';
+
+CREATE TABLE navigator.org_links
+(     
+        org_links_fid          INT NOT NULL,
+        org_links_title     VARCHAR(100) NOT NULL,
+        org_links_url        VARCHAR(750) DEFAULT '',
+        org_links_docs_fid  INT,
+        org_links_type        VARCHAR(40) NOT NULL, --  HOW_THEY_BUY, etc
+        CONSTRAINT FOREIGN KEY (org_links_fid) REFERENCES orgs (orgs_id),
+        PRIMARY KEY (org_links_fid,org_links_docs_fid,org_links_url)
+) engine InnoDB COMMENT 'mostly used for "how they buy" pages  ';
+
+  
 
 
 CREATE TABLE navigator.contacts
@@ -332,7 +371,8 @@ CREATE TABLE navigator.contacts
         contacts_first_name VARCHAR(20),
         contacts_last_name VARCHAR(20),
         contacts_biographie TEXT,
-         PRIMARY KEY (contacts_id)
+        contacts_photo_url VARCHAR(200),
+        PRIMARY KEY (contacts_id)
     ) engine InnoDB ; 
 
     
@@ -374,6 +414,7 @@ CREATE TABLE navigator.contact_roles     -- a link table between org and contact
        roles_zip            VARCHAR(20),
        roles_phone            VARCHAR(20),
        roles_fax             VARCHAR(20),
+       roles_url            VARCHAR(200),
        CONSTRAINT FOREIGN KEY (roles_contacts_fid) REFERENCES contacts (contacts_id),
        CONSTRAINT FOREIGN KEY (roles_orgs_fid) REFERENCES orgs (orgs_id),
        CONSTRAINT FOREIGN KEY (roles_divisions_code) REFERENCES divisions (divisions_code),
@@ -549,9 +590,8 @@ CREATE TABLE  navigator.searches
         CONSTRAINT FOREIGN KEY (searches_contacts_fid) REFERENCES users (users_id),
         PRIMARY KEY (searches_id)
     ) engine InnoDB;   
-     
 
-     
+         
    
 
 insert into accounts(accounts_id,accounts_pk,accounts_title,accounts_sf_id) values(1,417102,'eRepublic','0013000000LtZ3U');
@@ -585,16 +625,4 @@ INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_
 INSERT INTO states (states_code,states_title,states_pk,states_fips_code, states_territories) VALUES('MP','Northern Marianas', 10005,69,1); 
 --  other fips codes:  Bureau of Indian Education: 59 , DOD (Domestic): 61  , DOD (Overseas): 58
 
- 
-   
-
--- articles
-
--- cron_jobs
--- push_mail_log
--- salesforce_logs
-
-
-
-
-        
+       
